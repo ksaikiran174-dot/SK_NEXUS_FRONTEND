@@ -11,7 +11,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
 import { getPendingOrders, deleteOfflineOrder } from "./utils/db";
 import { DarkModeProvider } from './context/DarkModeContext';
-import PendingApproval from "./pages/pendingApproval"; 
+import pendingApproval from "./pages/pendingApproval"; 
 /* ==========================================================
    DYNAMIC EXTENSION SWITCHES
 ========================================================== */
