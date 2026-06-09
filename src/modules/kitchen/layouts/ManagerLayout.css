@@ -1,0 +1,17 @@
+.manager-layout {
+
+  display: flex;
+
+  min-height: 100vh;
+
+  background: #f5f7fb;
+}
+
+.manager-main {
+
+  flex: 1;
+
+  padding: 24px;
+
+  overflow-y: auto;
+}

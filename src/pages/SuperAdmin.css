@@ -1,0 +1,248 @@
+.super-admin-page {
+  padding: 30px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+.super-admin-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+.admin-section {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.section-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 14px;
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.admin-table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.approve-btn,
+.extend-btn,
+.suspend-btn,
+.delete-btn {
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.approve-btn {
+  background: #10b981;
+  color: white;
+}
+
+.extend-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.suspend-btn {
+  background: #f59e0b;
+  color: white;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.pending-status {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.active-status {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.expired-status {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+
+.restaurant-link-btn {
+
+  background: none;
+
+  border: none;
+
+  color: #2563eb;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.restaurant-link-btn:hover {
+
+  text-decoration: underline;
+}
+
+.restaurant-modal-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0,0,0,0.55);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 999;
+}
+
+.restaurant-modal {
+
+  width: 600px;
+
+  max-width: 95%;
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 24px;
+}
+
+.restaurant-modal-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+.close-modal-btn {
+
+  border: none;
+
+  background: none;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.restaurant-modal-body {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.detail-row {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  border-bottom: 1px solid #eee;
+
+  padding-bottom: 10px;
+}
+
+.image-modal-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0,0,0,0.7);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+.image-modal {
+
+  background: white;
+
+  padding: 20px;
+
+  border-radius: 16px;
+
+  max-width: 700px;
+
+  width: 90%;
+
+  position: relative;
+}
+
+.payment-preview-image {
+
+  width: 100%;
+
+  border-radius: 12px;
+}
+
+.close-modal-btn {
+
+  position: absolute;
+
+  top: 10px;
+
+  right: 10px;
+
+  border: none;
+
+  background: red;
+
+  color: white;
+
+  width: 32px;
+
+  height: 32px;
+
+  border-radius: 50%;
+
+  cursor: pointer;
+}

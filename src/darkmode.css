@@ -1,0 +1,171 @@
+/* ============================================
+   DARK MODE GLOBAL STYLES
+   ============================================ */
+
+/* Inputs and form elements */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Tables */
+[data-theme="dark"] table {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] table thead {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] table tbody tr {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] table tbody tr:hover {
+  background-color: var(--border-color);
+}
+
+/* Modals and dialogs */
+[data-theme="dark"] .modal,
+[data-theme="dark"] .dialog,
+[data-theme="dark"] [role="dialog"] {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Dropdowns and menus */
+[data-theme="dark"] .dropdown-menu,
+[data-theme="dark"] .menu {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .menu-item:hover {
+  background-color: var(--border-color);
+}
+
+/* Notifications and alerts */
+[data-theme="dark"] .alert,
+[data-theme="dark"] .notification {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Scrollbars (Webkit browsers) */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Links */
+[data-theme="dark"] a {
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] a:hover {
+  color: var(--primary-dark);
+}
+
+/* Code blocks */
+[data-theme="dark"] code,
+[data-theme="dark"] pre {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Smooth transitions for all theme changes */
+[data-theme="dark"] * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Focus states */
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Highlight and selection */
+[data-theme="dark"] ::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] ::-moz-selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: var(--text-primary);
+}
+
+/* Recharts components for dark mode */
+[data-theme="dark"] .recharts-default-tooltip {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .recharts-tooltip-label {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .recharts-tooltip-item {
+  color: var(--text-secondary) !important;
+}
+
+/* Animation and motion elements */
+[data-theme="dark"] .motion-div {
+  color: var(--text-primary);
+}
+
+/* Status badges */
+[data-theme="dark"] .badge {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .badge-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+[data-theme="dark"] .badge-success {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+[data-theme="dark"] .badge-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+[data-theme="dark"] .badge-warning {
+  background-color: var(--warning-color);
+  color: white;
+}

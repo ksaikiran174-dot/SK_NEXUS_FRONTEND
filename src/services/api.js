@@ -1,0 +1,121 @@
+// api.js
+
+export const apiFetch = async (url, options = {}, role) => {
+  // 🎯 FIX 1: AUTO-DETECT ROLE IF OMITTED TO PREVENT CROSS-TALK CRASHES
+  let currentRole = role;
+  if (!currentRole) {
+    // If the URL or window path contains 'manager', treat it as manager, otherwise default to employee
+    currentRole = window.location.pathname.includes("manager") || url.includes("manager") 
+      ? "manager" 
+      : "employee";
+  }
+
+  const tokenKey =
+    currentRole === "manager"
+      ? "managerAccessToken"
+      : "employeeAccessToken";
+
+  const refreshTokenKey =
+    currentRole === "manager"
+      ? "managerRefreshToken"
+      : "employeeRefreshToken";
+
+  let accessToken = localStorage.getItem(tokenKey);
+
+  // =========================================
+  // DETECT FORMDATA
+  // =========================================
+  const isFormData = options.body instanceof FormData;
+
+  // =========================================
+  // HEADERS
+  // =========================================
+  const headers = { ...(options.headers || {}) };
+
+  // 🎯 FIX 2: ONLY ATTACH AUTH IF TOKEN ACTUALLY EXISTS (Avoids sending "Bearer null")
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+
+  // ONLY SET JSON HEADER IF NOT FORMDATA
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  // =========================================
+  // REQUEST
+  // =========================================
+  let response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  // =========================================
+  // TOKEN EXPIRED (401 Interceptor)
+  // =========================================
+  if (response.status === 401) {
+    const refreshToken = localStorage.getItem(refreshTokenKey);
+
+    if (!refreshToken) {
+      logout(currentRole);
+      return response;
+    }
+
+    try {
+      const refreshRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          refresh_token: refreshToken
+        })
+      });
+
+      if (!refreshRes.ok) {
+        logout(currentRole);
+        return response;
+      }
+
+      const refreshData = await refreshRes.json();
+      localStorage.setItem(tokenKey, refreshData.access_token);
+
+      // =========================================
+      // RETRY REQUEST
+      // =========================================
+      const retryHeaders = {
+        Authorization: `Bearer ${refreshData.access_token}`,
+        ...(options.headers || {})
+      };
+
+      if (!isFormData) {
+        retryHeaders["Content-Type"] = "application/json";
+      }
+
+      response = await fetch(url, {
+        ...options,
+        headers: retryHeaders
+      });
+    } catch (error) {
+      console.error("Token refresh routing error:", error);
+      logout(currentRole);
+    }
+  }
+
+  return response;
+};
+
+// =========================================
+// LOGOUT
+// =========================================
+const logout = (role) => {
+  if (role === "manager") {
+    localStorage.removeItem("managerAccessToken");
+    localStorage.removeItem("managerRefreshToken");
+  } else {
+    localStorage.removeItem("employeeAccessToken");
+    localStorage.removeItem("employeeRefreshToken");
+  }
+
+  window.location.href = "/";
+};
