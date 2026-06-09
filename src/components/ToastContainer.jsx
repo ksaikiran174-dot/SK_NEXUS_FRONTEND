@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { inferToastType, TOAST_ICONS } from "../utils/toastHelpers";
+import { inferToastType, TOAST_ICONS } from "../utils/ToastHelpers";
 import "./ToastContainer.css";
 
 function ToastContainer({ notifications = [] }) {

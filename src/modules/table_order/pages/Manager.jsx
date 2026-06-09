@@ -27,7 +27,7 @@ import { apiFetch } from "../../../services/api";
 import { clearManagerData } from "../../../services/auth";
 import ConfirmationModal from "../../../components/ConfirmationModal";
 import ToastContainer from "../../../components/ToastContainer";
-import { inferToastType } from "../../../utils/toastHelpers";
+import { inferToastType } from "../../../utils/ToastHelpers";
 import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";

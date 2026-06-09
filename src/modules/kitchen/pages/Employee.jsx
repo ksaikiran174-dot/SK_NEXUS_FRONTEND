@@ -8,7 +8,7 @@ import { useDarkMode } from "../../../context/DarkModeContext";
 import { clearEmployeeData } from "../../../services/auth";
 import ConfirmationModal from "../../../components/ConfirmationModal";
 import ToastContainer from "../../../components/ToastContainer";
-import { inferToastType } from "../../../utils/toastHelpers";
+import { inferToastType } from "../../../utils/ToastHelpers";
 
 function KitchenEmployee() {
   const [orders, setOrders] = useState([]);
