@@ -34,6 +34,36 @@ import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";
 
+// 🎯 HIGH-SPEED CLOUDINARY DIRECT UPLOADER (Bypasses Railway Completely)
+const uploadDirectToCloudinary = async (file) => {
+  if (!file) return "";
+
+  const formData = new FormData();
+  formData.append("file", file);
+  
+  // ⚠️ CHANGE THESE TWO VALUES TO MATCH YOUR CLOUDINARY CREDENTIALS 👇
+  formData.append("upload_preset", "sk_nexus_preset"); 
+  const cloudName = "dcwc8blaa"; 
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) {
+      throw new Error("Direct upload failed");
+    }
+
+    const data = await response.json();
+    return data.secure_url; // Returns the permanent absolute HTTPS url string instantly!
+  } catch (error) {
+    console.error("Cloudinary upload utility crashed:", error);
+    throw error;
+  }
+};
+
+
 function BillingManager() {
   const [orders, setOrders] = useState([]);
   const [item, setItem] = useState("");
@@ -1683,34 +1713,6 @@ const handleTabChange = (tabName) => {
   }
 };
 
-// 🎯 HIGH-SPEED CLOUDINARY DIRECT UPLOADER (Bypasses Railway Completely)
-const uploadDirectToCloudinary = async (file) => {
-  if (!file) return "";
-
-  const formData = new FormData();
-  formData.append("file", file);
-  
-  // ⚠️ CHANGE THESE TWO VALUES TO MATCH YOUR CLOUDINARY CREDENTIALS 👇
-  formData.append("upload_preset", "sk_nexus_preset"); 
-  const cloudName = "dcwc8blaa"; 
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      { method: "POST", body: formData }
-    );
-
-    if (!response.ok) {
-      throw new Error("Direct upload failed");
-    }
-
-    const data = await response.json();
-    return data.secure_url; // Returns the permanent absolute HTTPS url string instantly!
-  } catch (error) {
-    console.error("Cloudinary upload utility crashed:", error);
-    throw error;
-  }
-};
 
 // Automatically extracts unique category values from current menu data array strings
 const existingCategories = [...new Set(menu.map(item => item.category).filter(Boolean))];
