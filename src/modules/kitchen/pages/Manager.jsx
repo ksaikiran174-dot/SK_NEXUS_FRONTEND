@@ -1532,7 +1532,7 @@ const submitPasswordChange = async (e) => {
 
   try {
     setPasswordSubmitting(true);
-    const response = await fetch("http://127.0.0.1:8000/settings/change-password", {
+    const response = await fetch("https://sknexus-production.up.railway.app/settings/change-password", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

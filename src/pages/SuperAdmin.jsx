@@ -235,7 +235,7 @@ const handleDeclineSubscription = async (restaurantId, declineReason) => {
   try {
     const token = localStorage.getItem("superAdminAccessToken");
 
-    const response = await fetch(`http://127.0.0.1:8000/super-admin/restaurants/${restaurantId}/decline`, {
+    const response = await fetch(`https://sknexus-production.up.railway.app/super-admin/restaurants/${restaurantId}/decline`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

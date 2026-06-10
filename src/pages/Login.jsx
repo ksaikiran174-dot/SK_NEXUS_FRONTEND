@@ -121,7 +121,7 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
     e.preventDefault();
     try {
       setLoadingForgot(true);
-      const res = await fetch("http://127.0.0.1:8000/auth/forgot-password/request", {
+      const res = await fetch("https://sknexus-production.up.railway.app/auth/forgot-password/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: forgotEmail }),
@@ -183,7 +183,7 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
 
     try {
       setLoadingForgot(true);
-      const res = await fetch("http://127.0.0.1:8000/auth/forgot-password/reset", {
+      const res = await fetch("https://sknexus-production.up.railway.app/auth/forgot-password/reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
