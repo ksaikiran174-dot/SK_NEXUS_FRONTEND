@@ -61,6 +61,7 @@ function BillingManager() {
   const completeSoundRef = useRef(null);
   const rejectSoundRef = useRef(null);
   const [menu, setMenu] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showEmployeeRegister, setShowEmployeeRegister] = useState(false);
   const [editingItem, setEditingItem] =
   useState(null);
@@ -1682,6 +1683,35 @@ const handleTabChange = (tabName) => {
   }
 };
 
+// 🎯 HIGH-SPEED CLOUDINARY DIRECT UPLOADER (Bypasses Railway Completely)
+const uploadDirectToCloudinary = async (file) => {
+  if (!file) return "";
+
+  const formData = new FormData();
+  formData.append("file", file);
+  
+  // ⚠️ CHANGE THESE TWO VALUES TO MATCH YOUR CLOUDINARY CREDENTIALS 👇
+  formData.append("upload_preset", "sk_nexus_preset"); 
+  const cloudName = "dcwc8blaa"; 
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) {
+      throw new Error("Direct upload failed");
+    }
+
+    const data = await response.json();
+    return data.secure_url; // Returns the permanent absolute HTTPS url string instantly!
+  } catch (error) {
+    console.error("Cloudinary upload utility crashed:", error);
+    throw error;
+  }
+};
+
 // Automatically extracts unique category values from current menu data array strings
 const existingCategories = [...new Set(menu.map(item => item.category).filter(Boolean))];
 
@@ -2563,255 +2593,261 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 )}
 
 
-        {/* ========== CREATE MENU PANEL ========== */}
-        {showCreateMenu && (
-          <div>
-            <div className="main-header">
-              <h1>➕ Add New Menu Item</h1>
-            </div>
-
-            <div className="card">
-              <div className="form-group">
-                <label>Item Name *</label>
-                <input
-                  className="form-input"
-                  placeholder="Enter item name"
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                />
-              </div>
-
-              {/* 🎯 UPGRADED CATEGORY FIELD BLOCK INSERTER */}
-<div className="form-group">
-  <label>Item Category *</label>
-  {!isCustomCategory ? (
-    <select
-      className="form-input"
-      value={newItemCategory}
-      onChange={(e) => {
-        if (e.target.value === "__NEW__") {
-          setIsCustomCategory(true);
-          setNewItemCategory("");
-        } else {
-          setNewItemCategory(e.target.value);
-        }
-      }}
-    >
-      <option value="">-- Select a Category --</option>
-      {existingCategories.map(cat => (
-        <option key={cat} value={cat}>{cat}</option>
-      ))}
-      <option value="__NEW__" style={{ fontWeight: "bold", color: "#2563eb" }}>➕ Create New Category...</option>
-    </select>
-  ) : (
-    /* 🛠️ Bulletproof layout wrapper */
-    <div style={{ 
-      display: "flex", 
-      gap: "10px", 
-      width: "100%", 
-      alignItems: "center",
-      marginTop: "5px"
-    }}>
-      <input
-        type="text"
-        placeholder="e.g., Biryani, Fast Food, Cool Drinks"
-        value={customCategoryInput}
-        onChange={(e) => setCustomCategoryInput(e.target.value)}
-        /* 🚨 NO CLASSNAME HERE TO AVOID CSS CONFLICTS */
-        style={{ 
-          flex: 1,
-          padding: "10px 12px",
-          fontSize: "14px",
-          color: "#000000",          // 👁️ Forces the text to be pure black so you can see what you type
-          backgroundColor: "#ffffff",// ⚪ Forces background to be solid white
-          border: "1px solid #cbd5e1",
-          borderRadius: "6px",
-          outline: "none",
-          width: "100%",             // Safe inside flex due to stripping global style rules
-          boxSizing: "border-box"
-        }}
-        autoFocus
-      />
-      <button
-        type="button"
-        onClick={() => {
-          setIsCustomCategory(false);
-          setCustomCategoryInput("");
-        }}
-        /* 🚨 NO CLASSNAME HERE TO STOP THE BUTTON FROM STRETCHING DUMB/BIG */
-        style={{ 
-          padding: "10px 16px",
-          fontSize: "14px",
-          backgroundColor: "#64748b", // Standard clean slate grey
-          color: "#ffffff",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer",
-          whiteSpace: "nowrap",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "40px"              // Matches the input size exactly
-        }}
-      >
-        ✕ Cancel
-      </button>
+{/* ========== CREATE MENU PANEL ========== */}
+{showCreateMenu && (
+  <div>
+    <div className="main-header">
+      <h1>➕ Add New Menu Item</h1>
     </div>
-  )}
-</div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Price (₹) *</label>
-                  <input
-                    className="form-input"
-                    type="number"
-                    placeholder="0.00"
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
-                  />
-                </div>
-              </div>
 
-              <div className="form-group">
-                <label>Description</label>
-                <input
-                  className="form-input"
-                  placeholder="Enter item description"
-                  value={newItemDescription}
-                  onChange={(e) => setNewItemDescription(e.target.value)}
-                />
-              </div>
+    <div className="card">
+      <div className="form-group">
+        <label>Item Name *</label>
+        <input
+          className="form-input"
+          placeholder="Enter item name"
+          value={newItemName}
+          disabled={loading}
+          onChange={(e) => setNewItemName(e.target.value)}
+        />
+      </div>
 
-              <div className="form-group">
-                <label>Item Image</label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    setSelectedFile(file);
-                    if (file) {
-                      setPreviewImage(URL.createObjectURL(file));
-                    }
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
-                  style={{ display: "none" }}
-                  id="file-input"
-                />
-                <label
-                  htmlFor="file-input"
-                  className="btn btn-secondary"
-                  style={{ display: "inline-block" }}
-                >
-                  🖼️ Choose Image
-                </label>
-              </div>
-
-              {previewImage && (
-                <div style={{ marginBottom: "20px" }}>
-                  <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px" }}>
-                    Image Preview:
-                  </p>
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    style={{
-                      width: "100%",
-                      maxHeight: "200px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                      border: "2px solid var(--border-color)",
-                    }}
-                  />
-                </div>
-              )}
-
-              <button
-                className="btn btn-success"
-                style={{ width: "100%" }}
-                onClick={async () => {
-                  // Resolve correct target category string text payload value string
-                  const finalizedCategory = isCustomCategory 
-                    ? customCategoryInput.trim() 
-                    : newItemCategory;
-
-                  if (!finalizedCategory) {
-                    alert("Please select a category or write a brand new custom heading name!");
-                    return;
-                  }
-
-                  let imagePath = "";
-
-                  if (selectedFile) {
-                    const formData = new FormData();
-                    formData.append("file", selectedFile);
-
-                    try {
-                      const uploadRes = await apiFetch(
-                        `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                        {
-                          method: "POST",
-                          body: formData,
-                        }, "manager"
-                      );
-
-                      if (uploadRes.ok) {
-                        const uploadData = await uploadRes.json();
-                        imagePath = uploadData.image;
-                        console.log("Captured Image Path:", imagePath);
-                      }
-                    } catch (error) {
-                      console.error("Image upload failed:", error);
-                      return;
-                    }
-                  }
-
-                  const newItem = {
-                    name: newItemName,
-                    price: Number(newItemPrice),
-                    description: newItemDescription,
-                    category: finalizedCategory, // ✅ Sends custom or selected category string to backend
-                    image: imagePath,
-                    available: true,
-                  };
-                  console.log("🚀 Submitting this to DB:", newItem);
-
-                  try {
-                    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(newItem)
-                    }, "manager");
-
-                    if (res.ok) {
-                      const data = await res.json();
-                      setMenu((prev) => [...prev, data]);
-
-                      // 🧼 Clear all fields and category reset toggles cleanly
-                      setNewItemName("");
-                      setNewItemPrice("");
-                      setNewItemDescription("");
-                      setNewItemCategory("");
-                      setCustomCategoryInput("");
-                      setIsCustomCategory(false);
-                      setSelectedFile(null);
-                      setPreviewImage("");
-
-                      addNotification("✅ Item added successfully!", "success");
-                    }
-                  } catch (error) {
-                    console.error("Failed to add item:", error);
-                  }
-                }}
-              >
-                ✅ Add Item to Menu
-              </button>
-            </div>
+      {/* 🎯 CATEGORY FIELD BLOCK INSERTER */}
+      <div className="form-group">
+        <label>Item Category *</label>
+        {!isCustomCategory ? (
+          <select
+            className="form-input"
+            value={newItemCategory}
+            disabled={loading}
+            onChange={(e) => {
+              if (e.target.value === "__NEW__") {
+                setIsCustomCategory(true);
+                setNewItemCategory("");
+              } else {
+                setNewItemCategory(e.target.value);
+              }
+            }}
+          >
+            <option value="">-- Select a Category --</option>
+            {existingCategories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+            <option value="__NEW__" style={{ fontWeight: "bold", color: "#2563eb" }}>➕ Create New Category...</option>
+          </select>
+        ) : (
+          <div style={{ 
+            display: "flex", 
+            gap: "10px", 
+            width: "100%", 
+            alignItems: "center",
+            marginTop: "5px"
+          }}>
+            <input
+              type="text"
+              placeholder="e.g., Biryani, Fast Food, Cool Drinks"
+              value={customCategoryInput}
+              disabled={loading}
+              onChange={(e) => setCustomCategoryInput(e.target.value)}
+              style={{ 
+                flex: 1,
+                padding: "10px 12px",
+                fontSize: "14px",
+                color: "#000000",
+                backgroundColor: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: "6px",
+                outline: "none",
+                width: "100%",
+                boxSizing: "border-box"
+              }}
+              autoFocus
+            />
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                setIsCustomCategory(false);
+                setCustomCategoryInput("");
+              }}
+              style={{ 
+                padding: "10px 16px",
+                fontSize: "14px",
+                backgroundColor: "#64748b",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "40px"
+              }}
+            >
+              ✕ Cancel
+            </button>
           </div>
         )}
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>Price (₹) *</label>
+          <input
+            className="form-input"
+            type="number"
+            placeholder="0.00"
+            value={newItemPrice}
+            disabled={loading}
+            onChange={(e) => setNewItemPrice(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Description</label>
+        <input
+          className="form-input"
+          placeholder="Enter item description"
+          value={newItemDescription}
+          disabled={loading}
+          onChange={(e) => setNewItemDescription(e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Item Image</label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          disabled={loading}
+          onChange={(e) => {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            if (file) {
+              setPreviewImage(URL.createObjectURL(file));
+            }
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+          style={{ display: "none" }}
+          id="file-input"
+        />
+        <label
+          htmlFor="file-input"
+          className="btn btn-secondary"
+          style={{ display: "inline-block", cursor: loading ? "not-allowed" : "pointer" }}
+        >
+          {loading ? "⏳ Uploading..." : "🖼️ Choose Image"}
+        </label>
+      </div>
+
+      {previewImage && (
+        <div style={{ marginBottom: "20px" }}>
+          <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px" }}>
+            Image Preview:
+          </p>
+          <img
+            src={previewImage}
+            alt="Preview"
+            style={{
+              width: "100%",
+              maxHeight: "200px",
+              objectFit: "cover",
+              borderRadius: "8px",
+              border: "2px solid var(--border-color)",
+            }}
+          />
+        </div>
+      )}
+
+      <button
+        className="btn btn-success"
+        style={{ width: "100%", opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
+        disabled={loading}
+        onClick={async () => {
+          const finalizedCategory = isCustomCategory 
+            ? customCategoryInput.trim() 
+            : newItemCategory;
+
+          if (!finalizedCategory) {
+            alert("Please select a category or write a brand new custom heading name!");
+            return;
+          }
+
+          if (!newItemName || !newItemPrice) {
+            alert("Item Name and Price are required fields!");
+            return;
+          }
+
+          let imagePath = "";
+          setLoading(true); // Lock fields to prevent double actions
+
+          // ⚡ HIGH-SPEED DIRECT HOP: Fire file directly to Cloudinary from browser!
+          if (selectedFile) {
+            try {
+              imagePath = await uploadDirectToCloudinary(selectedFile);
+              console.log("⚡ Cloudinary Secure URL Acquired directly:", imagePath);
+            } catch (error) {
+              addNotification("❌ Image upload to storage provider failed.", "error");
+              setLoading(false);
+              return;
+            }
+          }
+
+          // Build a tiny, lightweight JSON object payload string matrix 
+          const newItem = {
+            name: newItemName,
+            price: Number(newItemPrice),
+            description: newItemDescription,
+            category: finalizedCategory, 
+            image: imagePath, // Passes clean text string URL link
+            available: true,
+          };
+
+          console.log("🚀 Submitting lightweight text data to DB:", newItem);
+
+          try {
+            const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newItem)
+            }, "manager");
+
+            if (res.ok) {
+              const data = await res.json();
+              setMenu((prev) => [...prev, data]);
+
+              // 🧼 Clear all fields and clean resets
+              setNewItemName("");
+              setNewItemPrice("");
+              setNewItemDescription("");
+              setNewItemCategory("");
+              setCustomCategoryInput("");
+              setIsCustomCategory(false);
+              setSelectedFile(null);
+              setPreviewImage("");
+
+              addNotification("✅ Item added successfully!", "success");
+            } else {
+              addNotification("❌ Database rejected item initialization request.", "error");
+            }
+          } catch (error) {
+            console.error("Failed to add item to DB context layer:", error);
+            addNotification("❌ Network layer communication crash.", "error");
+          } finally {
+            setLoading(false); // Unlock interactions smoothly
+          }
+        }}
+      >
+        {loading ? "⏳ Syncing Cloud Pointers..." : "✅ Add Item to Menu"}
+      </button>
+    </div>
+  </div>
+)}
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
         {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
