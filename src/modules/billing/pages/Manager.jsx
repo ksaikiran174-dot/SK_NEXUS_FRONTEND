@@ -34,29 +34,70 @@ import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";
 
-// 🎯 HIGH-SPEED CLOUDINARY DIRECT UPLOADER (Bypasses Railway Completely)
+// 🎯 HIGH-SPEED COMPRESSION + DIRECT CLOUDINARY UPLOADER
 const uploadDirectToCloudinary = async (file) => {
   if (!file) return "";
 
-  const formData = new FormData();
-  formData.append("file", file);
-  
-  // ⚠️ CHANGE THESE TWO VALUES TO MATCH YOUR CLOUDINARY CREDENTIALS 👇
-  formData.append("upload_preset", "sk_nexus_preset"); 
-  const cloudName = "dcwc8blaa"; 
+  // 1. Create a helper function to scale and compress using HTML5 Canvas
+  const compressImage = (sourceFile) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(sourceFile);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          
+          // Target max width for a crisp menu item image card layout
+          const MAX_WIDTH = 600; 
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Export as JPEG at 75% quality (Perfect balance of looking great + tiny file size)
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, "image/jpeg", 0.75);
+        };
+      };
+    });
+  };
 
   try {
+    console.log(`⏳ Original raw size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    
+    // Run the compression block
+    const compressedBlob = await compressImage(file);
+    console.log(`⚡ Compressed optimized size: ${(compressedBlob.size / 1024).toFixed(2)} KB`);
+
+    const formData = new FormData();
+    // Append the tiny compressed blob instead of the massive raw file instance
+    formData.append("file", compressedBlob, "menu_item.jpg");
+    
+    // ⚠️ KEEP YOUR VALID KEYS HERE 👇
+    formData.append("upload_preset", "your_unsigned_upload_preset_name"); 
+    const cloudName = "dcwc8blaa"; 
+
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       { method: "POST", body: formData }
     );
 
-    if (!response.ok) {
-      throw new Error("Direct upload failed");
-    }
+    if (!response.ok) throw new Error("Direct web-optimized upload failed");
 
     const data = await response.json();
-    return data.secure_url; // Returns the permanent absolute HTTPS url string instantly!
+    return data.secure_url; 
   } catch (error) {
     console.error("Cloudinary upload utility crashed:", error);
     throw error;
