@@ -87,7 +87,7 @@ const uploadDirectToCloudinary = async (file) => {
     formData.append("file", optimizedFile);
     
     // ⚠️ COPIED EXACTLY FROM YOUR CREDENTIAL LOG DATA 👇
-    formData.append("upload_preset", "your_unsigned_upload_preset_name"); // Ensure this is your correct preset string name!
+    formData.append("upload_preset", "sk_nexus_preset"); // Ensure this is your correct preset string name!
     const cloudName = "dcwc8blaa"; 
 
     const response = await fetch(
