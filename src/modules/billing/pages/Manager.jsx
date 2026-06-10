@@ -1563,8 +1563,13 @@ useEffect(() => {
 
 
 
-// 🚀 CORE DATA FETCH: Optimized via Promise.all to prevent queue locks
+const hasFetched = useRef(false);
+
 useEffect(() => {
+  // If React tries to double-mount this component, terminate the duplicate run immediately
+  if (hasFetched.current) return;
+  hasFetched.current = true;
+
   const loadDashboardData = async () => {
     const token = localStorage.getItem("managerAccessToken");
     if (!token) return;
@@ -1572,55 +1577,24 @@ useEffect(() => {
     const headers = { "Authorization": `Bearer ${token}` };
 
     try {
-      // 🔥 THE PARALLEL FIX: Fires all backend lookups at the exact same millisecond!
-      const [settingsRes, menuRes, lowStockRes, employeesRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, { headers }),
+      console.log("🚀 Firing single aggregated dashboard batch...");
+      const [menuRes, lowStockRes, employeesRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL}/menu`, { headers }),
         fetch(`${import.meta.env.VITE_API_URL}/low-stock`, { headers }),
         fetch(`${import.meta.env.VITE_API_URL}/employees`, { headers })
       ]);
 
-      // 1. Process Settings Matrix safely
-      if (settingsRes.ok) {
-        const data = await settingsRes.json();
-        setSettings(prev => ({ ...prev, ...data })); 
-        
-        if (data?.subscription_expires) {
-          const totalTimeDiff = new Date(data.subscription_expires) - new Date();
-          if (totalTimeDiff <= 0) {
-            setSubscriptionTimeLeft('Expired');
-          } else {
-            const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-            setSubscriptionTimeLeft(`${remainingDays} days remaining`);
-          }
-        } else {
-          setSubscriptionTimeLeft('No Active Plan');
-        }
-      }
-
-      // 2. Map your other datasets instantly without waiting for each other
-      if (menuRes.ok) {
-        const menuData = await menuRes.json();
-        setMenuItems(menuData); // Update your menu state
-      }
-
-      if (lowStockRes.ok) {
-        const lowStockData = await lowStockRes.json();
-        setLowStockItems(lowStockData); // Update your low stock state
-      }
-
-      if (employeesRes.ok) {
-        const employeesData = await employeesRes.json();
-        setEmployees(employeesData); // Update your staff state
-      }
+      if (menuRes.ok) setMenuItems(await menuRes.json());
+      if (lowStockRes.ok) setLowStockItems(await lowStockRes.json());
+      if (employeesRes.ok) setEmployees(await employeesRes.json());
 
     } catch (error) {
-      console.error("Failed loading aggregated dashboard matrices", error);
+      console.error("Dashboard collection failed", error);
     }
   };
 
   loadDashboardData();
-}, []);
+}, []); // Keeps tracking constraints bounded tightly
 
 
 const submitPasswordChange = async (e) => {
