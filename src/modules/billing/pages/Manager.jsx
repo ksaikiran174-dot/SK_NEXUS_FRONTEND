@@ -34,11 +34,10 @@ import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";
 
-// 🎯 HIGH-SPEED COMPRESSION + DIRECT CLOUDINARY UPLOADER
+// 🎯 HIGH-SPEED COMPRESSION + CLOUDINARY FIXED UPLOADER
 const uploadDirectToCloudinary = async (file) => {
   if (!file) return "";
 
-  // 1. Create a helper function to scale and compress using HTML5 Canvas
   const compressImage = (sourceFile) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -49,7 +48,6 @@ const uploadDirectToCloudinary = async (file) => {
         img.onload = () => {
           const canvas = document.createElement("canvas");
           
-          // Target max width for a crisp menu item image card layout
           const MAX_WIDTH = 600; 
           let width = img.width;
           let height = img.height;
@@ -65,7 +63,6 @@ const uploadDirectToCloudinary = async (file) => {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Export as JPEG at 75% quality (Perfect balance of looking great + tiny file size)
           canvas.toBlob((blob) => {
             resolve(blob);
           }, "image/jpeg", 0.75);
@@ -77,16 +74,20 @@ const uploadDirectToCloudinary = async (file) => {
   try {
     console.log(`⏳ Original raw size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     
-    // Run the compression block
+    // 1. Get the compressed binary blob
     const compressedBlob = await compressImage(file);
-    console.log(`⚡ Compressed optimized size: ${(compressedBlob.size / 1024).toFixed(2)} KB`);
+    
+    // 🛠️ THE FIX: Convert the raw blob into a fully valid File instance wrapper
+    const optimizedFile = new File([compressedBlob], "menu_item.jpg", { type: "image/jpeg" });
+    console.log(`⚡ Compressed optimized size: ${(optimizedFile.size / 1024).toFixed(2)} KB`);
 
     const formData = new FormData();
-    // Append the tiny compressed blob instead of the massive raw file instance
-    formData.append("file", compressedBlob, "menu_item.jpg");
     
-    // ⚠️ KEEP YOUR VALID KEYS HERE 👇
-    formData.append("upload_preset", "your_unsigned_upload_preset_name"); 
+    // 2. Append our brand new clean File object instance
+    formData.append("file", optimizedFile);
+    
+    // ⚠️ COPIED EXACTLY FROM YOUR CREDENTIAL LOG DATA 👇
+    formData.append("upload_preset", "your_unsigned_upload_preset_name"); // Ensure this is your correct preset string name!
     const cloudName = "dcwc8blaa"; 
 
     const response = await fetch(
@@ -94,7 +95,12 @@ const uploadDirectToCloudinary = async (file) => {
       { method: "POST", body: formData }
     );
 
-    if (!response.ok) throw new Error("Direct web-optimized upload failed");
+    if (!response.ok) {
+      // Let's log the exact error reason from Cloudinary if it fails again
+      const errData = await response.json();
+      console.error("Cloudinary Engine Rejection Reason:", errData);
+      throw new Error(errData.error?.message || "Direct upload failed");
+    }
 
     const data = await response.json();
     return data.secure_url; 
