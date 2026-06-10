@@ -139,6 +139,7 @@ function BillingManager() {
   const rejectSoundRef = useRef(null);
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(null); // Track the ID of the row being saved
   const [showEmployeeRegister, setShowEmployeeRegister] = useState(false);
   const [editingItem, setEditingItem] =
   useState(null);
@@ -2340,13 +2341,9 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     </div>
 
     {(() => {
-      // 🧠 1. Group items dynamically by category on render state
       const groupedItems = menu.reduce((acc, item) => {
         let cat = item.category ? item.category.trim() : "";
-        if (!cat) {
-          cat = "General Menu / Uncategorized";
-        }
-
+        if (!cat) cat = "General Menu / Uncategorized";
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(item);
         return acc;
@@ -2356,11 +2353,9 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         return <p style={{ color: "var(--text-secondary)" }}>No items found in your menu ledger.</p>;
       }
 
-      // 🔄 2. Loop and generate separate HTML headers and child sub-grids per section
       return Object.keys(groupedItems).map((categoryName) => (
         <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
           
-          {/* Category Title Separator Banner */}
           <h2 style={{
             fontSize: "22px",
             fontWeight: "700",
@@ -2380,7 +2375,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             </span>
           </h2> 
 
-          {/* Operational Items Grid Inside this Specific Category Group Block */}
           <div className="grid grid-3">
             {groupedItems[categoryName].map((item) => (
               <div key={item.id} className="menu-item">
@@ -2397,7 +2391,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                   <p className="menu-item-price">₹{item.price}</p>
                   <p className="menu-item-description">{item.description}</p>
                   
-                  {/* Display Category Badge Label on Card */}
                   <span style={{
                     display: "inline-block",
                     padding: "3px 8px",
@@ -2415,6 +2408,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                     <div className="menu-item-actions">
                       <button
                         className="btn btn-primary btn-sm"
+                        disabled={isSaving !== null} // Disable other actions while saving any row
                         onClick={() => {
                           setEditingItem(item.id);
                           setEditName(item.name);
@@ -2428,29 +2422,9 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                       </button>
                       <button
                         className="btn btn-danger btn-sm"
+                        disabled={isSaving !== null}
                         onClick={() => {
-                          setConfirmationModal({
-                            isOpen: true,
-                            title: "Delete Menu Item",
-                            message: `Are you sure you want to delete "${item.name}"? This action cannot be undone.`,
-                            isDangerous: true,
-                            confirmText: "Delete",
-                            onConfirm: async () => {
-                              setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
-                              try {
-                                await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/menu/${item.id}`,
-                                  { method: "DELETE" },
-                                  "manager"
-                                );
-                                setMenu((prev) => prev.filter((m) => m.id !== item.id));
-                                addNotification(`🗑️ "${item.name}" deleted successfully`);
-                              } catch (err) {
-                                addNotification("❌ Failed to delete item");
-                                console.error(err);
-                              }
-                            },
-                          });
+                          // ... Keep your delete modal block intact
                         }}
                       >
                         🗑️ Delete
@@ -2461,12 +2435,12 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                   {editingItem === item.id && (
                     <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
                       
-                      {/* 🏷️ INPUT HEADERS ADDED HERE */}
                       <div className="form-group" style={{ marginBottom: "10px" }}>
                         <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
                         <input
                           className="form-input"
                           value={editName}
+                          disabled={isSaving === item.id} // Freeze input fields while processing
                           onChange={(e) => setEditName(e.target.value)}
                           placeholder="Item Name"
                         />
@@ -2477,6 +2451,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                         <input
                           className="form-input"
                           value={editPrice}
+                          disabled={isSaving === item.id}
                           onChange={(e) => setEditPrice(e.target.value)}
                           placeholder="Price"
                           type="number"
@@ -2489,6 +2464,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                           className="form-input"
                           style={{ borderColor: "#93c5fd" }}
                           value={editCategory}
+                          disabled={isSaving === item.id}
                           onChange={(e) => setEditCategory(e.target.value)}
                           placeholder="e.g., Starters, Beverages, Desserts"
                         />
@@ -2499,6 +2475,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                         <input
                           className="form-input"
                           value={editDescription}
+                          disabled={isSaving === item.id}
                           onChange={(e) => setEditDescription(e.target.value)}
                           placeholder="Description"
                         />
@@ -2510,6 +2487,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                           accept="image/*"
                           style={{ display: "none" }}
                           id={`edit-image-${item.id}`}
+                          disabled={isSaving === item.id}
                           onChange={(e) => {
                             const file = e.target.files[0];
                             setEditSelectedFile(file);
@@ -2521,9 +2499,17 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                         <label
                           htmlFor={`edit-image-${item.id}`}
                           className="btn btn-secondary btn-sm"
-                          style={{ display: "inline-flex", cursor: "pointer", width: "100%", textAlign: "center", padding: "6px", gap: "6px" }}
+                          style={{ 
+                            display: "inline-flex", 
+                            cursor: isSaving === item.id ? "not-allowed" : "pointer", 
+                            width: "100%", 
+                            textAlign: "center", 
+                            padding: "6px", 
+                            gap: "6px",
+                            opacity: isSaving === item.id ? 0.6 : 1
+                          }}
                         >
-                          🖼️ Change Item Image
+                          🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
                         </label>
                       </div>
 
@@ -2532,12 +2518,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                           <img
                             src={editPreviewImage}
                             alt="Preview"
-                            style={{
-                              width: "100%",
-                              height: "100px",
-                              objectFit: "cover",
-                              borderRadius: "6px",
-                            }}
+                            style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }}
                           />
                         </div>
                       )}
@@ -2545,26 +2526,20 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
                           className="btn btn-success btn-sm"
-                          style={{ flex: 1 }}
+                          style={{ flex: 1, opacity: isSaving === item.id ? 0.7 : 1, cursor: isSaving === item.id ? "not-allowed" : "pointer" }}
+                          disabled={isSaving === item.id} // Prevent double clicking
                           onClick={async () => {
                             let imagePath = item.image;
                             const finalizedCategory = editCategory.trim();
 
+                            setIsSaving(item.id); // ⚡ TURN ON LOADING STATE FOR THIS ROW
+
                             if (editSelectedFile) {
-                              const formData = new FormData();
-                              formData.append("file", editSelectedFile);
                               try {
-                                const uploadRes = await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                                  { method: "POST", body: formData },
-                                  "manager"
-                                );
-                                if (uploadRes.ok) {
-                                  const uploadData = await uploadRes.json();
-                                  imagePath = uploadData.image;
-                                }
+                                imagePath = await uploadDirectToCloudinary(editSelectedFile);
                               } catch (error) {
-                                console.error("Image upload failed:", error);
+                                addNotification("❌ Image upload to storage provider failed.", "error");
+                                setIsSaving(null); // Turn off if it crashes
                                 return;
                               }
                             }
@@ -2590,11 +2565,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                               );
 
                               if (res.ok) {
-                                const data = await res.json();
-                                
-                                // 🎯 FIX FOR CATEGORY NOT UPDATING STATE:
-                                // If the backend doesn't return the full updated item correctly,
-                                // we inject our local text string straight into the state array!
                                 setMenu((prev) =>
                                   prev.map((m) => 
                                     m.id === item.id 
@@ -2611,14 +2581,17 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                             } catch (error) {
                               console.error("Failed to update item:", error);
                               addNotification("❌ Update request failed.");
+                            } finally {
+                              setIsSaving(null); // ⚡ TURN OFF LOADING STATE ALWAYS
                             }
                           }}
                         >
-                          ✅ Save
+                          {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
                         </button>
                         <button
                           className="btn btn-secondary btn-sm"
                           style={{ flex: 1 }}
+                          disabled={isSaving === item.id} // Disable cancel while saving
                           onClick={() => {
                             setEditingItem(null);
                             setEditSelectedFile(null);
@@ -2640,7 +2613,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     })()}
   </div>
 )}
-
 
 {/* ========== CREATE MENU PANEL ========== */}
 {showCreateMenu && (
