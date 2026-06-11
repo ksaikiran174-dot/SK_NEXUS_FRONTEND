@@ -215,7 +215,8 @@ const [showTransactions, setShowTransactions] = useState(false);
     enable_low_stock_alert: true,
 
     subscription_expires: "",
-    payment_status: ""
+    payment_status: "",
+    email: ""  
   });
   const [
   creatingOrder,
@@ -1350,7 +1351,7 @@ const handleSaveSettings =
           `${import.meta.env.VITE_API_URL}/settings`,
           {
             method: "PATCH",
-
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(
               settings
             )
@@ -3154,7 +3155,7 @@ return (
         type="email"
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
-        value={settings.email || ""} // Pulls email from your state tracking matrix
+        value={isLoadingSettings ? "Loading..." : (settings.email || "Not available")}// Pulls email from your state tracking matrix
         style={{ 
           background: "#f1f5f9", 
           cursor: "not-allowed", 
