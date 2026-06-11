@@ -671,10 +671,11 @@ const printToken = (order) => {
   });
 };
 
-
-/* =========================
-   INITIAL LOAD
-========================= */
+/* =========================================================================
+   🚀 1. CLEAN UNIFIED DASHBOARD MOUNT ENGINE (Runs EXACTLY ONCE on Mount)
+========================================================================= */
+const hasFetched = useRef(false);
+const [isLoading, setIsLoading] = useState(true); // Master loading spinner state
 
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
@@ -685,44 +686,76 @@ useEffect(() => {
     return;
   }
 
-  const headers = {
-    Authorization: `Bearer ${token}`,
+  // Prevent React StrictMode double-mounting from execution duplication
+  if (hasFetched.current) return;
+  hasFetched.current = true;
+
+  const loadAllDashboardData = async () => {
+    try {
+      setIsLoading(true); // Start the full screen loader instantly
+      console.log("🔥 Firing single-batch parallel dashboard engine...");
+
+      // Fire EVERY single primary network layout endpoint simultaneously
+      const [
+        ordersRes, 
+        menuRes, 
+        lowStockRes, 
+        settingsRes, 
+        activeDayRes, 
+        summaryRes
+      ] = await Promise.all([
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager")
+      ]);
+
+      // Map clean responses straight to state vectors without thread lag
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json();
+        if (Array.isArray(ordersData)) setOrders(ordersData);
+      }
+
+      if (menuRes.ok) {
+        const menuData = await menuRes.json();
+        if (Array.isArray(menuData)) {
+          setMenu(menuData);
+          setMenuItems?.(menuData); // Safely sets alternative hook names if any
+        }
+      }
+
+      if (lowStockRes.ok) {
+        const lowStockData = await lowStockRes.json();
+        if (Array.isArray(lowStockData)) {
+          setLowStockItems(lowStockData.map((item) => item.item_name || item));
+        }
+      }
+
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        setSettings(prev => ({ ...prev, ...settingsData }));
+      }
+
+      if (activeDayRes.ok) {
+        const activeDayData = await activeDayRes.json();
+        setBusinessDay(activeDayData);
+      }
+
+      if (summaryRes.ok) {
+        const summaryData = await summaryRes.json();
+        setSummary(summaryData);
+      }
+
+    } catch (error) {
+      console.error("❌ Critical Dashboard Boot Failure:", error);
+    } finally {
+      setIsLoading(false); // Drop loader only when all states are fully operational
+    }
   };
 
-  
-  /* 2. FETCH ORDERS */
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else {
-        console.error("Orders fetch error:", data);
-      }
-    })
-    .catch(console.error);
-
-  /* 3. FETCH MENU */
-  apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setMenu(data);
-      }
-    })
-    .catch(console.error);
-
-  /* 4. FETCH LOW STOCK */
-  apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setLowStockItems(data.map((item) => item.item_name));
-      }
-    })
-    .catch(console.error);
-
-  /* 5. LOAD SOUNDS */
+  // Initialize System Audio Clips Safely
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
@@ -736,7 +769,76 @@ useEffect(() => {
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-}, []); // Dependency array is empty because initialization happens once on mount
+  // Fire master pipeline execution
+  loadAllDashboardData();
+}, []); 
+
+
+/* =========================================================================
+   ⏰ 2. SUBSCRIPTION EXPIRY ENGINE (Listens directly to incoming data keys)
+========================================================================= */
+useEffect(() => {
+  const expiryDateString = settings?.subscription_expires; 
+  if (!expiryDateString) {
+    setSubscriptionTimeLeft('No Active Plan');
+    return;
+  }
+
+  const calculateRemainingDays = () => {
+    const totalTimeDiff = new Date(expiryDateString) - new Date();
+    
+    if (totalTimeDiff <= 0) {
+      setSubscriptionTimeLeft('Expired');
+      setIsExpiryCritical(true);
+      return;
+    }
+
+    const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
+    const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
+
+    if (remainingDays < 3) {
+      setIsExpiryCritical(true);
+    } else {
+      setIsExpiryCritical(false);
+    }
+
+    setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
+  };
+
+  // Run immediately once data arrives from the master loader pool
+  calculateRemainingDays();
+
+  // Tick calculation down every minute smoothly
+  const timerInterval = setInterval(calculateRemainingDays, 60000); 
+  return () => clearInterval(timerInterval);
+}, [settings?.subscription_expires]);
+
+
+/* =========================================================================
+   🕵️ 3. REAL-TIME BACKGROUND APPROVAL SYNC TIMER
+========================================================================= */
+useEffect(() => {
+  // Only runs background background synchronization IF status explicitly demands it
+  if (settings?.subscription_status !== "pending_renewal") return;
+
+  console.log("🕵️ Background active sync checking for renewal authentication states...");
+
+  const syncInterval = setInterval(async () => {
+    try {
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(prev => ({ ...prev, ...data }));
+      }
+    } catch (err) {
+      console.error("Background validation sync failed:", err);
+    }
+  }, 5000);
+
+  return () => clearInterval(syncInterval);
+}, [settings?.subscription_status]);
+
+
 
 
 const addNotification = (text, type) => {
@@ -1221,27 +1323,6 @@ const handleLogoUpload =
 };
 
 
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/settings`,
-    {},
-    "manager"
-  )
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setSettings(prev => ({
-  ...prev,
-  ...data
-}));
-    })
-
-    .catch(console.error);
-
-}, []);
-
 const handleSaveSettings =
   async () => {
 
@@ -1281,62 +1362,6 @@ const handleSaveSettings =
       console.error(err);
     }
 };
-
-useEffect(() => {
-  // 1️⃣ Your standard initial data loader function
-  const loadSettings = async () => {
-    try {
-      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
-      const data = await res.json();
-      
-      setSettings(prev => ({
-        ...prev,
-        ...data
-      }));
-    } catch (err) {
-      console.error("Settings fetch failed:", err);
-    }
-  };
-
-  loadSettings();
-
-  // 2️⃣ 🚀 THE REAL-TIME SYNC ENGINE:
-  // If the status is pending, check the backend automatically every 5 seconds!
-  let intervalId;
-  if (settings?.subscription_status === "pending_renewal") {
-    intervalId = setInterval(() => {
-      console.log("🕵️ Checking background approval sync updates...");
-      loadSettings();
-    }, 5000); // 5000ms = 5 seconds
-  }
-
-  // 🧹 CLEANUP LAYER: Destroys the timer when the component unmounts
-  return () => {
-    if (intervalId) clearInterval(intervalId);
-  };
-
-}, [settings?.subscription_status]); // 🚀 CRITICAL: Re-runs this effect loop when the status keys shift!
-
-
-
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/active`,
-    {},
-    "manager"
-  )
-
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setBusinessDay(data);
-    })
-
-    .catch(console.error);
-
-}, []);
 
 
 const handleStartDay = async () => {
@@ -1458,26 +1483,7 @@ const handleCloseDay = async () => {
 
 
 
-useEffect(() => {
 
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/summary`,
-    {},
-    "manager"
-  )
-
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      console.log(data);
-
-      setSummary(data);
-    })
-
-    .catch(console.error);
-
-}, []);
 
 const fetchEmployees = async () => {
 
@@ -1503,11 +1509,7 @@ const fetchEmployees = async () => {
   }
 };
 
-useEffect(() => {
 
-  fetchEmployees();
-
-}, []);
 
 const runCountdownCalculation = (expiryDateString) => {
   if (!expiryDateString) return;
@@ -1526,75 +1528,6 @@ const runCountdownCalculation = (expiryDateString) => {
   setIsExpiryCritical(remainingDays < 3);
   setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
 };
-
-useEffect(() => {
-  // 🚀 FIXED: Swapped out key string to match your exact backend structure!
-  const expiryDateString = settings?.subscription_expires; 
-  if (!expiryDateString) {
-    setSubscriptionTimeLeft('No Active Plan');
-    return;
-  }
-
-  const calculateRemainingDays = () => {
-    const totalTimeDiff = new Date(expiryDateString) - new Date();
-    
-    if (totalTimeDiff <= 0) {
-      setSubscriptionTimeLeft('Expired');
-      setIsExpiryCritical(true);
-      return;
-    }
-
-    const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-    const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
-
-    if (remainingDays < 3) {
-      setIsExpiryCritical(true);
-    } else {
-      setIsExpiryCritical(false);
-    }
-
-    setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
-  };
-
-  calculateRemainingDays();
-  const timerInterval = setInterval(calculateRemainingDays, 60000); 
-  return () => clearInterval(timerInterval);
-}, [settings?.subscription_expires]); // 🚀 FIXED KEY HERE TOO
-
-
-
-const hasFetched = useRef(false);
-
-useEffect(() => {
-  // If React tries to double-mount this component, terminate the duplicate run immediately
-  if (hasFetched.current) return;
-  hasFetched.current = true;
-
-  const loadDashboardData = async () => {
-    const token = localStorage.getItem("managerAccessToken");
-    if (!token) return;
-
-    const headers = { "Authorization": `Bearer ${token}` };
-
-    try {
-      console.log("🚀 Firing single aggregated dashboard batch...");
-      const [menuRes, lowStockRes, employeesRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/menu`, { headers }),
-        fetch(`${import.meta.env.VITE_API_URL}/low-stock`, { headers }),
-        fetch(`${import.meta.env.VITE_API_URL}/employees`, { headers })
-      ]);
-
-      if (menuRes.ok) setMenuItems(await menuRes.json());
-      if (lowStockRes.ok) setLowStockItems(await lowStockRes.json());
-      if (employeesRes.ok) setEmployees(await employeesRes.json());
-
-    } catch (error) {
-      console.error("Dashboard collection failed", error);
-    }
-  };
-
-  loadDashboardData();
-}, []); // Keeps tracking constraints bounded tightly
 
 
 const submitPasswordChange = async (e) => {
