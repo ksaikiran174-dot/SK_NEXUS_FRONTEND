@@ -196,7 +196,7 @@ function BillingManager() {
   const [isEditCustomCategory, setIsEditCustomCategory] = useState(false);
   const [editCustomCategoryInput, setEditCustomCategoryInput] = useState("");
   
-  const [showSummaryView, setShowSummaryView] = useState(false);
+  const [showSummaryView, setShowSummaryView] = useState(true);
 const [showAnalyticsView, setShowAnalyticsView] = useState(false);
 const [showTransactions, setShowTransactions] = useState(false);
 
@@ -1755,6 +1755,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchTransactions(); 
             }}
           >
             <span className="sidebar-icon">💳</span>
@@ -1996,10 +1997,7 @@ return (
           
           {/* ⚡ FIXED: Pointed to the running 'transactions' state pool updated on mount */}
           {(transactions || []).map((txn) => (
-            <div
-              key={txn.id}
-              className={`transaction-item ${txn.status === "rejected" ? "rejected-order" : ""}`}
-            >
+            <div key={txn.id || txn._id} className={`transaction-item ...`}>
               <div className="transaction-header">
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <span className="transaction-token">
