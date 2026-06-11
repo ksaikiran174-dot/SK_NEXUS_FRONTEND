@@ -1729,8 +1729,16 @@ return (
 <nav className="sidebar-nav">
           {/* ========== ORDERS TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'orders' ? 'active' : ''}`}
-            onClick={() => setActiveTab('orders')}
+            className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
+            onClick={() => {
+              setShowTransactions(false);
+              setSummary(null);      // Clears view toggle
+              setAnalytics(null);    // Clears view toggle
+              setShowManageMenu(false);
+              setShowCreateMenu(false);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">📝</span>
             <span>Orders</span>
@@ -1738,8 +1746,16 @@ return (
 
           {/* ========== ANALYTICS TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
+            className={`sidebar-link ${analytics ? 'active' : ''}`}
+            onClick={() => {
+              setAnalytics({}); // ⚡ Set to empty object so it evaluates to truthy/renders!
+              setShowTransactions(false);
+              setSummary(null);
+              setShowManageMenu(false);
+              setShowCreateMenu(false);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">📊</span>
             <span>Analytics</span>
@@ -1747,8 +1763,16 @@ return (
 
           {/* ========== TRANSACTIONS TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'transactions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('transactions')}
+            className={`sidebar-link ${showTransactions ? 'active' : ''}`}
+            onClick={() => {
+              setShowTransactions(true); // ⚡ Turn display panel on!
+              setSummary(null);
+              setAnalytics(null);
+              setShowManageMenu(false);
+              setShowCreateMenu(false);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">💳</span>
             <span>Transactions</span>
@@ -1756,8 +1780,16 @@ return (
 
           {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'summary' ? 'active' : ''}`}
-            onClick={() => setActiveTab('summary')}
+            className={`sidebar-link ${summary ? 'active' : ''}`}
+            onClick={() => {
+              setSummary({}); // ⚡ Set to empty object so it evaluates to truthy/renders!
+              setShowTransactions(false);
+              setAnalytics(null);
+              setShowManageMenu(false);
+              setShowCreateMenu(false);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">📈</span>
             <span>Today's Summary</span>
@@ -1765,8 +1797,16 @@ return (
 
           {/* ========== MANAGE MENU TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'manage-menu' ? 'active' : ''}`}
-            onClick={() => setActiveTab('manage-menu')}
+            className={`sidebar-link ${showManageMenu ? 'active' : ''}`}
+            onClick={() => {
+              setShowManageMenu(true);
+              setShowTransactions(false);
+              setAnalytics(null);
+              setSummary(null);
+              setShowCreateMenu(false);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">✏️</span>
             <span>Manage Menu</span>
@@ -1774,8 +1814,16 @@ return (
 
           {/* ========== ADD MENU ITEM TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'add-item' ? 'active' : ''}`}
-            onClick={() => setActiveTab('add-item')}
+            className={`sidebar-link ${showCreateMenu ? 'active' : ''}`}
+            onClick={() => {
+              setShowCreateMenu(true);
+              setShowManageMenu(false);
+              setShowTransactions(false);
+              setAnalytics(null);
+              setSummary(null);
+              setShowSettings(false);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">➕</span>
             <span>Add Menu Item</span>
@@ -1783,8 +1831,16 @@ return (
 
           {/* ========== SUBSCRIPTION TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'subscription' ? 'active' : ''}`}
-            onClick={() => setActiveTab('subscription')}
+            className={`sidebar-link ${showSubscription ? 'active' : ''}`}
+            onClick={() => {
+              setShowSubscription(true);
+              setShowSettings(false);
+              setShowCreateMenu(false);
+              setShowManageMenu(false);
+              setShowTransactions(false);
+              setAnalytics(null);
+              setSummary(null);
+            }}
           >
             <span className="sidebar-icon">⏳</span>
             <span>Subscription</span>
@@ -1792,8 +1848,16 @@ return (
 
           {/* ========== SETTINGS TAB ========== */}
           <div
-            className={`sidebar-link ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
+            className={`sidebar-link ${showSettings ? 'active' : ''}`}
+            onClick={() => {
+              setShowSettings(true);
+              setShowCreateMenu(false);
+              setShowManageMenu(false);
+              setShowTransactions(false);
+              setAnalytics(null);
+              setSummary(null);
+              setShowSubscription(false);
+            }}
           >
             <span className="sidebar-icon">⚙️</span>
             <span>Settings</span>
@@ -1825,7 +1889,7 @@ return (
         {/* ==========================================
             📊 1. SUMMARY PANEL (Instant Load Condition)
         ========================================== */}
-        {activeTab === 'summary' && summary && (
+        {summary && (
           <>
             {/* BUSINESS STATUS CARD */}
             <div className="status-card">
@@ -1894,7 +1958,7 @@ return (
 {/* ==========================================
           💳 2. TRANSACTIONS PANEL
       ========================================== */}
-      {activeTab === 'transactions' && showTransactions && (
+      {showTransactions && (
         <div className="card">
           <div className="card-header">
             <h2>💳 Previous Transactions</h2>
@@ -2043,7 +2107,7 @@ return (
 {/* ==========================================
             ✏️ 3. MANAGE MENU PANEL
         ========================================== */}
-        {activeTab === 'manage-menu' && showManageMenu && (
+        {showManageMenu && (
           <div>
             <div className="main-header">
               <h1>✏️ Manage Menu Items</h1>
@@ -2255,7 +2319,7 @@ return (
         )}
 
 {/* ========== ANALYTICS PANEL ========== */}
-{activeTab === 'analytics' && analytics && (
+{analytics && (
   <div className="analytics-container">
     <div className="main-header">
       <h1>📊 Analytics & Performance</h1>
@@ -2382,7 +2446,7 @@ return (
 
 
 {/* ========== CREATE MENU PANEL ========== */}
-{activeTab === 'add-item' && showCreateMenu && (
+{showCreateMenu && (
   <div>
     <div className="main-header">
       <h1>➕ Add New Menu Item</h1>
@@ -2636,7 +2700,7 @@ return (
 
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
-        {activeTab === 'orders' && !showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
+        {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
           <>
             <div className="main-header">
 
@@ -2839,7 +2903,7 @@ return (
  {/* ========================================================
     MAIN CONTENT AREA: SUBSCRIPTION MANAGEMENT PANEL
     ======================================================== */}
-{activeTab === 'subscription' && showSubscription && (
+{showSubscription && (
   <div style={{ padding: "30px", maxWidth: "800px", margin: "0 auto" }}>
     <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "6px", color: "#1e293b" }}>
       🛡️ Subscription Management
@@ -3009,7 +3073,7 @@ return (
 
 
         {/* ========== SETTINGS PANEL ========== */}
-        {activeTab === 'settings' && showSettings && (
+        {showSettings && (
           <div className="settings-container">
             <div className="main-header">
               <h1>⚙️ Business Settings</h1>
