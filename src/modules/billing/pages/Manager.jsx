@@ -1985,8 +1985,9 @@ return (
             </button>
           </div>
 
-          {/* ⚡ Pointed to the running data pool mapped on mount */}
-          {(orders || []).map((txn) => (
+          
+          {/* ⚡ FIXED: Pointed to the running 'transactions' state pool updated on mount */}
+          {(transactions || []).map((txn) => (
             <div
               key={txn.id}
               className={`transaction-item ${txn.status === "rejected" ? "rejected-order" : ""}`}
