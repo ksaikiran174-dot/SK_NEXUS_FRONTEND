@@ -670,18 +670,18 @@ const printToken = (order, onComplete) => {
 
 
 /* =========================================================================
-    🚀 UNIFIED DASHBOARD MOUNT ENGINE (Consolidated Master Control)
+    🚀 UNIFIED DASHBOARD MOUNT ENGINE (With Employees Fully Integrated)
 ========================================================================= */
 const hasFetched = useRef(false);
 const [isLoading, setIsLoading] = useState(true);
 
-// 🛠️ Keep standalone individual refresh hooks so you can trigger them via manual buttons/actions anytime
+// Standalone manual triggers for actions/buttons
 const refreshTransactions = async () => {
   try {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) setOrders(data); // In transactions panel, make sure this maps to your orders pool!
+      if (Array.isArray(data)) setOrders(data);
     }
   } catch (err) { console.error("Error updating transactions:", err); }
 };
@@ -692,7 +692,7 @@ const refreshSummary = async () => {
     if (res.ok) {
       const data = await res.json();
       setSummary(data);
-      setAnalytics(data); // ⚡ Syncs analytics and summary simultaneously!
+      setAnalytics(data); 
     }
   } catch (err) { console.error("Error updating summary:", err); }
 };
@@ -707,7 +707,7 @@ const loadSettings = async () => {
   } catch (err) { console.error("Settings fetch failed:", err); }
 };
 
-// MASTER INITIALIZATION EFFECT
+// MASTER INITIALIZATION LOOP
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
 
@@ -724,7 +724,7 @@ useEffect(() => {
       setIsLoading(true);
       console.log("🔥 Firing Single-Batch Kitchen Extension Parallel Engine...");
 
-      // ⚡ Firing all 7 endpoints in parallel instantly
+      // ⚡ Added employeeRes to the parallel Promise batch!
       const [
         ordersRes,
         menuRes,
@@ -732,7 +732,8 @@ useEffect(() => {
         settingsRes,
         activeDayRes,
         summaryRes,
-        metadataRes
+        metadataRes,
+        employeeRes
       ] = await Promise.all([
         apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
         apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
@@ -740,7 +741,8 @@ useEffect(() => {
         apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e)
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e) // 🔥 BATCHED!
       ]);
 
       // 📥 1. Sync Orders Data
@@ -763,7 +765,7 @@ useEffect(() => {
         }
       }
 
-      // 📥 4. Sync Settings & Setup Metadata Matrix
+      // 📥 4. Sync Settings & Metadata Matrix
       let mergedSettings = {};
       if (settingsRes?.ok) {
         const settingsData = await settingsRes.json();
@@ -774,29 +776,30 @@ useEffect(() => {
         mergedSettings = { ...mergedSettings, ...metadataData };
       }
       setSettings(prev => ({ ...prev, ...mergedSettings }));
-      setIsLoadingSettings(false);
 
-      // 📥 5. Sync Active Business Day status
+      // 📥 5. Sync Active Business Day Status
       if (activeDayRes?.ok) {
         const activeDayData = await activeDayRes.json();
         setBusinessDay(activeDayData);
       }
 
-      // 📥 6. Sync Summary & Analytics data pools together!
+      // 📥 6. Sync Summary & Analytics Data Pools
       if (summaryRes?.ok) {
         const summaryData = await summaryRes.json();
         setSummary(summaryData);
-        setAnalytics(summaryData); // 🔥 Fixed: Unlocks analytics page instantly!
+        setAnalytics(summaryData); 
       }
 
-      // 📥 7. Trigger independent background worker lists
-      fetchEmployees();
+      // 📥 7. Sync Employees Data (Using your clean global handler layout)
+      if (employeeRes?.ok) {
+        const employeeData = await employeeRes.json();
+        setEmployees(employeeData);
+      }
 
     } catch (error) {
       console.error("❌ Critical Dashboard Boot Failure:", error);
     } finally {
       setIsLoading(false);
-      setIsLoadingSettings(false);
     }
   };
 
@@ -816,7 +819,7 @@ useEffect(() => {
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-  // Fire engine execution loop
+  // Fire execution loop
   loadAllDashboardData();
 }, []);
 
@@ -2872,8 +2875,7 @@ return (
                   <button
                     className="btn btn-success"
                     style={{ width: "100%" }}
-                    disabled={cart.length === 0}
-                    disabled={creatingOrder}
+                    disabled={cart.length === 0 || creatingOrder}
                     onClick={handleCreateOrder}
                   >
                     {

@@ -175,7 +175,6 @@ function BillingManager() {
   setEditPreviewImage] =
   useState("");
   const navigate = useNavigate();
-  const [employees, setEmployees] = useState([]);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [closeDaySummary, setCloseDaySummary] = useState(null); // Holds { totalRevenue, cashSales, onlineSales, date }
   const [masterCycleSummary, setMasterCycleSummary] = useState(null);
