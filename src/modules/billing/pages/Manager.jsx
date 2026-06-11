@@ -672,30 +672,48 @@ const printToken = (order) => {
 };
 
 /* =========================================================================
-   🚀 1. CLEAN UNIFIED DASHBOARD MOUNT ENGINE (Runs EXACTLY ONCE on Mount)
+    🚀 1. CLEAN UNIFIED DASHBOARD MOUNT ENGINE (Runs EXACTLY ONCE on Mount)
 ========================================================================= */
 const hasFetched = useRef(false);
 const [isLoading, setIsLoading] = useState(true); // Master loading spinner state
 
+// Dedicated individual data fetchers you can call anytime an action happens
+const refreshTransactions = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) setTransactions(data);
+    }
+  } catch (err) { console.error("Error updating transactions:", err); }
+};
+
+const refreshSummary = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSummaryData(data); // Stored in data state
+    }
+  } catch (err) { console.error("Error updating summary:", err); }
+};
+
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
 
-  // Redirect if no token is found
   if (!token) {
     window.location.href = "/";
     return;
   }
 
-  // Prevent React StrictMode double-mounting from execution duplication
   if (hasFetched.current) return;
   hasFetched.current = true;
 
   const loadAllDashboardData = async () => {
     try {
-      setIsLoading(true); // Start the full screen loader instantly
+      setIsLoading(true);
       console.log("🔥 Firing single-batch parallel dashboard engine...");
 
-      // Fire EVERY single primary network layout endpoint simultaneously
       const [
         ordersRes, 
         menuRes, 
@@ -712,17 +730,17 @@ useEffect(() => {
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager")
       ]);
 
+      // Sync data arrays directly to state pools
       if (ordersRes.ok) {
-  const ordersData = await ordersRes.json();
-  if (Array.isArray(ordersData)) setTransactions(ordersData); // ⚡ Syncs straight to your view array!
-}
+        const ordersData = await ordersRes.json();
+        if (Array.isArray(ordersData)) {
+          setTransactions(ordersData); 
+        }
+      }
 
       if (menuRes.ok) {
         const menuData = await menuRes.json();
-        if (Array.isArray(menuData)) {
-          setMenu(menuData);
-          setMenu?.(menuData); // Safely sets alternative hook names if any
-        }
+        if (Array.isArray(menuData)) setMenu(menuData);
       }
 
       if (lowStockRes.ok) {
@@ -733,7 +751,7 @@ useEffect(() => {
       }
 
       if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
+        const settingsData = await settingsRes.ok ? await settingsRes.json() : {};
         setSettings(prev => ({ ...prev, ...settingsData }));
       }
 
@@ -744,21 +762,20 @@ useEffect(() => {
 
       if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
-        setSummary(summaryData);
+        setSummaryData(summaryData); // Saved into a dedicated data holder variable!
       }
 
     } catch (error) {
       console.error("❌ Critical Dashboard Boot Failure:", error);
     } finally {
-      setIsLoading(false); // Drop loader only when all states are fully operational
+      setIsLoading(false);
     }
   };
 
-  // Initialize System Audio Clips Safely
+  // Audio loading logic
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
-    audio.load();
     return audio;
   };
 
@@ -768,9 +785,8 @@ useEffect(() => {
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-  // Fire master pipeline execution
   loadAllDashboardData();
-}, []); 
+}, []);
 
 
 /* =========================================================================
@@ -1713,16 +1729,8 @@ return (
 <nav className="sidebar-nav">
           {/* ========== ORDERS TAB ========== */}
           <div
-            className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
-            onClick={() => {
-              setShowTransactions(false);
-              setSummary(null);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'orders' ? 'active' : ''}`}
+            onClick={() => setActiveTab('orders')}
           >
             <span className="sidebar-icon">📝</span>
             <span>Orders</span>
@@ -1730,17 +1738,8 @@ return (
 
           {/* ========== ANALYTICS TAB ========== */}
           <div
-            className={`sidebar-link ${analytics ? 'active' : ''}`}
-            onClick={() => {
-              // ⚡ FIXED: Removed 'async' and properly set analytics to truthy value
-              setAnalytics(true); 
-              setShowTransactions(false);
-              setSummary(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
           >
             <span className="sidebar-icon">📊</span>
             <span>Analytics</span>
@@ -1748,17 +1747,8 @@ return (
 
           {/* ========== TRANSACTIONS TAB ========== */}
           <div
-            className={`sidebar-link ${showTransactions ? 'active' : ''}`}
-            onClick={() => {
-              // ⚡ FIXED: Removed 'async' to completely seal off preflight channels
-              setShowTransactions(true);
-              setSummary(null);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'transactions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('transactions')}
           >
             <span className="sidebar-icon">💳</span>
             <span>Transactions</span>
@@ -1766,17 +1756,8 @@ return (
 
           {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
-            className={`sidebar-link ${summary ? 'active' : ''}`}
-            onClick={() => {
-              // ⚡ FIXED: Force true/object assignment so view mount mounts properly
-              setSummary(true); 
-              setShowTransactions(false);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'summary' ? 'active' : ''}`}
+            onClick={() => setActiveTab('summary')}
           >
             <span className="sidebar-icon">📈</span>
             <span>Today's Summary</span>
@@ -1784,16 +1765,8 @@ return (
 
           {/* ========== MANAGE MENU TAB ========== */}
           <div
-            className={`sidebar-link ${showManageMenu ? 'active' : ''}`}
-            onClick={() => {
-              setShowManageMenu(true);
-              setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'manage-menu' ? 'active' : ''}`}
+            onClick={() => setActiveTab('manage-menu')}
           >
             <span className="sidebar-icon">✏️</span>
             <span>Manage Menu</span>
@@ -1801,16 +1774,8 @@ return (
 
           {/* ========== ADD MENU ITEM TAB ========== */}
           <div
-            className={`sidebar-link ${showCreateMenu ? 'active' : ''}`}
-            onClick={() => {
-              setShowCreateMenu(true);
-              setShowManageMenu(false);
-              setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'add-item' ? 'active' : ''}`}
+            onClick={() => setActiveTab('add-item')}
           >
             <span className="sidebar-icon">➕</span>
             <span>Add Menu Item</span>
@@ -1818,16 +1783,8 @@ return (
 
           {/* ========== SUBSCRIPTION TAB ========== */}
           <div
-            className={`sidebar-link ${showSubscription ? 'active' : ''}`}
-            onClick={() => {
-              setShowSubscription(true);
-              setShowSettings(false);
-              setShowCreateMenu(false);
-              setShowManageMenu(false);
-              setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
-            }}
+            className={`sidebar-link ${activeTab === 'subscription' ? 'active' : ''}`}
+            onClick={() => setActiveTab('subscription')}
           >
             <span className="sidebar-icon">⏳</span>
             <span>Subscription</span>
@@ -1835,16 +1792,8 @@ return (
 
           {/* ========== SETTINGS TAB ========== */}
           <div
-            className={`sidebar-link ${showSettings ? 'active' : ''}`}
-            onClick={() => {
-              setShowSettings(true);
-              setShowCreateMenu(false);
-              setShowManageMenu(false);
-              setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
-              setShowSubscription(false);
-            }}
+            className={`sidebar-link ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
           >
             <span className="sidebar-icon">⚙️</span>
             <span>Settings</span>
@@ -1876,7 +1825,7 @@ return (
         {/* ==========================================
             📊 1. SUMMARY PANEL (Instant Load Condition)
         ========================================== */}
-        {summary && (
+        {activeTab === 'summary' && summary && (
           <>
             {/* BUSINESS STATUS CARD */}
             <div className="status-card">
@@ -1945,7 +1894,7 @@ return (
 {/* ==========================================
           💳 2. TRANSACTIONS PANEL
       ========================================== */}
-      {showTransactions && (
+      {activeTab === 'transactions' && showTransactions && (
         <div className="card">
           <div className="card-header">
             <h2>💳 Previous Transactions</h2>
@@ -2094,7 +2043,7 @@ return (
 {/* ==========================================
             ✏️ 3. MANAGE MENU PANEL
         ========================================== */}
-        {showManageMenu && (
+        {activeTab === 'manage-menu' && showManageMenu && (
           <div>
             <div className="main-header">
               <h1>✏️ Manage Menu Items</h1>
@@ -2306,7 +2255,7 @@ return (
         )}
 
 {/* ========== ANALYTICS PANEL ========== */}
-{analytics && (
+{activeTab === 'analytics' && analytics && (
   <div className="analytics-container">
     <div className="main-header">
       <h1>📊 Analytics & Performance</h1>
@@ -2433,7 +2382,7 @@ return (
 
 
 {/* ========== CREATE MENU PANEL ========== */}
-{showCreateMenu && (
+{activeTab === 'add-item' && showCreateMenu && (
   <div>
     <div className="main-header">
       <h1>➕ Add New Menu Item</h1>
@@ -2687,7 +2636,7 @@ return (
 
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
-        {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
+        {activeTab === 'orders' && !showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
           <>
             <div className="main-header">
 
@@ -2890,7 +2839,7 @@ return (
  {/* ========================================================
     MAIN CONTENT AREA: SUBSCRIPTION MANAGEMENT PANEL
     ======================================================== */}
-{showSubscription && (
+{activeTab === 'subscription' && showSubscription && (
   <div style={{ padding: "30px", maxWidth: "800px", margin: "0 auto" }}>
     <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "6px", color: "#1e293b" }}>
       🛡️ Subscription Management
@@ -3060,7 +3009,7 @@ return (
 
 
         {/* ========== SETTINGS PANEL ========== */}
-        {showSettings && (
+        {activeTab === 'settings' && showSettings && (
           <div className="settings-container">
             <div className="main-header">
               <h1>⚙️ Business Settings</h1>
