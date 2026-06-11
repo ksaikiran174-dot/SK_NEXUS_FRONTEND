@@ -762,7 +762,7 @@ useEffect(() => {
 
       if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
-        setSummaryData(summaryData); // Saved into a dedicated data holder variable!
+        setSummary(summaryData); // Saved into a dedicated data holder variable!
       }
 
     } catch (error) {
