@@ -196,6 +196,11 @@ function BillingManager() {
   const [editCategory, setEditCategory] = useState("");
   const [isEditCustomCategory, setIsEditCustomCategory] = useState(false);
   const [editCustomCategoryInput, setEditCustomCategoryInput] = useState("");
+  
+  const [showSummaryView, setShowSummaryView] = useState(false);
+const [showAnalyticsView, setShowAnalyticsView] = useState(false);
+const [showTransactions, setShowTransactions] = useState(false);
+
   const [
   currentTime,
   setCurrentTime
@@ -1729,11 +1734,11 @@ return (
 <nav className="sidebar-nav">
           {/* ========== ORDERS TAB ========== */}
           <div
-            className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
+            className={`sidebar-link ${!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
             onClick={() => {
               setShowTransactions(false);
-              setSummary(null);      // Clears view toggle
-              setAnalytics(null);    // Clears view toggle
+              setShowSummaryView(false);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1746,11 +1751,11 @@ return (
 
           {/* ========== ANALYTICS TAB ========== */}
           <div
-            className={`sidebar-link ${analytics ? 'active' : ''}`}
+            className={`sidebar-link ${showAnalyticsView ? 'active' : ''}`}
             onClick={() => {
-              setAnalytics({}); // ⚡ Set to empty object so it evaluates to truthy/renders!
+              setShowAnalyticsView(true);
               setShowTransactions(false);
-              setSummary(null);
+              setShowSummaryView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1765,9 +1770,9 @@ return (
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
             onClick={() => {
-              setShowTransactions(true); // ⚡ Turn display panel on!
-              setSummary(null);
-              setAnalytics(null);
+              setShowTransactions(true);
+              setShowSummaryView(false);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1780,11 +1785,11 @@ return (
 
           {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
-            className={`sidebar-link ${summary ? 'active' : ''}`}
+            className={`sidebar-link ${showSummaryView ? 'active' : ''}`}
             onClick={() => {
-              setSummary({}); // ⚡ Set to empty object so it evaluates to truthy/renders!
+              setShowSummaryView(true);
               setShowTransactions(false);
-              setAnalytics(null);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1801,8 +1806,8 @@ return (
             onClick={() => {
               setShowManageMenu(true);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
@@ -1819,8 +1824,8 @@ return (
               setShowCreateMenu(true);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSettings(false);
               setShowSubscription(false);
             }}
@@ -1838,8 +1843,8 @@ return (
               setShowCreateMenu(false);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
             }}
           >
             <span className="sidebar-icon">⏳</span>
@@ -1854,8 +1859,8 @@ return (
               setShowCreateMenu(false);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSubscription(false);
             }}
           >
@@ -1889,71 +1894,76 @@ return (
         {/* ==========================================
             📊 1. SUMMARY PANEL (Instant Load Condition)
         ========================================== */}
-        {summary && (
-          <>
-            {/* BUSINESS STATUS CARD */}
-            <div className="status-card">
-              <h3>Day Status</h3>
-              {businessDay && businessDay.cycle_number ? (
-                <p className="text-green-500 font-bold">
-                  Business day {businessDay.cycle_number} Active ✅
-                </p>
-              ) : (
-                <p className="text-red-500 font-bold">
-                  Business Day Inactive ❌
-                </p>
-              )}
+        {showSummaryView && (
+  <>
+    {/* BUSINESS STATUS CARD */}
+    <div className="status-card">
+      <h3>Day Status</h3>
+      {businessDay && businessDay.cycle_number ? (
+        <p className="text-green-500 font-bold">
+          Business day {businessDay.cycle_number} Active ✅
+        </p>
+      ) : (
+        <p className="text-red-500 font-bold">
+          Business Day Inactive ❌
+        </p>
+      )}
+    </div>
+
+    {/* SUMMARY ITEMS LEDGER */}
+    <div className="summary-panel">
+      <h2 className="summary-header">📊 Today's Summary</h2>
+      
+      {summary ? (
+        <div className="summary-items">
+          <div className="summary-item">
+            <div className="summary-item-label">Total Revenue</div>
+            <div className="summary-item-value">
+              ₹{businessDay && businessDay.cycle_number ? (summary.total_sales || 0) : 0}
             </div>
+          </div>
 
-            {/* SUMMARY ITEMS LEDGER */}
-            <div className="summary-panel">
-              <h2 className="summary-header">📊 Today's Summary</h2>
-              
-              <div className="summary-items">
-                <div className="summary-item">
-                  <div className="summary-item-label">Total Revenue</div>
-                  <div className="summary-item-value">
-                    ₹{businessDay && businessDay.cycle_number ? (summary.total_sales || 0) : 0}
-                  </div>
-                </div>
-
-                <div className="summary-item">
-                  <div className="summary-item-label">Cash Received</div>
-                  <div className="summary-item-value">
-                    ₹{businessDay && businessDay.cycle_number ? (summary.cash_sales || 0) : 0}
-                  </div>
-                </div>
-
-                <div className="summary-item">
-                  <div className="summary-item-label">Online Payments</div>
-                  <div className="summary-item-value">
-                    ₹{businessDay && businessDay.cycle_number ? (summary.online_sales || 0) : 0}
-                  </div>
-                </div>
-
-                <div className="summary-item">
-                  <div className="summary-item-label">Total Orders</div>
-                  <div className="summary-item-value">
-                    {businessDay && businessDay.cycle_number ? (summary.completed_orders || 0) : 0}
-                  </div>
-                </div>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="summary-actions">
-                {!(businessDay && businessDay.cycle_number) ? (
-                  <button className="btn btn-success" onClick={handleStartDay}>
-                    ▶ Start Today
-                  </button>
-                ) : (
-                  <button className="btn btn-danger" onClick={handleCloseDay}>
-                    🔒 Close Today Sales
-                  </button>
-                )}
-              </div>
+          <div className="summary-item">
+            <div className="summary-item-label">Cash Received</div>
+            <div className="summary-item-value">
+              ₹{businessDay && businessDay.cycle_number ? (summary.cash_sales || 0) : 0}
             </div>
-          </>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-item-label">Online Payments</div>
+            <div className="summary-item-value">
+              ₹{businessDay && businessDay.cycle_number ? (summary.online_sales || 0) : 0}
+            </div>
+          </div>
+
+          <div className="summary-item">
+            <div className="summary-item-label">Total Orders</div>
+            <div className="summary-item-value">
+              {businessDay && businessDay.cycle_number ? (summary.completed_orders || 0) : 0}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p>No summary data available.</p>
+      )}
+
+      {/* ACTION BUTTONS */}
+      <div className="summary-actions">
+        {!(businessDay && businessDay.cycle_number) ? (
+          <button className="btn btn-success" onClick={handleStartDay}>
+            ▶ Start Today
+          </button>
+        ) : (
+          <button className="btn btn-danger" onClick={handleCloseDay}>
+            🔒 Close Today Sales
+          </button>
         )}
+      </div>
+    </div>
+  </>
+)}
+
 
 {/* ==========================================
           💳 2. TRANSACTIONS PANEL
@@ -2319,7 +2329,7 @@ return (
         )}
 
 {/* ========== ANALYTICS PANEL ========== */}
-{analytics && (
+{showAnalyticsView && analytics && (
   <div className="analytics-container">
     <div className="main-header">
       <h1>📊 Analytics & Performance</h1>
