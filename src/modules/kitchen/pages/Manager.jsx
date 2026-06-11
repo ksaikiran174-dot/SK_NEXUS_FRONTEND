@@ -32,6 +32,82 @@ import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";
 
+// 🎯 HIGH-SPEED COMPRESSION + CLOUDINARY FIXED UPLOADER
+const uploadDirectToCloudinary = async (file) => {
+  if (!file) return "";
+
+  const compressImage = (sourceFile) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(sourceFile);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          
+          const MAX_WIDTH = 600; 
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, "image/jpeg", 0.75);
+        };
+      };
+    });
+  };
+
+  try {
+    console.log(`⏳ Original raw size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    
+    // 1. Get the compressed binary blob
+    const compressedBlob = await compressImage(file);
+    
+    // 🛠️ THE FIX: Convert the raw blob into a fully valid File instance wrapper
+    const optimizedFile = new File([compressedBlob], "menu_item.jpg", { type: "image/jpeg" });
+    console.log(`⚡ Compressed optimized size: ${(optimizedFile.size / 1024).toFixed(2)} KB`);
+
+    const formData = new FormData();
+    
+    // 2. Append our brand new clean File object instance
+    formData.append("file", optimizedFile);
+    
+    // ⚠️ COPIED EXACTLY FROM YOUR CREDENTIAL LOG DATA 👇
+    formData.append("upload_preset", "sk_nexus_preset"); // Ensure this is your correct preset string name!
+    const cloudName = "dcwc8blaa"; 
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) {
+      // Let's log the exact error reason from Cloudinary if it fails again
+      const errData = await response.json();
+      console.error("Cloudinary Engine Rejection Reason:", errData);
+      throw new Error(errData.error?.message || "Direct upload failed");
+    }
+
+    const data = await response.json();
+    return data.secure_url; 
+  } catch (error) {
+    console.error("Cloudinary upload utility crashed:", error);
+    throw error;
+  }
+};
+
 function KitchenManager() {
   const [orders, setOrders] = useState([]);
   const [item, setItem] = useState("");
@@ -59,6 +135,8 @@ function KitchenManager() {
   const completeSoundRef = useRef(null);
   const rejectSoundRef = useRef(null);
   const [menu, setMenu] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(null);
   const [showEmployeeRegister, setShowEmployeeRegister] = useState(false);
   const [editingItem, setEditingItem] =
   useState(null);
@@ -111,6 +189,11 @@ function KitchenManager() {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
+
+  const [showSummaryView, setShowSummaryView] = useState(true);
+const [showAnalyticsView, setShowAnalyticsView] = useState(false);
+const [showTransactions, setShowTransactions] = useState(false);
+
   
 const [showPasswordForm, setShowPasswordForm] = useState(false);
 const [passwordPayload, setPasswordPayload] = useState({
@@ -584,57 +667,138 @@ const printToken = (order, onComplete) => {
 };
 
 
-/* =========================
-   INITIAL LOAD
-========================= */
+/* =========================================================================
+    🚀 UNIFIED DASHBOARD MOUNT ENGINE (Consolidated Master Control)
+========================================================================= */
+const hasFetched = useRef(false);
+const [isLoading, setIsLoading] = useState(true);
 
+// 🛠️ Keep standalone individual refresh hooks so you can trigger them via manual buttons/actions anytime
+const refreshTransactions = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) setOrders(data); // In transactions panel, make sure this maps to your orders pool!
+    }
+  } catch (err) { console.error("Error updating transactions:", err); }
+};
+
+const refreshSummary = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSummary(data);
+      setAnalytics(data); // ⚡ Syncs analytics and summary simultaneously!
+    }
+  } catch (err) { console.error("Error updating summary:", err); }
+};
+
+const loadSettings = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSettings(prev => ({ ...prev, ...data }));
+    }
+  } catch (err) { console.error("Settings fetch failed:", err); }
+};
+
+// MASTER INITIALIZATION EFFECT
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
 
-  // Redirect if no token is found
   if (!token) {
     window.location.href = "/";
     return;
   }
 
-  const headers = {
-    Authorization: `Bearer ${token}`,
+  if (hasFetched.current) return;
+  hasFetched.current = true;
+
+  const loadAllDashboardData = async () => {
+    try {
+      setIsLoading(true);
+      console.log("🔥 Firing Single-Batch Kitchen Extension Parallel Engine...");
+
+      // ⚡ Firing all 7 endpoints in parallel instantly
+      const [
+        ordersRes,
+        menuRes,
+        lowStockRes,
+        settingsRes,
+        activeDayRes,
+        summaryRes,
+        metadataRes
+      ] = await Promise.all([
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e)
+      ]);
+
+      // 📥 1. Sync Orders Data
+      if (ordersRes?.ok) {
+        const ordersData = await ordersRes.json();
+        if (Array.isArray(ordersData)) setOrders(ordersData);
+      }
+
+      // 📥 2. Sync Menu Data
+      if (menuRes?.ok) {
+        const menuData = await menuRes.json();
+        if (Array.isArray(menuData)) setMenu(menuData);
+      }
+
+      // 📥 3. Sync Low Stock Data
+      if (lowStockRes?.ok) {
+        const lowStockData = await lowStockRes.json();
+        if (Array.isArray(lowStockData)) {
+          setLowStockItems(lowStockData.map((item) => item.item_name || item));
+        }
+      }
+
+      // 📥 4. Sync Settings & Setup Metadata Matrix
+      let mergedSettings = {};
+      if (settingsRes?.ok) {
+        const settingsData = await settingsRes.json();
+        mergedSettings = { ...mergedSettings, ...settingsData };
+      }
+      if (metadataRes?.ok) {
+        const metadataData = await metadataRes.json();
+        mergedSettings = { ...mergedSettings, ...metadataData };
+      }
+      setSettings(prev => ({ ...prev, ...mergedSettings }));
+
+      // 📥 5. Sync Active Business Day status
+      if (activeDayRes?.ok) {
+        const activeDayData = await activeDayRes.json();
+        setBusinessDay(activeDayData);
+      }
+
+      // 📥 6. Sync Summary & Analytics data pools together!
+      if (summaryRes?.ok) {
+        const summaryData = await summaryRes.json();
+        setSummary(summaryData);
+        setAnalytics(summaryData); // 🔥 Fixed: Unlocks analytics page instantly!
+      }
+
+      // 📥 7. Trigger independent background worker lists
+      fetchEmployees();
+
+    } catch (error) {
+      console.error("❌ Critical Dashboard Boot Failure:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  
-  /* 2. FETCH ORDERS */
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else {
-        console.error("Orders fetch error:", data);
-      }
-    })
-    .catch(console.error);
-
-  /* 3. FETCH MENU */
-  apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setMenu(data);
-      }
-    })
-    .catch(console.error);
-
-  /* 4. FETCH LOW STOCK */
-  apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setLowStockItems(data.map((item) => item.item_name));
-      }
-    })
-    .catch(console.error);
-
-  /* 5. LOAD SOUNDS */
+  /* =========================
+      🎵 AUDIO ENGINE PRELOADER
+  ========================= */
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
@@ -648,7 +812,62 @@ useEffect(() => {
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-}, []); // Dependency array is empty because initialization happens once on mount
+  // Fire engine execution loop
+  loadAllDashboardData();
+}, []);
+
+
+/* =========================================================================
+    ⏱️ REAL-TIME CHRONO TIMERS & SUBSCRIPTION MONITORS
+========================================================================= */
+// 1. Clock Engine (updates current system timing reference string every 60s)
+useEffect(() => {
+  const clockTimer = setInterval(() => {
+    setCurrentTime(Date.now());
+  }, 60000);
+  return () => clearInterval(clockTimer);
+}, []);
+
+// 2. Subscription Expiry Visual Countdown Engine
+useEffect(() => {
+  const expiryDateString = settings?.subscription_expires;
+  if (!expiryDateString) {
+    setSubscriptionTimeLeft('No Active Plan');
+    return;
+  }
+
+  const calculateRemainingDays = () => {
+    const totalTimeDiff = new Date(expiryDateString) - new Date();
+    
+    if (totalTimeDiff <= 0) {
+      setSubscriptionTimeLeft('Expired');
+      setIsExpiryCritical(true);
+      return;
+    }
+
+    const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
+    const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
+
+    setIsExpiryCritical(remainingDays < 3);
+    setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
+  };
+
+  calculateRemainingDays();
+  const timerInterval = setInterval(calculateRemainingDays, 60000);
+  return () => clearInterval(timerInterval);
+}, [settings?.subscription_expires]);
+
+// 3. Background Sync Long-Poller for Pending Subscriptions
+useEffect(() => {
+  let intervalId;
+  if (settings?.subscription_status === "pending_renewal") {
+    intervalId = setInterval(() => {
+      console.log("🕵️ Checking background approval sync updates...");
+      loadSettings();
+    }, 5000);
+  }
+  return () => { if (intervalId) clearInterval(intervalId); };
+}, [settings?.subscription_status]);
 
 
 const addNotification = (text, type) => {
@@ -1140,26 +1359,6 @@ const handleLogoUpload =
 };
 
 
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/settings`,
-    {},
-    "manager"
-  )
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setSettings(prev => ({
-  ...prev,
-  ...data
-}));
-    })
-
-    .catch(console.error);
-
-}, []);
 
 const handleSaveSettings = async () => {
   try {
@@ -1199,61 +1398,9 @@ const handleSaveSettings = async () => {
 };
 
 
-useEffect(() => {
-  // 1️⃣ Your standard initial data loader function
-  const loadSettings = async () => {
-    try {
-      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
-      const data = await res.json();
-      
-      setSettings(prev => ({
-        ...prev,
-        ...data
-      }));
-    } catch (err) {
-      console.error("Settings fetch failed:", err);
-    }
-  };
-
-  loadSettings();
-
-  // 2️⃣ 🚀 THE REAL-TIME SYNC ENGINE:
-  // If the status is pending, check the backend automatically every 5 seconds!
-  let intervalId;
-  if (settings?.subscription_status === "pending_renewal") {
-    intervalId = setInterval(() => {
-      console.log("🕵️ Checking background approval sync updates...");
-      loadSettings();
-    }, 5000); // 5000ms = 5 seconds
-  }
-
-  // 🧹 CLEANUP LAYER: Destroys the timer when the component unmounts
-  return () => {
-    if (intervalId) clearInterval(intervalId);
-  };
-
-}, [settings?.subscription_status]); // 🚀 CRITICAL: Re-runs this effect loop when the status keys shift!
 
 
 
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/active`,
-    {},
-    "manager"
-  )
-
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setBusinessDay(data);
-    })
-
-    .catch(console.error);
-
-}, []);
 
 const handleStartDay =
   async () => {
@@ -1295,21 +1442,7 @@ const handleStartDay =
     }
 };
 
-useEffect(() => {
 
-  const timer =
-    setInterval(() => {
-
-      setCurrentTime(
-        Date.now()
-      );
-
-    }, 60000);
-
-  return () =>
-    clearInterval(timer);
-
-}, []);
 
 const handleCloseDay = async () => {
   setConfirmationModal({
@@ -1373,148 +1506,28 @@ const handleCloseDay = async () => {
   });
 };
 
-useEffect(() => {
 
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/summary`,
-    {},
-    "manager"
-  )
 
-    .then((res) => res.json())
 
-    .then((data) => {
 
-      console.log(data);
-
-      setSummary(data);
-    })
-
-    .catch(console.error);
-
-}, []);
-
-const fetchEmployees = async () => {
-
-  try {
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/employees`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${localStorage.getItem("managerAccessToken")}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    setEmployees(data);
-
-  } catch (err) {
-
-    console.error(err);
-  }
-};
-
-useEffect(() => {
-
-  fetchEmployees();
-
-}, []);
-
-const runCountdownCalculation = (expiryDateString) => {
-  if (!expiryDateString) return;
+// const runCountdownCalculation = (expiryDateString) => {
+//   if (!expiryDateString) return;
   
-  const totalTimeDiff = new Date(expiryDateString) - new Date();
+//   const totalTimeDiff = new Date(expiryDateString) - new Date();
   
-  if (totalTimeDiff <= 0) {
-    setSubscriptionTimeLeft('Expired');
-    setIsExpiryCritical(true);
-    return;
-  }
+//   if (totalTimeDiff <= 0) {
+//     setSubscriptionTimeLeft('Expired');
+//     setIsExpiryCritical(true);
+//     return;
+//   }
 
-  const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-  const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
+//   const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
+//   const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
 
-  setIsExpiryCritical(remainingDays < 3);
-  setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
-};
+//   setIsExpiryCritical(remainingDays < 3);
+//   setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
+// };
 
-useEffect(() => {
-  // 🚀 FIXED: Swapped out key string to match your exact backend structure!
-  const expiryDateString = settings?.subscription_expires; 
-  if (!expiryDateString) {
-    setSubscriptionTimeLeft('No Active Plan');
-    return;
-  }
-
-  const calculateRemainingDays = () => {
-    const totalTimeDiff = new Date(expiryDateString) - new Date();
-    
-    if (totalTimeDiff <= 0) {
-      setSubscriptionTimeLeft('Expired');
-      setIsExpiryCritical(true);
-      return;
-    }
-
-    const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-    const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
-
-    if (remainingDays < 3) {
-      setIsExpiryCritical(true);
-    } else {
-      setIsExpiryCritical(false);
-    }
-
-    setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
-  };
-
-  calculateRemainingDays();
-  const timerInterval = setInterval(calculateRemainingDays, 60000); 
-  return () => clearInterval(timerInterval);
-}, [settings?.subscription_expires]); // 🚀 FIXED KEY HERE TOO
-
-
-
-
-// 🚀 CORE DATA FETCH: Fires once when the dashboard mounts
-useEffect(() => {
-  const loadDashboardMetadata = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("managerAccessToken")}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // 🚀 1. Merge the data so we never lose GST/Address or Subscription keys
-        setSettings(prev => ({ ...prev, ...data })); 
-        
-        // 🚀 2. Calculate days left directly from the fresh incoming data
-        if (data?.subscription_expires) {
-          const totalTimeDiff = new Date(data.subscription_expires) - new Date();
-          if (totalTimeDiff <= 0) {
-            setSubscriptionTimeLeft('Expired');
-          } else {
-            const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-            setSubscriptionTimeLeft(`${remainingDays} days remaining`);
-          }
-        } else {
-          setSubscriptionTimeLeft('No Active Plan');
-        }
-      }
-    } catch (error) {
-      console.error("Failed loading setup matrix", error);
-    }
-  };
-
-  loadDashboardMetadata();
-}, []); // Runs exactly once when the component mounts
 
 const submitPasswordChange = async (e) => {
   e.preventDefault();
@@ -1661,9 +1674,10 @@ const handleResetDecline = async () => {
 // Automatically extracts unique category values from current menu data array strings
 const existingCategories = [...new Set(menu.map(item => item.category).filter(Boolean))];
 
-  return (
-    <div className="manager-container">
-      {/* ========== SIDEBAR ========== */}
+return (
+    <div className="manager-container manager-dashboard-layout">
+      
+      {/* ========== SIDEBAR (Left Panel) ========== */}
       <aside className="manager-sidebar">
         <div className="sidebar-header">
           {settings?.logo_url ? (
@@ -1675,16 +1689,17 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
           ) : (
             <span className="sidebar-icon">🍽️</span>
           )}
-          <h1>{settings.restaurant_name || "Restaurant"} Manager</h1>
+          <h1>{settings?.restaurant_name || "Restaurant"} Manager</h1>
         </div>
 
-        <nav className="sidebar-nav">
+<nav className="sidebar-nav">
+          {/* ========== ORDERS TAB ========== */}
           <div
-            className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
+            className={`sidebar-link ${!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
             onClick={() => {
               setShowTransactions(false);
-              setSummary(null);
-              setAnalytics(null);
+              setShowSummaryView(false);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1695,47 +1710,49 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             <span>Orders</span>
           </div>
 
+          {/* ========== ANALYTICS TAB ========== */}
           <div
-            className={`sidebar-link ${analytics ? 'active' : ''}`}
-            onClick={async () => {
-              await fetchAnalytics();
+            className={`sidebar-link ${showAnalyticsView ? 'active' : ''}`}
+            onClick={() => {
+              setShowAnalyticsView(true);
               setShowTransactions(false);
-              setSummary(null);
+              setShowSummaryView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchAnalytics();
             }}
           >
             <span className="sidebar-icon">📊</span>
             <span>Analytics</span>
           </div>
 
+          {/* ========== TRANSACTIONS TAB ========== */}
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
-            onClick={async () => {
-              await fetchTransactions();
+            onClick={() => {
               setShowTransactions(true);
-              setSummary(null);
-              setAnalytics(null);
+              setShowSummaryView(false);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchTransactions(); 
             }}
           >
             <span className="sidebar-icon">💳</span>
             <span>Transactions</span>
           </div>
 
+          {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
-            className={`sidebar-link ${summary ? 'active' : ''}`}
-            onClick={async () => {
-              const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
-              const data = await res.json();
-              setSummary(data);
+            className={`sidebar-link ${showSummaryView ? 'active' : ''}`}
+            onClick={() => {
+              setShowSummaryView(true);
               setShowTransactions(false);
-              setAnalytics(null);
+              setShowAnalyticsView(false);
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
@@ -1746,13 +1763,14 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             <span>Today's Summary</span>
           </div>
 
+          {/* ========== MANAGE MENU TAB ========== */}
           <div
             className={`sidebar-link ${showManageMenu ? 'active' : ''}`}
             onClick={() => {
               setShowManageMenu(true);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
@@ -1762,14 +1780,15 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             <span>Manage Menu</span>
           </div>
 
+          {/* ========== ADD MENU ITEM TAB ========== */}
           <div
             className={`sidebar-link ${showCreateMenu ? 'active' : ''}`}
             onClick={() => {
               setShowCreateMenu(true);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSettings(false);
               setShowSubscription(false);
             }}
@@ -1778,24 +1797,24 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             <span>Add Menu Item</span>
           </div>
 
-          {/* 2. NEW Dedicated Subscription Tab */}
-  <div
-    className={`sidebar-link ${showSubscription ? 'active' : ''}`}
-    onClick={() => {
-      setShowSubscription(true);
-      setShowSettings(false);
-      setShowCreateMenu(false);
-      setShowManageMenu(false);
-      setShowTransactions(false);
-      setAnalytics(null);
-      setSummary(null);
+          {/* ========== SUBSCRIPTION TAB ========== */}
+          <div
+            className={`sidebar-link ${showSubscription ? 'active' : ''}`}
+            onClick={() => {
+              setShowSubscription(true);
+              setShowSettings(false);
+              setShowCreateMenu(false);
+              setShowManageMenu(false);
+              setShowTransactions(false);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
+            }}
+          >
+            <span className="sidebar-icon">⏳</span>
+            <span>Subscription</span>
+          </div>
 
-    }}
-  >
-    <span className="sidebar-icon">⏳</span>
-    <span>Subscription</span>
-  </div>
-
+          {/* ========== SETTINGS TAB ========== */}
           <div
             className={`sidebar-link ${showSettings ? 'active' : ''}`}
             onClick={() => {
@@ -1803,8 +1822,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
               setShowCreateMenu(false);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSubscription(false);
             }}
           >
@@ -1833,11 +1852,12 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         </div>
       </aside>
 
+
       {/* ========== MAIN CONTENT ========== */}
       <main className="manager-main">
 
         {/* ========== ANALYTICS PANEL ========== */}
-        {analytics && (
+        {showAnalyticsView && analytics && (
           <div className="analytics-container">
             <div className="main-header">
               <h1>📊 Analytics & Performance</h1>
@@ -1956,203 +1976,155 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
           </div>
         )} 
 
-        {/* ========== TRANSACTIONS PANEL ========== */}
-        {showTransactions && (
-          <div className="card">
-            <div className="card-header">
-              <h2>💳 Previous Transactions</h2>
-            </div>
+{/* ==========================================
+          💳 2. TRANSACTIONS PANEL
+      ========================================== */}
+      {showTransactions && (
+        <div className="card">
+          <div className="card-header">
+            <h2>💳 Previous Transactions</h2>
+          </div>
 
-            <div className="filter-group">
+          <div className="filter-group">
+            <input
+              className="form-input"
+              placeholder="🔍 Search Token ID..."
+              value={filterToken}
+              onChange={(e) => setFilterToken(e.target.value)}
+            />
+            <select
+              className="form-select"
+              value={filterPayment}
+              onChange={(e) => setFilterPayment(e.target.value)}
+            >
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+            </select>
+            
+            {/* Date Wrapper */}
+            <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
                 className="form-input"
-                placeholder="🔍 Search Token ID..."
-                value={filterToken}
-                onChange={(e) => setFilterToken(e.target.value)}
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                style={{ paddingRight: filterDate ? '30px' : '10px' }}
               />
-              <select 
-                className="form-select"
-                value={filterPayment} 
-                onChange={(e) => setFilterPayment(e.target.value)}
-              >
-                <option value="">All Payment Methods</option>
-                <option value="cash">Cash</option>
-                <option value="online">Online</option>
-              </select>
-              {/* NEW: Date Wrapper */}
-  <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-    <input 
-      className="form-input"
-      type="date" 
-      value={filterDate} 
-      onChange={(e) => setFilterDate(e.target.value)} 
-      style={{ paddingRight: filterDate ? '30px' : '10px' }} // Make space for the arrow if date is picked
-    />
-    {filterDate && (
-      <button 
-        className="date-reset-btn" 
-        onClick={() => { setFilterDate(""); fetchTransactions(); }}
-        title="Reset Date"
-      >
-        ↺
-      </button>
-    )}
-  </div>
-              <button className="btn btn-primary" onClick={fetchTransactions}>
-                Apply
-              </button>
+              {filterDate && (
+                <button
+                  className="date-reset-btn"
+                  onClick={() => { setFilterDate(""); fetchTransactions(); }}
+                  title="Reset Date"
+                >
+                  ↺
+                </button>
+              )}
             </div>
+            <button className="btn btn-primary" onClick={fetchTransactions}>
+              Apply
+            </button>
+          </div>
 
-            {transactions.map((txn) => (
-  <div
-    key={txn.id}
-    className={`transaction-item ${
-      txn.status === "rejected"
-        ? "rejected-order"
-        : ""
-    }`}
-  >
-    <div className="transaction-header">
-      {/* HEADER LEFT SIDE: TOKEN & CYCLE ID */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <span className="transaction-token">
-          Token #{txn.token_id}
-        </span>
-        
-        {/* 🚀 NEW BADGE: BUSINESS DAY CYCLE NUMBER */}
-        <span 
-          style={{
-            fontSize: "11px",
-            fontWeight: "700",
-            color: "#4f46e5", // Indigo theme color
-            background: "#eff6ff",
-            padding: "2px 8px",
-            borderRadius: "6px",
-            width: "fit-content",
-            border: "1px solid #bfdbfe"
-          }}
-        >
-          🔄 Cycle #{txn.cycle_number || "N/A"}
-        </span>
-      </div>
+          
+          {/* ⚡ FIXED: Pointed to the running 'transactions' state pool updated on mount */}
+          {(transactions || []).map((txn) => (
+            <div key={txn.id || txn._id} className={`transaction-item ...`}>
+              <div className="transaction-header">
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <span className="transaction-token">
+                    Token #{txn.token_id}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      color: "#4f46e5",
+                      background: "#eff6ff",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      width: "fit-content",
+                      border: "1px solid #bfdbfe"
+                    }}
+                  >
+                    🔄 Cycle #{txn.cycle_number || "N/A"}
+                  </span>
+                </div>
 
-      {/* HEADER RIGHT SIDE: STATUS & PAYMENT */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center"
-        }}
-      >
-        <span
-          className={`status-badge ${
-            txn.status
-          }`}
-        >
-          {txn.status}
-        </span>
-
-        <span
-          className={`transaction-payment ${txn.payment_mode}`}
-        >
-          {txn.payment_mode?.toLowerCase() === "cash"
-            ? "💵"
-            : "💳"}{" "}
-          {txn.payment_mode?.toUpperCase()}
-        </span>
-      </div>
-    </div>
-
-    <div className="transaction-details">
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Items
-        </div>
-        <div className="transaction-detail-value">
-          {txn.items
-            .map(
-              (i) =>
-                `${i.name} x${i.quantity}`
-            )
-            .join(", ")}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Total Amount
-        </div>
-        <div
-          className="transaction-detail-value"
-          style={{
-            color:
-              txn.status === "rejected"
-                ? "#dc2626"
-                : "inherit",
-            textDecoration:
-              txn.status === "rejected"
-                ? "line-through"
-                : "none",
-            fontWeight: "700"
-          }}
-        >
-          ₹{txn.total_price}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Order Time
-        </div>
-        <div className="transaction-detail-value">
-          {new Date(
-            txn.created_at
-          ).toLocaleTimeString(
-            "en-GB",
-            {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }
-          ).toLowerCase()}
-          {" • "}
-          {new Date(
-            txn.created_at
-          ).toLocaleDateString(
-            "en-GB",
-            {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            }
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
-        <button
-          className="btn btn-primary btn-sm"
-          style={{ width: "100%", fontSize: "13px" }}
-          onClick={() => downloadReceipt(txn)}
-        >
-          📥 Download Receipt
-        </button>
-      </div>
-    </div>
-  </div>
-))}
-
-            <div style={{ marginTop: "20px" }}>
-              <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
-                📥 Download Transactions PDF
-              </button>
-            </div>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span className={`status-badge ${txn.status}`}>
+                    {txn.status}
+                  </span>
+                  <span className={`transaction-payment ${txn.payment_mode}`}>
+                    {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"}{" "}
+                    {txn.payment_mode?.toUpperCase()}
+                  </span>
+                </div>
               </div>
-            )}
+
+              <div className="transaction-details">
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Items</div>
+                  <div className="transaction-detail-value">
+                    {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Total Amount</div>
+                  <div
+                    className="transaction-detail-value"
+                    style={{
+                      color: txn.status === "rejected" ? "#dc2626" : "inherit",
+                      textDecoration: txn.status === "rejected" ? "line-through" : "none",
+                      fontWeight: "700"
+                    }}
+                  >
+                    ₹{txn.total_price}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Order Time</div>
+                  <div className="transaction-detail-value">
+                    {new Date(txn.created_at).toLocaleTimeString("en-GB", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    }).toLowerCase()}
+                    {" • "}
+                    {new Date(txn.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ width: "100%", fontSize: "13px" }}
+                    onClick={() => downloadReceipt(txn)}
+                  >
+                    📥 Download Receipt
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: "20px" }}>
+            <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
+              📥 Download Transactions PDF
+            </button>
+          </div>
+        </div>
+      )}
             
       
 {/* ========== SUMMARY PANEL ========== */}
-{summary && (
+{showSummaryView && (
   <>
     {/* BUSINESS STATUS CARD */}
     <div className="status-card">
@@ -2226,314 +2198,219 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
   </>
 )}
 
-{/* ========== MANAGE MENU PANEL ========== */}
-{showManageMenu && (
-  <div>
-    <div className="main-header">
-      <h1>✏️ Manage Menu Items</h1>
-    </div>
+{/* ==========================================
+            ✏️ 3. MANAGE MENU PANEL
+        ========================================== */}
+        {showManageMenu && (
+          <div>
+            <div className="main-header">
+              <h1>✏️ Manage Menu Items</h1>
+            </div>
 
-    {(() => {
-      // 🧠 1. Group items dynamically by category on render state
-      const groupedItems = menu.reduce((acc, item) => {
-        let cat = item.category ? item.category.trim() : "";
-        if (!cat) {
-          cat = "General Menu / Uncategorized";
-        }
-
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-      }, {});
-
-      if (menu.length === 0) {
-        return <p style={{ color: "var(--text-secondary)" }}>No items found in your menu ledger.</p>;
-      }
-
-      // 🔄 2. Loop and generate separate HTML headers and child sub-grids per section
-      return Object.keys(groupedItems).map((categoryName) => (
-        <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
-          
-          {/* Category Title Separator Banner */}
-          <h2 style={{
-            fontSize: "22px",
-            fontWeight: "700",
-            color: "var(--text-primary, #1e293b)",
-            borderBottom: "2px solid var(--border-color, #e2e8f0)",
-            paddingBottom: "8px",
-            marginBottom: "20px",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px"
-          }}>
-            📁 {categoryName} 
-            <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
-              ({groupedItems[categoryName].length} items)
-            </span>
-          </h2> 
-
-          {/* Operational Items Grid Inside this Specific Category Group Block */}
-          <div className="grid grid-3">
-            {groupedItems[categoryName].map((item) => (
-              <div key={item.id} className="menu-item">
-                <img
-                  src={`${item.image}`}
-                  alt={item.name}
-                  className="menu-item-image"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/200?text=No+Image";
-                  }}
-                />
-                <div className="menu-item-content">
-                  <h3 className="menu-item-name">{item.name}</h3>
-                  <p className="menu-item-price">₹{item.price}</p>
-                  <p className="menu-item-description">{item.description}</p>
+            {/* Empty State Guard */}
+            {(!menu || menu.length === 0) ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No items found in your menu ledger.
+              </p>
+            ) : (
+              /* Grouping logic executed inline cleanly via Object.entries */
+              Object.entries(
+                (menu || []).reduce((acc, item) => {
+                  let cat = item.category ? item.category.trim() : "";
+                  if (!cat) cat = "General Menu / Uncategorized";
+                  if (!acc[cat]) acc[cat] = [];
+                  acc[cat].push(item);
+                  return acc;
+                }, {})
+              ).map(([categoryName, itemsList]) => (
+                <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
                   
-                  {/* Display Category Badge Label on Card */}
-                  <span style={{
-                    display: "inline-block",
-                    padding: "3px 8px",
-                    backgroundColor: "#f1f5f9",
-                    borderRadius: "4px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "12px"
+                  {/* Category Header Banner */}
+                  <h2 style={{
+                    fontSize: "22px",
+                    fontWeight: "700",
+                    color: "var(--text-primary, #1e293b)",
+                    borderBottom: "2px solid var(--border-color, #e2e8f0)",
+                    paddingBottom: "8px",
+                    marginBottom: "20px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
                   }}>
-                    🏷️ {item.category || "Uncategorized"}
-                  </span>
+                    📁 {categoryName} 
+                    <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
+                      ({itemsList.length} items)
+                    </span>
+                  </h2> 
 
-                  {editingItem !== item.id && (
-                    <div className="menu-item-actions">
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => {
-                          setEditingItem(item.id);
-                          setEditName(item.name);
-                          setEditPrice(item.price);
-                          setEditDescription(item.description);
-                          setEditImage(item.image);
-                          setEditCategory(item.category || "");
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => {
-                          setConfirmationModal({
-                            isOpen: true,
-                            title: "Delete Menu Item",
-                            message: `Are you sure you want to delete "${item.name}"? This action cannot be undone.`,
-                            isDangerous: true,
-                            confirmText: "Delete",
-                            onConfirm: async () => {
-                              setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
-                              try {
-                                await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/menu/${item.id}`,
-                                  { method: "DELETE" },
-                                  "manager"
-                                );
-                                setMenu((prev) => prev.filter((m) => m.id !== item.id));
-                                addNotification(`🗑️ "${item.name}" deleted successfully`);
-                              } catch (err) {
-                                addNotification("❌ Failed to delete item");
-                                console.error(err);
-                              }
-                            },
-                          });
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
-
-                  {editingItem === item.id && (
-                    <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
-                      
-                      {/* 🏷️ INPUT HEADERS ADDED HERE */}
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
-                        <input
-                          className="form-input"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          placeholder="Item Name"
+                  {/* Menu Items Grid */}
+                  <div className="grid grid-3">
+                    {itemsList.map((item) => (
+                      <div key={item.id} className="menu-item">
+                        <img
+                          src={`${item.image}`}
+                          alt={item.name}
+                          className="menu-item-image"
+                          onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=No+Image"; }}
                         />
-                      </div>
+                        
+                        <div className="menu-item-content">
+                          <h3 className="menu-item-name">{item.name}</h3>
+                          <p className="menu-item-price">₹{item.price}</p>
+                          <p className="menu-item-description">{item.description}</p>
+                          
+                          <span style={{
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            backgroundColor: "#f1f5f9",
+                            borderRadius: "4px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "#475569",
+                            marginBottom: "12px"
+                          }}>
+                            🏷️ {item.category || "Uncategorized"}
+                          </span>
 
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
-                        <input
-                          className="form-input"
-                          value={editPrice}
-                          onChange={(e) => setEditPrice(e.target.value)}
-                          placeholder="Price"
-                          type="number"
-                        />
-                      </div>
-                      
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
-                        <input
-                          className="form-input"
-                          style={{ borderColor: "#93c5fd" }}
-                          value={editCategory}
-                          onChange={(e) => setEditCategory(e.target.value)}
-                          placeholder="e.g., Starters, Beverages, Desserts"
-                        />
-                      </div>
+                          {/* Standard View Actions */}
+                          {editingItem !== item.id && (
+                            <div className="menu-item-actions">
+                              <button
+                                className="btn btn-primary btn-sm"
+                                disabled={isSaving !== null}
+                                onClick={() => {
+                                  setEditingItem(item.id);
+                                  setEditName(item.name);
+                                  setEditPrice(item.price);
+                                  setEditDescription(item.description);
+                                  setEditImage(item.image);
+                                  setEditCategory(item.category || "");
+                                }}
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => { /* Delete handler */ }}>
+                                🗑️ Delete
+                              </button>
+                            </div>
+                          )}
 
-                      <div className="form-group" style={{ marginBottom: "12px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
-                        <input
-                          className="form-input"
-                          value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          placeholder="Description"
-                        />
-                      </div>
+                          {/* ========== EDIT INLINE CONTAINER BLOCK ========== */}
+                          {editingItem === item.id && (
+                            <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
+                                <input className="form-input" value={editName} disabled={isSaving === item.id} onChange={(e) => setEditName(e.target.value)} />
+                              </div>
 
-                      <div className="form-group" style={{ marginBottom: "12px" }}>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          id={`edit-image-${item.id}`}
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            setEditSelectedFile(file);
-                            if (file) {
-                              setEditPreviewImage(URL.createObjectURL(file));
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`edit-image-${item.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ display: "inline-block", cursor: "pointer", width: "100%", textAlign: "center", padding: "6px" }}
-                        >
-                          🖼️ Change Item Image
-                        </label>
-                      </div>
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
+                                <input className="form-input" value={editPrice} disabled={isSaving === item.id} onChange={(e) => setEditPrice(e.target.value)} type="number" />
+                              </div>
+                              
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
+                                <input className="form-input" style={{ borderColor: "#93c5fd" }} value={editCategory} disabled={isSaving === item.id} onChange={(e) => setEditCategory(e.target.value)} />
+                              </div>
 
-                      {editPreviewImage && (
-                        <div style={{ marginBottom: "12px" }}>
-                          <img
-                            src={editPreviewImage}
-                            alt="Preview"
-                            style={{
-                              width: "100%",
-                              height: "100px",
-                              objectFit: "cover",
-                              borderRadius: "6px",
-                            }}
-                          />
+                              <div className="form-group" style={{ marginBottom: "12px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
+                                <input className="form-input" value={editDescription} disabled={isSaving === item.id} onChange={(e) => setEditDescription(e.target.value)} />
+                              </div>
+
+                              <div className="form-group" style={{ marginBottom: "12px" }}>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  id={`edit-image-${item.id}`}
+                                  disabled={isSaving === item.id}
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    setEditSelectedFile(file);
+                                    if (file) setEditPreviewImage(URL.createObjectURL(file));
+                                  }}
+                                />
+                                <label htmlFor={`edit-image-${item.id}`} className="btn btn-secondary btn-sm" style={{ display: "inline-flex", width: "100%", gap: "6px" }}>
+                                  🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
+                                </label>
+                              </div>
+
+                              {editPreviewImage && (
+                                <div style={{ marginBottom: "12px" }}>
+                                  <img src={editPreviewImage} alt="Preview" style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }} />
+                                </div>
+                              )}
+
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  style={{ flex: 1 }}
+                                  disabled={isSaving === item.id}
+                                  onClick={async () => {
+                                    let imagePath = item.image;
+                                    setIsSaving(item.id);
+
+                                    if (editSelectedFile) {
+                                      try {
+                                        imagePath = await uploadDirectToCloudinary(editSelectedFile);
+                                      } catch (error) {
+                                        addNotification("❌ Image upload failed.", "error");
+                                        setIsSaving(null);
+                                        return;
+                                      }
+                                    }
+
+                                    const updatedItem = {
+                                      name: editName,
+                                      price: Number(editPrice),
+                                      description: editDescription,
+                                      category: editCategory.trim(), 
+                                      available: true,
+                                      image: imagePath,
+                                    };
+
+                                    try {
+                                      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu/${item.id}`, {
+                                        method: "PUT",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify(updatedItem),
+                                      }, "manager");
+
+                                      if (res.ok) {
+                                        setMenu((prev) => prev.map((m) => m.id === item.id ? { ...m, ...updatedItem, id: item.id } : m));
+                                        setEditingItem(null);
+                                        setEditSelectedFile(null);
+                                        setEditPreviewImage("");
+                                        addNotification("✨ Menu item updated successfully!");
+                                      }
+                                    } catch (error) {
+                                      console.error(error);
+                                    } finally {
+                                      setIsSaving(null);
+                                    }
+                                  }}
+                                >
+                                  {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
+                                </button>
+                                <button className="btn btn-secondary btn-sm" style={{ flex: 1 }} disabled={isSaving === item.id} onClick={() => { setEditingItem(null); setEditPreviewImage(""); }}>
+                                  ✕ Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          className="btn btn-success btn-sm"
-                          style={{ flex: 1 }}
-                          onClick={async () => {
-                            let imagePath = item.image;
-                            const finalizedCategory = editCategory.trim();
-
-                            if (editSelectedFile) {
-                              const formData = new FormData();
-                              formData.append("file", editSelectedFile);
-                              try {
-                                const uploadRes = await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                                  { method: "POST", body: formData },
-                                  "manager"
-                                );
-                                if (uploadRes.ok) {
-                                  const uploadData = await uploadRes.json();
-                                  imagePath = uploadData.image;
-                                }
-                              } catch (error) {
-                                console.error("Image upload failed:", error);
-                                return;
-                              }
-                            }
-
-                            const updatedItem = {
-                              name: editName,
-                              price: Number(editPrice),
-                              description: editDescription,
-                              category: finalizedCategory, 
-                              available: true,
-                              image: imagePath,
-                            };
-
-                            try {
-                              const res = await apiFetch(
-                                `${import.meta.env.VITE_API_URL}/menu/${item.id}`,
-                                {
-                                  method: "PUT",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify(updatedItem),
-                                },
-                                "manager"
-                              );
-
-                              if (res.ok) {
-                                const data = await res.json();
-                                
-                                // 🎯 FIX FOR CATEGORY NOT UPDATING STATE:
-                                // If the backend doesn't return the full updated item correctly,
-                                // we inject our local text string straight into the state array!
-                                setMenu((prev) =>
-                                  prev.map((m) => 
-                                    m.id === item.id 
-                                      ? { ...m, ...updatedItem, id: item.id } 
-                                      : m
-                                  )
-                                );
-
-                                setEditingItem(null);
-                                setEditSelectedFile(null);
-                                setEditPreviewImage("");
-                                addNotification("✨ Menu item updated successfully!");
-                              }
-                            } catch (error) {
-                              console.error("Failed to update item:", error);
-                              addNotification("❌ Update request failed.");
-                            }
-                          }}
-                        >
-                          ✅ Save
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{ flex: 1 }}
-                          onClick={() => {
-                            setEditingItem(null);
-                            setEditSelectedFile(null);
-                            setEditPreviewImage("");
-                          }}
-                        >
-                          ✕ Cancel
-                        </button>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                    ))}
+                  </div>
 
-        </div>
-      ));
-    })()}
-  </div>
-)}
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
 
         {/* ========== CREATE MENU PANEL ========== */}
@@ -2675,13 +2552,13 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                   style={{ display: "none" }}
                   id="file-input"
                 />
-                <label
-                  htmlFor="file-input"
-                  className="btn btn-secondary"
-                  style={{ display: "inline-block" }}
-                >
-                  🖼️ Choose Image
-                </label>
+        <label
+          htmlFor="file-input"
+          className="btn btn-secondary"
+          style={{ display: "inline-block", cursor: loading ? "not-allowed" : "pointer" }}
+        >
+          {loading ? "⏳ Uploading..." : "🖼️ Choose Image"}
+        </label>
               </div>
 
               {previewImage && (
@@ -2703,87 +2580,87 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                 </div>
               )}
 
-              <button
-                className="btn btn-success"
-                style={{ width: "100%" }}
-                onClick={async () => {
-                  // Resolve correct target category string text payload value string
-                  const finalizedCategory = isCustomCategory 
-                    ? customCategoryInput.trim() 
-                    : newItemCategory;
+      <button
+        className="btn btn-success"
+        style={{ width: "100%", opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
+        disabled={loading}
+        onClick={async () => {
+          const finalizedCategory = isCustomCategory 
+            ? customCategoryInput.trim() 
+            : newItemCategory;
 
-                  if (!finalizedCategory) {
-                    alert("Please select a category or write a brand new custom heading name!");
-                    return;
-                  }
+          if (!finalizedCategory) {
+            alert("Please select a category or write a brand new custom heading name!");
+            return;
+          }
 
-                  let imagePath = "";
+          if (!newItemName || !newItemPrice) {
+            alert("Item Name and Price are required fields!");
+            return;
+          }
 
-                  if (selectedFile) {
-                    const formData = new FormData();
-                    formData.append("file", selectedFile);
+          let imagePath = "";
+          setLoading(true);
 
-                    try {
-                      const uploadRes = await apiFetch(
-                        `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                        {
-                          method: "POST",
-                          body: formData,
-                        }, "manager"
-                      );
+          if (selectedFile) {
+            try {
+              imagePath = await uploadDirectToCloudinary(selectedFile);
+              console.log("⚡ Cloudinary Secure URL Acquired directly:", imagePath);
+            } catch (error) {
+              addNotification("❌ Image upload to storage provider failed.", "error");
+              setLoading(false);
+              return;
+            }
+          }
 
-                      if (uploadRes.ok) {
-                        const uploadData = await uploadRes.json();
-                        imagePath = uploadData.image;
-                      }
-                    } catch (error) {
-                      console.error("Image upload failed:", error);
-                      return;
-                    }
-                  }
+          const newItem = {
+            name: newItemName,
+            price: Number(newItemPrice),
+            description: newItemDescription,
+            category: finalizedCategory, 
+            image: imagePath,
+            available: true,
+          };
 
-                  const newItem = {
-                    name: newItemName,
-                    price: Number(newItemPrice),
-                    description: newItemDescription,
-                    category: finalizedCategory, // ✅ Sends custom or selected category string to backend
-                    image: imagePath,
-                    available: true,
-                  };
+          console.log("🚀 Submitting lightweight text data to DB:", newItem);
 
-                  try {
-                    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(newItem)
-                    }, "manager");
+          try {
+            const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newItem)
+            }, "manager");
 
-                    if (res.ok) {
-                      const data = await res.json();
-                      setMenu((prev) => [...prev, data]);
+            if (res.ok) {
+              const data = await res.json();
+              setMenu((prev) => [...prev, data]);
 
-                      // 🧼 Clear all fields and category reset toggles cleanly
-                      setNewItemName("");
-                      setNewItemPrice("");
-                      setNewItemDescription("");
-                      setNewItemCategory("");
-                      setCustomCategoryInput("");
-                      setIsCustomCategory(false);
-                      setSelectedFile(null);
-                      setPreviewImage("");
+              setNewItemName("");
+              setNewItemPrice("");
+              setNewItemDescription("");
+              setNewItemCategory("");
+              setCustomCategoryInput("");
+              setIsCustomCategory(false);
+              setSelectedFile(null);
+              setPreviewImage("");
 
-                      addNotification("✅ Item added successfully!", "success");
-                    }
-                  } catch (error) {
-                    console.error("Failed to add item:", error);
-                  }
-                }}
-              >
-                ✅ Add Item to Menu
-              </button>
-            </div>
-          </div>
-        )}
+              addNotification("✅ Item added successfully!", "success");
+            } else {
+              addNotification("❌ Database rejected item initialization request.", "error");
+            }
+          } catch (error) {
+            console.error("Failed to add item to DB context layer:", error);
+            addNotification("❌ Network layer communication crash.", "error");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        {loading ? "⏳ Syncing Cloud Pointers..." : "✅ Add Item to Menu"}
+      </button>
+    </div>
+  </div>
+)}
 
         
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
@@ -3624,7 +3501,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         type="email"
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
-        value={settings.email || ""} // Pulls email from your state tracking matrix
+        value={isLoadingSettings ? "Loading..." : (settings.email || "Not available")} // Pulls email from your state tracking matrix
         style={{ 
           background: "#f1f5f9", 
           cursor: "not-allowed", 
