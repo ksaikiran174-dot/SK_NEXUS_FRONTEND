@@ -124,7 +124,6 @@ function BillingManager() {
   const [cart, setCart] = useState([]);
   const [paymentMode, setPaymentMode] = useState("cash");
   const [showMenu, setShowMenu] = useState(false);
-  const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [selectedInfoItem, setSelectedInfoItem] = useState(null);
   const [filterToken, setFilterToken] = useState("");
