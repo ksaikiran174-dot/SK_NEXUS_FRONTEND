@@ -227,7 +227,10 @@ const handlePasswordInputChange = (e) => {
     gst_number: "",
     token_prefix: "TOK",
     // 🎯 Set initial states from localStorage dynamically!
-    enable_sound: prefs.enable_sound   
+    enable_sound: prefs.enable_sound,
+    subscription_expires: "",
+    payment_status: "",
+    email: ""     
   };
 });
 
@@ -771,6 +774,7 @@ useEffect(() => {
         mergedSettings = { ...mergedSettings, ...metadataData };
       }
       setSettings(prev => ({ ...prev, ...mergedSettings }));
+      setIsLoadingSettings(false);
 
       // 📥 5. Sync Active Business Day status
       if (activeDayRes?.ok) {
@@ -792,6 +796,7 @@ useEffect(() => {
       console.error("❌ Critical Dashboard Boot Failure:", error);
     } finally {
       setIsLoading(false);
+      setIsLoadingSettings(false);
     }
   };
 
@@ -2663,7 +2668,7 @@ return (
 
         
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
-        {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
+        {!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings && (
           <>
             <div className="main-header">
 
