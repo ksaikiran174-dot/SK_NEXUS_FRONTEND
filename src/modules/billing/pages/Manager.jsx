@@ -722,7 +722,7 @@ useEffect(() => {
         const menuData = await menuRes.json();
         if (Array.isArray(menuData)) {
           setMenu(menuData);
-          setMenuItems?.(menuData); // Safely sets alternative hook names if any
+          setMenu?.(menuData); // Safely sets alternative hook names if any
         }
       }
 
