@@ -755,7 +755,7 @@ useEffect(() => {
       }
 
       if (settingsRes.ok) {
-        const settingsData = await settingsRes.ok ? await settingsRes.json() : {};
+        const settingsData = settingsRes.ok ? await settingsRes.json() : {};
         setSettings(prev => ({ ...prev, ...settingsData }));
       }
 
@@ -1093,13 +1093,10 @@ const fetchTransactions =
 
     try {
 
-      const res =
-        await apiFetch(url, {}, "manager");
-
-      const data =
-        await res.json();
-
-      setTransactions(data);
+      const res = await apiFetch(url, {}, "manager");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data)) setTransactions(data);
 
     } catch (err) {
 
@@ -1530,26 +1527,6 @@ const fetchEmployees = async () => {
 };
 
 
-
-const runCountdownCalculation = (expiryDateString) => {
-  if (!expiryDateString) return;
-  
-  const totalTimeDiff = new Date(expiryDateString) - new Date();
-  
-  if (totalTimeDiff <= 0) {
-    setSubscriptionTimeLeft('Expired');
-    setIsExpiryCritical(true);
-    return;
-  }
-
-  const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-  const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
-
-  setIsExpiryCritical(remainingDays < 3);
-  setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
-};
-
-
 const submitPasswordChange = async (e) => {
   e.preventDefault();
 
@@ -1760,6 +1737,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchAnalytics();
             }}
           >
             <span className="sidebar-icon">📊</span>
@@ -2134,7 +2112,7 @@ return (
                 (menu || []).reduce((acc, item) => {
                   let cat = item.category ? item.category.trim() : "";
                   if (!cat) cat = "General Menu / Uncategorized";
-                  if (!acc[cat]) acc[acc[cat] = []];
+                  if (!acc[cat]) acc[cat] = [];
                   acc[cat].push(item);
                   return acc;
                 }, {})
@@ -2710,7 +2688,7 @@ return (
 
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
-        {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
+        {!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings && (
           <>
             <div className="main-header">
 
@@ -2890,8 +2868,7 @@ return (
                   <button
                     className="btn btn-success"
                     style={{ width: "100%" }}
-                    disabled={cart.length === 0}
-                    disabled={creatingOrder}
+                    disabled={cart.length === 0 || creatingOrder}
                     onClick={handleCreateOrder}
                   >
                     {
