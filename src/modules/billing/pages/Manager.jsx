@@ -1936,8 +1936,8 @@ return (
           </>
         )}
 
-      {/* ==========================================
-          💳 2. TRANSACTIONS PANEL (Instant Filter Mapping)
+ {/* ==========================================
+          💳 2. TRANSACTIONS PANEL (With Real-Time Client Filtering)
       ========================================== */}
       {showTransactions && (
         <div className="card">
@@ -1974,7 +1974,7 @@ return (
               {filterDate && (
                 <button 
                   className="date-reset-btn" 
-                  onClick={() => { setFilterDate(""); }} // ⚡ REMOVED extra API call trigger
+                  onClick={() => { setFilterDate(""); }} 
                   title="Reset Date"
                 >
                   ↺
@@ -1982,82 +1982,111 @@ return (
               )}
             </div>
             
-            {/* ⚡ NOTE: This Apply button will now cleanly filter the "orders" array stored in memory! */}
-            <button className="btn btn-primary" onClick={() => console.log("Filtering local state data vector pool...")}>
+            <button className="btn btn-primary" onClick={() => console.log("Filters applied successfully!")}>
               Apply
             </button>
           </div>
 
-          {/* Render target mapped rows straight from state memory */}
-          {(orders || []).map((txn) => (
-            <div
-              key={txn.id}
-              className={`transaction-item ${txn.status === "rejected" ? "rejected-order" : ""}`}
-            >
-              <div className="transaction-header">
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <span className="transaction-token">Token #{txn.token_id}</span>
-                  <span style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    color: "#4f46e5",
-                    background: "#eff6ff",
-                    padding: "2px 8px",
-                    borderRadius: "6px",
-                    width: "fit-content",
-                    border: "1px solid #bfdbfe"
-                  }}>
-                    🔄 Cycle #{txn.cycle_number || "N/A"}
-                  </span>
+          {/* Render target mapped rows with live state processing */}
+          {(() => {
+            // Apply filtering rules instantly to the loaded orders array
+            const filteredOrders = (orders || []).filter((txn) => {
+              // 1. Filter by Token ID if typed
+              if (filterToken && !txn.token_id?.toString().includes(filterToken)) {
+                return false;
+              }
+              // 2. Filter by Payment Mode selection
+              if (filterPayment && txn.payment_mode?.toLowerCase() !== filterPayment.toLowerCase()) {
+                return false;
+              }
+              // 3. Filter by Date matching (YYYY-MM-DD format check)
+              if (filterDate) {
+                const orderDateString = new Date(txn.created_at).toISOString().split('T')[0];
+                if (orderDateString !== filterDate) return false;
+              }
+              return true;
+            });
+
+            // If no records match the criteria, show a clean message
+            if (filteredOrders.length === 0) {
+              return (
+                <p style={{ color: "var(--text-secondary)", padding: "20px 0", textAlign: "center" }}>
+                  No previous transactions match your current filters.
+                </p>
+              );
+            }
+
+            // Map out the verified matching records
+            return filteredOrders.map((txn) => (
+              <div
+                key={txn.id}
+                className={`transaction-item ${txn.status === "rejected" ? "rejected-order" : ""}`}
+              >
+                <div className="transaction-header">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span className="transaction-token">Token #{txn.token_id}</span>
+                    <span style={{
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      color: "#4f46e5",
+                      background: "#eff6ff",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      width: "fit-content",
+                      border: "1px solid #bfdbfe"
+                    }}>
+                      🔄 Cycle #{txn.cycle_number || "N/A"}
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <span className={`status-badge ${txn.status}`}>{txn.status}</span>
+                    <span className={`transaction-payment ${txn.payment_mode}`}>
+                      {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"} {txn.payment_mode?.toUpperCase()}
+                    </span>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  <span className={`status-badge ${txn.status}`}>{txn.status}</span>
-                  <span className={`transaction-payment ${txn.payment_mode}`}>
-                    {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"} {txn.payment_mode?.toUpperCase()}
-                  </span>
+                <div className="transaction-details">
+                  <div className="transaction-detail-row">
+                    <div className="transaction-detail-label">Items</div>
+                    <div className="transaction-detail-value">
+                      {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
+                    </div>
+                  </div>
+
+                  <div className="transaction-detail-row">
+                    <div className="transaction-detail-label">Total Amount</div>
+                    <div
+                      className="transaction-detail-value"
+                      style={{
+                        color: txn.status === "rejected" ? "#dc2626" : "inherit",
+                        textDecoration: txn.status === "rejected" ? "line-through" : "none",
+                        fontWeight: "700"
+                      }}
+                    >
+                      ₹{txn.total_price}
+                    </div>
+                  </div>
+
+                  <div className="transaction-detail-row">
+                    <div className="transaction-detail-label">Order Time</div>
+                    <div className="transaction-detail-value">
+                      {new Date(txn.created_at).toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase()}
+                      {" • "}
+                      {new Date(txn.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
+                    <button className="btn btn-primary btn-sm" style={{ width: "100%", fontSize: "13px" }} onClick={() => downloadReceipt(txn)}>
+                      📥 Download Receipt
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="transaction-details">
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Items</div>
-                  <div className="transaction-detail-value">
-                    {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
-                  </div>
-                </div>
-
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Total Amount</div>
-                  <div
-                    className="transaction-detail-value"
-                    style={{
-                      color: txn.status === "rejected" ? "#dc2626" : "inherit",
-                      textDecoration: txn.status === "rejected" ? "line-through" : "none",
-                      fontWeight: "700"
-                    }}
-                  >
-                    ₹{txn.total_price}
-                  </div>
-                </div>
-
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Order Time</div>
-                  <div className="transaction-detail-value">
-                    {new Date(txn.created_at).toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase()}
-                    {" • "}
-                    {new Date(txn.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
-                  <button className="btn btn-primary btn-sm" style={{ width: "100%", fontSize: "13px" }} onClick={() => downloadReceipt(txn)}>
-                    📥 Download Receipt
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            ));
+          })()}
 
           <div style={{ marginTop: "20px" }}>
             <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
@@ -2066,6 +2095,7 @@ return (
           </div>
         </div>
       )}
+      
 
 {/* ==========================================
             ✏️ 3. MANAGE MENU PANEL
