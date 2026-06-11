@@ -1710,7 +1710,8 @@ return (
           <h1>{settings?.restaurant_name || "Restaurant"} Manager</h1>
         </div>
 
-        <nav className="sidebar-nav">
+<nav className="sidebar-nav">
+          {/* ========== ORDERS TAB ========== */}
           <div
             className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
             onClick={() => {
@@ -1727,9 +1728,12 @@ return (
             <span>Orders</span>
           </div>
 
+          {/* ========== ANALYTICS TAB ========== */}
           <div
             className={`sidebar-link ${analytics ? 'active' : ''}`}
-            onClick={async () => {
+            onClick={() => {
+              // ⚡ FIXED: Removed 'async' and properly set analytics to truthy value
+              setAnalytics(true); 
               setShowTransactions(false);
               setSummary(null);
               setShowManageMenu(false);
@@ -1742,9 +1746,11 @@ return (
             <span>Analytics</span>
           </div>
 
+          {/* ========== TRANSACTIONS TAB ========== */}
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
-            onClick={async () => {
+            onClick={() => {
+              // ⚡ FIXED: Removed 'async' to completely seal off preflight channels
               setShowTransactions(true);
               setSummary(null);
               setAnalytics(null);
@@ -1758,9 +1764,12 @@ return (
             <span>Transactions</span>
           </div>
 
+          {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
             className={`sidebar-link ${summary ? 'active' : ''}`}
-            onClick={async () => {   
+            onClick={() => {
+              // ⚡ FIXED: Force true/object assignment so view mount mounts properly
+              setSummary(true); 
               setShowTransactions(false);
               setAnalytics(null);
               setShowManageMenu(false);
@@ -1773,6 +1782,7 @@ return (
             <span>Today's Summary</span>
           </div>
 
+          {/* ========== MANAGE MENU TAB ========== */}
           <div
             className={`sidebar-link ${showManageMenu ? 'active' : ''}`}
             onClick={() => {
@@ -1789,6 +1799,7 @@ return (
             <span>Manage Menu</span>
           </div>
 
+          {/* ========== ADD MENU ITEM TAB ========== */}
           <div
             className={`sidebar-link ${showCreateMenu ? 'active' : ''}`}
             onClick={() => {
@@ -1805,7 +1816,7 @@ return (
             <span>Add Menu Item</span>
           </div>
 
-          {/* Dedicated Subscription Tab */}
+          {/* ========== SUBSCRIPTION TAB ========== */}
           <div
             className={`sidebar-link ${showSubscription ? 'active' : ''}`}
             onClick={() => {
@@ -1822,6 +1833,7 @@ return (
             <span>Subscription</span>
           </div>
 
+          {/* ========== SETTINGS TAB ========== */}
           <div
             className={`sidebar-link ${showSettings ? 'active' : ''}`}
             onClick={() => {
