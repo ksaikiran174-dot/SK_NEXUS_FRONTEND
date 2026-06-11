@@ -284,7 +284,7 @@ const getWaitingTime = (
     new Date(createdAt);
 
   if (
-    isNaN(created.getTime())        //hello
+    isNaN(created.getTime())       
   ) {
     return "Unknown";
   }
@@ -766,7 +766,8 @@ useEffect(() => {
 
       if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
-        setSummary(summaryData); // Saved into a dedicated data holder variable!
+        setSummary(summaryData);
+        setAnalytics(summaryData) // Saved into a dedicated data holder variable!
       }
 
     } catch (error) {
@@ -2357,7 +2358,7 @@ return (
         transition={{ duration: 0.4 }}
       >
         <div className="stat-label">💰 Total Sales</div>
-        <div className="stat-value">₹{analytics.total_sales}</div>
+        <div className="stat-value">₹{analytics.total_sales || analytics.total_revenue || 0}</div>
       </motion.div>
 
       <motion.div
@@ -2367,7 +2368,7 @@ return (
         transition={{ duration: 0.5 }}
       >
         <div className="stat-label">📦 Total Orders</div>
-        <div className="stat-value">{analytics.total_orders}</div>
+        <div className="stat-value">{analytics.total_orders || analytics.completed_orders || 0}</div>
       </motion.div>
 
       <motion.div
