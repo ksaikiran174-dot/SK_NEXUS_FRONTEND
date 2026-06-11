@@ -758,6 +758,7 @@ useEffect(() => {
       if (settingsRes.ok) {
         const settingsData = settingsRes.ok ? await settingsRes.json() : {};
         setSettings(prev => ({ ...prev, ...settingsData }));
+        setIsLoadingSettings(false); 
       }
 
       if (activeDayRes.ok) {
@@ -775,6 +776,7 @@ useEffect(() => {
       console.error("❌ Critical Dashboard Boot Failure:", error);
     } finally {
       setIsLoading(false);
+      setIsLoadingSettings(false);
     }
   };
 
