@@ -1730,7 +1730,6 @@ return (
           <div
             className={`sidebar-link ${analytics ? 'active' : ''}`}
             onClick={async () => {
-              await fetchAnalytics();
               setShowTransactions(false);
               setSummary(null);
               setShowManageMenu(false);
@@ -1746,7 +1745,6 @@ return (
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
             onClick={async () => {
-              await fetchTransactions();
               setShowTransactions(true);
               setSummary(null);
               setAnalytics(null);
@@ -1762,10 +1760,7 @@ return (
 
           <div
             className={`sidebar-link ${summary ? 'active' : ''}`}
-            onClick={async () => {
-              const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
-              const data = await res.json();
-              setSummary(data);
+            onClick={async () => {   
               setShowTransactions(false);
               setAnalytics(null);
               setShowManageMenu(false);
