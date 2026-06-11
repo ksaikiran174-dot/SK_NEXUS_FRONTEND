@@ -1693,9 +1693,10 @@ const handleTabChange = (tabName) => {
 // Automatically extracts unique category values from current menu data array strings
 const existingCategories = [...new Set(menu.map(item => item.category).filter(Boolean))];
 
-  return (
-    <div className="manager-container">
-      {/* ========== SIDEBAR ========== */}
+return (
+    <div className="manager-container manager-dashboard-layout">
+      
+      {/* ========== SIDEBAR (Left Panel) ========== */}
       <aside className="manager-sidebar">
         <div className="sidebar-header">
           {settings?.logo_url ? (
@@ -1707,7 +1708,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
           ) : (
             <span className="sidebar-icon">🍽️</span>
           )}
-          <h1>{settings.restaurant_name || "Restaurant"} Manager</h1>
+          <h1>{settings?.restaurant_name || "Restaurant"} Manager</h1>
         </div>
 
         <nav className="sidebar-nav">
@@ -1810,23 +1811,22 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             <span>Add Menu Item</span>
           </div>
 
-          {/* 2. NEW Dedicated Subscription Tab */}
-  <div
-    className={`sidebar-link ${showSubscription ? 'active' : ''}`}
-    onClick={() => {
-      setShowSubscription(true);
-      setShowSettings(false);
-      setShowCreateMenu(false);
-      setShowManageMenu(false);
-      setShowTransactions(false);
-      setAnalytics(null);
-      setSummary(null);
-
-    }}
-  >
-    <span className="sidebar-icon">⏳</span>
-    <span>Subscription</span>
-  </div>
+          {/* Dedicated Subscription Tab */}
+          <div
+            className={`sidebar-link ${showSubscription ? 'active' : ''}`}
+            onClick={() => {
+              setShowSubscription(true);
+              setShowSettings(false);
+              setShowCreateMenu(false);
+              setShowManageMenu(false);
+              setShowTransactions(false);
+              setAnalytics(null);
+              setSummary(null);
+            }}
+          >
+            <span className="sidebar-icon">⏳</span>
+            <span>Subscription</span>
+          </div>
 
           <div
             className={`sidebar-link ${showSettings ? 'active' : ''}`}
@@ -1865,8 +1865,421 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         </div>
       </aside>
 
-      {/* ========== MAIN CONTENT ========== */}
-      <main className="manager-main">
+      {/* ========== MAIN CONTENT WINDOW (Right Panel) ========== */}
+      <main className="manager-main content-display-window">
+        {/* ==========================================
+            📊 1. SUMMARY PANEL (Instant Load Condition)
+        ========================================== */}
+        {summary && (
+          <>
+            {/* BUSINESS STATUS CARD */}
+            <div className="status-card">
+              <h3>Day Status</h3>
+              {businessDay && businessDay.cycle_number ? (
+                <p className="text-green-500 font-bold">
+                  Business day {businessDay.cycle_number} Active ✅
+                </p>
+              ) : (
+                <p className="text-red-500 font-bold">
+                  Business Day Inactive ❌
+                </p>
+              )}
+            </div>
+
+            {/* SUMMARY ITEMS LEDGER */}
+            <div className="summary-panel">
+              <h2 className="summary-header">📊 Today's Summary</h2>
+              
+              <div className="summary-items">
+                <div className="summary-item">
+                  <div className="summary-item-label">Total Revenue</div>
+                  <div className="summary-item-value">
+                    ₹{businessDay && businessDay.cycle_number ? (summary.total_sales || 0) : 0}
+                  </div>
+                </div>
+
+                <div className="summary-item">
+                  <div className="summary-item-label">Cash Received</div>
+                  <div className="summary-item-value">
+                    ₹{businessDay && businessDay.cycle_number ? (summary.cash_sales || 0) : 0}
+                  </div>
+                </div>
+
+                <div className="summary-item">
+                  <div className="summary-item-label">Online Payments</div>
+                  <div className="summary-item-value">
+                    ₹{businessDay && businessDay.cycle_number ? (summary.online_sales || 0) : 0}
+                  </div>
+                </div>
+
+                <div className="summary-item">
+                  <div className="summary-item-label">Total Orders</div>
+                  <div className="summary-item-value">
+                    {businessDay && businessDay.cycle_number ? (summary.completed_orders || 0) : 0}
+                  </div>
+                </div>
+              </div>
+
+              {/* ACTION BUTTONS */}
+              <div className="summary-actions">
+                {!(businessDay && businessDay.cycle_number) ? (
+                  <button className="btn btn-success" onClick={handleStartDay}>
+                    ▶ Start Today
+                  </button>
+                ) : (
+                  <button className="btn btn-danger" onClick={handleCloseDay}>
+                    🔒 Close Today Sales
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+      {/* ==========================================
+          💳 2. TRANSACTIONS PANEL (Instant Filter Mapping)
+      ========================================== */}
+      {showTransactions && (
+        <div className="card">
+          <div className="card-header">
+            <h2>💳 Previous Transactions</h2>
+          </div>
+
+          <div className="filter-group">
+            <input
+              className="form-input"
+              placeholder="🔍 Search Token ID..."
+              value={filterToken}
+              onChange={(e) => setFilterToken(e.target.value)}
+            />
+            <select 
+              className="form-select"
+              value={filterPayment} 
+              onChange={(e) => setFilterPayment(e.target.value)}
+            >
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+            </select>
+
+            {/* Date Picker Wrapper */}
+            <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input 
+                className="form-input"
+                type="date" 
+                value={filterDate} 
+                onChange={(e) => setFilterDate(e.target.value)} 
+                style={{ paddingRight: filterDate ? '30px' : '10px' }}
+              />
+              {filterDate && (
+                <button 
+                  className="date-reset-btn" 
+                  onClick={() => { setFilterDate(""); }} // ⚡ REMOVED extra API call trigger
+                  title="Reset Date"
+                >
+                  ↺
+                </button>
+              )}
+            </div>
+            
+            {/* ⚡ NOTE: This Apply button will now cleanly filter the "orders" array stored in memory! */}
+            <button className="btn btn-primary" onClick={() => console.log("Filtering local state data vector pool...")}>
+              Apply
+            </button>
+          </div>
+
+          {/* Render target mapped rows straight from state memory */}
+          {(orders || []).map((txn) => (
+            <div
+              key={txn.id}
+              className={`transaction-item ${txn.status === "rejected" ? "rejected-order" : ""}`}
+            >
+              <div className="transaction-header">
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <span className="transaction-token">Token #{txn.token_id}</span>
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#4f46e5",
+                    background: "#eff6ff",
+                    padding: "2px 8px",
+                    borderRadius: "6px",
+                    width: "fit-content",
+                    border: "1px solid #bfdbfe"
+                  }}>
+                    🔄 Cycle #{txn.cycle_number || "N/A"}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span className={`status-badge ${txn.status}`}>{txn.status}</span>
+                  <span className={`transaction-payment ${txn.payment_mode}`}>
+                    {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"} {txn.payment_mode?.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="transaction-details">
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Items</div>
+                  <div className="transaction-detail-value">
+                    {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Total Amount</div>
+                  <div
+                    className="transaction-detail-value"
+                    style={{
+                      color: txn.status === "rejected" ? "#dc2626" : "inherit",
+                      textDecoration: txn.status === "rejected" ? "line-through" : "none",
+                      fontWeight: "700"
+                    }}
+                  >
+                    ₹{txn.total_price}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Order Time</div>
+                  <div className="transaction-detail-value">
+                    {new Date(txn.created_at).toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase()}
+                    {" • "}
+                    {new Date(txn.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
+                  <button className="btn btn-primary btn-sm" style={{ width: "100%", fontSize: "13px" }} onClick={() => downloadReceipt(txn)}>
+                    📥 Download Receipt
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: "20px" }}>
+            <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
+              📥 Download Transactions PDF
+            </button>
+          </div>
+        </div>
+      )}
+
+{/* ==========================================
+            ✏️ 3. MANAGE MENU PANEL
+        ========================================== */}
+        {showManageMenu && (
+          <div>
+            <div className="main-header">
+              <h1>✏️ Manage Menu Items</h1>
+            </div>
+
+            {/* Empty State Guard */}
+            {(!menu || menu.length === 0) ? (
+              <p style={{ color: "var(--text-secondary)" }}>
+                No items found in your menu ledger.
+              </p>
+            ) : (
+              /* Grouping logic executed inline cleanly via Object.entries */
+              Object.entries(
+                (menu || []).reduce((acc, item) => {
+                  let cat = item.category ? item.category.trim() : "";
+                  if (!cat) cat = "General Menu / Uncategorized";
+                  if (!acc[cat]) acc[acc[cat] = []];
+                  acc[cat].push(item);
+                  return acc;
+                }, {})
+              ).map(([categoryName, itemsList]) => (
+                <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
+                  
+                  {/* Category Header Banner */}
+                  <h2 style={{
+                    fontSize: "22px",
+                    fontWeight: "700",
+                    color: "var(--text-primary, #1e293b)",
+                    borderBottom: "2px solid var(--border-color, #e2e8f0)",
+                    paddingBottom: "8px",
+                    marginBottom: "20px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px"
+                  }}>
+                    📁 {categoryName} 
+                    <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
+                      ({itemsList.length} items)
+                    </span>
+                  </h2> 
+
+                  {/* Menu Items Grid */}
+                  <div className="grid grid-3">
+                    {itemsList.map((item) => (
+                      <div key={item.id} className="menu-item">
+                        <img
+                          src={`${item.image}`}
+                          alt={item.name}
+                          className="menu-item-image"
+                          onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=No+Image"; }}
+                        />
+                        
+                        <div className="menu-item-content">
+                          <h3 className="menu-item-name">{item.name}</h3>
+                          <p className="menu-item-price">₹{item.price}</p>
+                          <p className="menu-item-description">{item.description}</p>
+                          
+                          <span style={{
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            backgroundColor: "#f1f5f9",
+                            borderRadius: "4px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "#475569",
+                            marginBottom: "12px"
+                          }}>
+                            🏷️ {item.category || "Uncategorized"}
+                          </span>
+
+                          {/* Standard View Actions */}
+                          {editingItem !== item.id && (
+                            <div className="menu-item-actions">
+                              <button
+                                className="btn btn-primary btn-sm"
+                                disabled={isSaving !== null}
+                                onClick={() => {
+                                  setEditingItem(item.id);
+                                  setEditName(item.name);
+                                  setEditPrice(item.price);
+                                  setEditDescription(item.description);
+                                  setEditImage(item.image);
+                                  setEditCategory(item.category || "");
+                                }}
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => { /* Delete handler */ }}>
+                                🗑️ Delete
+                              </button>
+                            </div>
+                          )}
+
+                          {/* ========== EDIT INLINE CONTAINER BLOCK ========== */}
+                          {editingItem === item.id && (
+                            <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
+                                <input className="form-input" value={editName} disabled={isSaving === item.id} onChange={(e) => setEditName(e.target.value)} />
+                              </div>
+
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
+                                <input className="form-input" value={editPrice} disabled={isSaving === item.id} onChange={(e) => setEditPrice(e.target.value)} type="number" />
+                              </div>
+                              
+                              <div className="form-group" style={{ marginBottom: "10px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
+                                <input className="form-input" style={{ borderColor: "#93c5fd" }} value={editCategory} disabled={isSaving === item.id} onChange={(e) => setEditCategory(e.target.value)} />
+                              </div>
+
+                              <div className="form-group" style={{ marginBottom: "12px" }}>
+                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
+                                <input className="form-input" value={editDescription} disabled={isSaving === item.id} onChange={(e) => setEditDescription(e.target.value)} />
+                              </div>
+
+                              <div className="form-group" style={{ marginBottom: "12px" }}>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  id={`edit-image-${item.id}`}
+                                  disabled={isSaving === item.id}
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    setEditSelectedFile(file);
+                                    if (file) setEditPreviewImage(URL.createObjectURL(file));
+                                  }}
+                                />
+                                <label htmlFor={`edit-image-${item.id}`} className="btn btn-secondary btn-sm" style={{ display: "inline-flex", width: "100%", gap: "6px" }}>
+                                  🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
+                                </label>
+                              </div>
+
+                              {editPreviewImage && (
+                                <div style={{ marginBottom: "12px" }}>
+                                  <img src={editPreviewImage} alt="Preview" style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }} />
+                                </div>
+                              )}
+
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  style={{ flex: 1 }}
+                                  disabled={isSaving === item.id}
+                                  onClick={async () => {
+                                    let imagePath = item.image;
+                                    setIsSaving(item.id);
+
+                                    if (editSelectedFile) {
+                                      try {
+                                        imagePath = await uploadDirectToCloudinary(editSelectedFile);
+                                      } catch (error) {
+                                        addNotification("❌ Image upload failed.", "error");
+                                        setIsSaving(null);
+                                        return;
+                                      }
+                                    }
+
+                                    const updatedItem = {
+                                      name: editName,
+                                      price: Number(editPrice),
+                                      description: editDescription,
+                                      category: editCategory.trim(), 
+                                      available: true,
+                                      image: imagePath,
+                                    };
+
+                                    try {
+                                      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu/${item.id}`, {
+                                        method: "PUT",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify(updatedItem),
+                                      }, "manager");
+
+                                      if (res.ok) {
+                                        setMenu((prev) => prev.map((m) => m.id === item.id ? { ...m, ...updatedItem, id: item.id } : m));
+                                        setEditingItem(null);
+                                        setEditSelectedFile(null);
+                                        setEditPreviewImage("");
+                                        addNotification("✨ Menu item updated successfully!");
+                                      }
+                                    } catch (error) {
+                                      console.error(error);
+                                    } finally {
+                                      setIsSaving(null);
+                                    }
+                                  }}
+                                >
+                                  {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
+                                </button>
+                                <button className="btn btn-secondary btn-sm" style={{ flex: 1 }} disabled={isSaving === item.id} onClick={() => { setEditingItem(null); setEditPreviewImage(""); }}>
+                                  ✕ Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
 {/* ========== ANALYTICS PANEL ========== */}
 {analytics && (
@@ -1975,7 +2388,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         </ResponsiveContainer>
       </div>
 
-      {/* Rush Hour Box wrapper remains untouched or can be used elsewhere */}
+      {/* Rush Hour Box wrapper remains untouched */}
       <div className="chart-container" style={{ background: '#ffffff', padding: '15px', borderRadius: '8px' }}>
         <h3 className="chart-title">Rush Hour Analytics</h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -1991,556 +2404,9 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     </div>
   </div>
 )}
-        {/* ========== TRANSACTIONS PANEL ========== */}
-        {showTransactions && (
-          <div className="card">
-            <div className="card-header">
-              <h2>💳 Previous Transactions</h2>
-            </div>
 
-            <div className="filter-group">
-              <input
-                className="form-input"
-                placeholder="🔍 Search Token ID..."
-                value={filterToken}
-                onChange={(e) => setFilterToken(e.target.value)}
-              />
-              <select 
-                className="form-select"
-                value={filterPayment} 
-                onChange={(e) => setFilterPayment(e.target.value)}
-              >
-                <option value="">All Payment Methods</option>
-                <option value="cash">Cash</option>
-                <option value="online">Online</option>
-              </select>
-              {/* NEW: Date Wrapper */}
-  <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-    <input 
-      className="form-input"
-      type="date" 
-      value={filterDate} 
-      onChange={(e) => setFilterDate(e.target.value)} 
-      style={{ paddingRight: filterDate ? '30px' : '10px' }} // Make space for the arrow if date is picked
-    />
-    {filterDate && (
-      <button 
-        className="date-reset-btn" 
-        onClick={() => { setFilterDate(""); fetchTransactions(); }}
-        title="Reset Date"
-      >
-        ↺
-      </button>
-    )}
-  </div>
-              <button className="btn btn-primary" onClick={fetchTransactions}>
-                Apply
-              </button>
-            </div>
 
-            {transactions.map((txn) => (
-  <div
-    key={txn.id}
-    className={`transaction-item ${
-      txn.status === "rejected"
-        ? "rejected-order"
-        : ""
-    }`}
-  >
-    <div className="transaction-header">
-      {/* HEADER LEFT SIDE: TOKEN & CYCLE ID */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <span className="transaction-token">
-          Token #{txn.token_id}
-        </span>
-        
-        {/* 🚀 NEW BADGE: BUSINESS DAY CYCLE NUMBER */}
-        <span 
-          style={{
-            fontSize: "11px",
-            fontWeight: "700",
-            color: "#4f46e5", // Indigo theme color
-            background: "#eff6ff",
-            padding: "2px 8px",
-            borderRadius: "6px",
-            width: "fit-content",
-            border: "1px solid #bfdbfe"
-          }}
-        >
-          🔄 Cycle #{txn.cycle_number || "N/A"}
-        </span>
-      </div>
 
-      {/* HEADER RIGHT SIDE: STATUS & PAYMENT */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center"
-        }}
-      >
-        <span
-          className={`status-badge ${
-            txn.status
-          }`}
-        >
-          {txn.status}
-        </span>
-
-        <span
-          className={`transaction-payment ${txn.payment_mode}`}
-        >
-          {txn.payment_mode?.toLowerCase() === "cash"
-            ? "💵"
-            : "💳"}{" "}
-          {txn.payment_mode?.toUpperCase()}
-        </span>
-      </div>
-    </div>
-
-    <div className="transaction-details">
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Items
-        </div>
-        <div className="transaction-detail-value">
-          {txn.items
-            .map(
-              (i) =>
-                `${i.name} x${i.quantity}`
-            )
-            .join(", ")}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Total Amount
-        </div>
-        <div
-          className="transaction-detail-value"
-          style={{
-            color:
-              txn.status === "rejected"
-                ? "#dc2626"
-                : "inherit",
-            textDecoration:
-              txn.status === "rejected"
-                ? "line-through"
-                : "none",
-            fontWeight: "700"
-          }}
-        >
-          ₹{txn.total_price}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Order Time
-        </div>
-        <div className="transaction-detail-value">
-          {new Date(
-            txn.created_at
-          ).toLocaleTimeString(
-            "en-GB",
-            {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }
-          ).toLowerCase()}
-          {" • "}
-          {new Date(
-            txn.created_at
-          ).toLocaleDateString(
-            "en-GB",
-            {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            }
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
-        <button
-          className="btn btn-primary btn-sm"
-          style={{ width: "100%", fontSize: "13px" }}
-          onClick={() => downloadReceipt(txn)}
-        >
-          📥 Download Receipt
-        </button>
-      </div>
-    </div>
-  </div>
-))}
-
-            <div style={{ marginTop: "20px" }}>
-              <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
-                📥 Download Transactions PDF
-              </button>
-            </div>
-              </div>
-            )}
-
-      
-{/* ========== SUMMARY PANEL ========== */}
-{summary && (
-  <>
-    {/* BUSINESS STATUS CARD */}
-    <div className="status-card">
-      <h3>Day Status</h3>
-      {businessDay && businessDay.cycle_number ? (
-        <p className="text-green-500 font-bold">
-          Business day {businessDay.cycle_number} Active ✅
-        </p>
-      ) : (
-        <p className="text-red-500 font-bold">
-          Business Day Inactive ❌
-        </p>
-      )}
-    </div>
-
-    {/* SUMMARY PANEL */}
-    <div className="summary-panel">
-      <h2 className="summary-header">
-        📊 Today's Summary
-      </h2>
-      
-      <div className="summary-items">
-        <div className="summary-item">
-          <div className="summary-item-label">Total Revenue</div>
-          <div className="summary-item-value">
-            ₹{businessDay && businessDay.cycle_number ? (summary.total_sales || 0) : 0}
-          </div>
-        </div>
-
-        <div className="summary-item">
-          <div className="summary-item-label">Cash Received</div>
-          <div className="summary-item-value">
-            ₹{businessDay && businessDay.cycle_number ? (summary.cash_sales || 0) : 0}
-          </div>
-        </div>
-
-        <div className="summary-item">
-          <div className="summary-item-label">Online Payments</div>
-          <div className="summary-item-value">
-            ₹{businessDay && businessDay.cycle_number ? (summary.online_sales || 0) : 0}
-          </div>
-        </div>
-
-        <div className="summary-item">
-          <div className="summary-item-label">Total Orders</div>
-          <div className="summary-item-value">
-            {businessDay && businessDay.cycle_number ? (summary.completed_orders || 0) : 0}
-          </div>
-        </div>
-      </div>
-
-      {/* ACTION BUTTONS */}
-      <div className="summary-actions">
-        {!(businessDay && businessDay.cycle_number) ? (
-          <button
-            className="btn btn-success"
-            onClick={handleStartDay}
-          >
-            ▶ Start Today
-          </button>
-        ) : (
-          <button
-            className="btn btn-danger"
-            onClick={handleCloseDay} // 🎯 Make sure this function sets businessDay to null!
-          >
-            🔒 Close Today Sales
-          </button>
-        )}
-      </div>
-    </div>
-  </>
-)}
-
-{/* ========== MANAGE MENU PANEL ========== */}
-{showManageMenu && (
-  <div>
-    <div className="main-header">
-      <h1>✏️ Manage Menu Items</h1>
-    </div>
-
-    {(() => {
-      const groupedItems = menu.reduce((acc, item) => {
-        let cat = item.category ? item.category.trim() : "";
-        if (!cat) cat = "General Menu / Uncategorized";
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(item);
-        return acc;
-      }, {});
-
-      if (menu.length === 0) {
-        return <p style={{ color: "var(--text-secondary)" }}>No items found in your menu ledger.</p>;
-      }
-
-      return Object.keys(groupedItems).map((categoryName) => (
-        <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
-          
-          <h2 style={{
-            fontSize: "22px",
-            fontWeight: "700",
-            color: "var(--text-primary, #1e293b)",
-            borderBottom: "2px solid var(--border-color, #e2e8f0)",
-            paddingBottom: "8px",
-            marginBottom: "20px",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px"
-          }}>
-            📁 {categoryName} 
-            <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
-              ({groupedItems[categoryName].length} items)
-            </span>
-          </h2> 
-
-          <div className="grid grid-3">
-            {groupedItems[categoryName].map((item) => (
-              <div key={item.id} className="menu-item">
-                <img
-                  src={`${item.image}`}
-                  alt={item.name}
-                  className="menu-item-image"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/200?text=No+Image";
-                  }}
-                />
-                <div className="menu-item-content">
-                  <h3 className="menu-item-name">{item.name}</h3>
-                  <p className="menu-item-price">₹{item.price}</p>
-                  <p className="menu-item-description">{item.description}</p>
-                  
-                  <span style={{
-                    display: "inline-block",
-                    padding: "3px 8px",
-                    backgroundColor: "#f1f5f9",
-                    borderRadius: "4px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    color: "#475569",
-                    marginBottom: "12px"
-                  }}>
-                    🏷️ {item.category || "Uncategorized"}
-                  </span>
-
-                  {editingItem !== item.id && (
-                    <div className="menu-item-actions">
-                      <button
-                        className="btn btn-primary btn-sm"
-                        disabled={isSaving !== null} // Disable other actions while saving any row
-                        onClick={() => {
-                          setEditingItem(item.id);
-                          setEditName(item.name);
-                          setEditPrice(item.price);
-                          setEditDescription(item.description);
-                          setEditImage(item.image);
-                          setEditCategory(item.category || "");
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        disabled={isSaving !== null}
-                        onClick={() => {
-                          // ... Keep your delete modal block intact
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
-
-                  {editingItem === item.id && (
-                    <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
-                      
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
-                        <input
-                          className="form-input"
-                          value={editName}
-                          disabled={isSaving === item.id} // Freeze input fields while processing
-                          onChange={(e) => setEditName(e.target.value)}
-                          placeholder="Item Name"
-                        />
-                      </div>
-
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
-                        <input
-                          className="form-input"
-                          value={editPrice}
-                          disabled={isSaving === item.id}
-                          onChange={(e) => setEditPrice(e.target.value)}
-                          placeholder="Price"
-                          type="number"
-                        />
-                      </div>
-                      
-                      <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
-                        <input
-                          className="form-input"
-                          style={{ borderColor: "#93c5fd" }}
-                          value={editCategory}
-                          disabled={isSaving === item.id}
-                          onChange={(e) => setEditCategory(e.target.value)}
-                          placeholder="e.g., Starters, Beverages, Desserts"
-                        />
-                      </div>
-
-                      <div className="form-group" style={{ marginBottom: "12px" }}>
-                        <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
-                        <input
-                          className="form-input"
-                          value={editDescription}
-                          disabled={isSaving === item.id}
-                          onChange={(e) => setEditDescription(e.target.value)}
-                          placeholder="Description"
-                        />
-                      </div>
-
-                      <div className="form-group" style={{ marginBottom: "12px" }}>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          id={`edit-image-${item.id}`}
-                          disabled={isSaving === item.id}
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            setEditSelectedFile(file);
-                            if (file) {
-                              setEditPreviewImage(URL.createObjectURL(file));
-                            }
-                          }}
-                        />
-                        <label
-                          htmlFor={`edit-image-${item.id}`}
-                          className="btn btn-secondary btn-sm"
-                          style={{ 
-                            display: "inline-flex", 
-                            cursor: isSaving === item.id ? "not-allowed" : "pointer", 
-                            width: "100%", 
-                            textAlign: "center", 
-                            padding: "6px", 
-                            gap: "6px",
-                            opacity: isSaving === item.id ? 0.6 : 1
-                          }}
-                        >
-                          🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
-                        </label>
-                      </div>
-
-                      {editPreviewImage && (
-                        <div style={{ marginBottom: "12px" }}>
-                          <img
-                            src={editPreviewImage}
-                            alt="Preview"
-                            style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }}
-                          />
-                        </div>
-                      )}
-
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          className="btn btn-success btn-sm"
-                          style={{ flex: 1, opacity: isSaving === item.id ? 0.7 : 1, cursor: isSaving === item.id ? "not-allowed" : "pointer" }}
-                          disabled={isSaving === item.id} // Prevent double clicking
-                          onClick={async () => {
-                            let imagePath = item.image;
-                            const finalizedCategory = editCategory.trim();
-
-                            setIsSaving(item.id); // ⚡ TURN ON LOADING STATE FOR THIS ROW
-
-                            if (editSelectedFile) {
-                              try {
-                                imagePath = await uploadDirectToCloudinary(editSelectedFile);
-                              } catch (error) {
-                                addNotification("❌ Image upload to storage provider failed.", "error");
-                                setIsSaving(null); // Turn off if it crashes
-                                return;
-                              }
-                            }
-
-                            const updatedItem = {
-                              name: editName,
-                              price: Number(editPrice),
-                              description: editDescription,
-                              category: finalizedCategory, 
-                              available: true,
-                              image: imagePath,
-                            };
-
-                            try {
-                              const res = await apiFetch(
-                                `${import.meta.env.VITE_API_URL}/menu/${item.id}`,
-                                {
-                                  method: "PUT",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify(updatedItem),
-                                },
-                                "manager"
-                              );
-
-                              if (res.ok) {
-                                setMenu((prev) =>
-                                  prev.map((m) => 
-                                    m.id === item.id 
-                                      ? { ...m, ...updatedItem, id: item.id } 
-                                      : m
-                                  )
-                                );
-
-                                setEditingItem(null);
-                                setEditSelectedFile(null);
-                                setEditPreviewImage("");
-                                addNotification("✨ Menu item updated successfully!");
-                              }
-                            } catch (error) {
-                              console.error("Failed to update item:", error);
-                              addNotification("❌ Update request failed.");
-                            } finally {
-                              setIsSaving(null); // ⚡ TURN OFF LOADING STATE ALWAYS
-                            }
-                          }}
-                        >
-                          {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
-                        </button>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{ flex: 1 }}
-                          disabled={isSaving === item.id} // Disable cancel while saving
-                          onClick={() => {
-                            setEditingItem(null);
-                            setEditSelectedFile(null);
-                            setEditPreviewImage("");
-                          }}
-                        >
-                          ✕ Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      ));
-    })()}
-  </div>
-)}
 
 {/* ========== CREATE MENU PANEL ========== */}
 {showCreateMenu && (
@@ -2733,9 +2599,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
           }
 
           let imagePath = "";
-          setLoading(true); // Lock fields to prevent double actions
+          setLoading(true);
 
-          // ⚡ HIGH-SPEED DIRECT HOP: Fire file directly to Cloudinary from browser!
           if (selectedFile) {
             try {
               imagePath = await uploadDirectToCloudinary(selectedFile);
@@ -2747,13 +2612,12 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             }
           }
 
-          // Build a tiny, lightweight JSON object payload string matrix 
           const newItem = {
             name: newItemName,
             price: Number(newItemPrice),
             description: newItemDescription,
             category: finalizedCategory, 
-            image: imagePath, // Passes clean text string URL link
+            image: imagePath,
             available: true,
           };
 
@@ -2770,7 +2634,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
               const data = await res.json();
               setMenu((prev) => [...prev, data]);
 
-              // 🧼 Clear all fields and clean resets
               setNewItemName("");
               setNewItemPrice("");
               setNewItemDescription("");
@@ -2788,7 +2651,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             console.error("Failed to add item to DB context layer:", error);
             addNotification("❌ Network layer communication crash.", "error");
           } finally {
-            setLoading(false); // Unlock interactions smoothly
+            setLoading(false);
           }
         }}
       >
@@ -2797,6 +2660,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     </div>
   </div>
 )}
+
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
         {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
@@ -3638,9 +3502,11 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
   </div>
 )}
 
-      </main>
+</main>
 
-      {/* Confirmation Modal */}
+
+
+      {/* ========== GLOBAL CONFIRMATION MODAL ========== */}
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
         title={confirmationModal.title}
@@ -3650,6 +3516,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         onConfirm={confirmationModal.onConfirm || (() => {})}
         onCancel={() => setConfirmationModal({ ...confirmationModal, isOpen: false })}
       />
+      
     </div>
   );
 }
