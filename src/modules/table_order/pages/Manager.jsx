@@ -721,14 +721,10 @@ const [isLoading, setIsLoading] = useState(true);
 
 const refreshTransactions = async () => {
   try {
-    // 🎯 Use your standard backend base endpoint
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) {
-        setOrders(data);        // 🔥 Updates your live kitchen workflow view!
-        setTransactions(data);  // 🔥 Updates your previous transaction log table views!
-      }
+      if (Array.isArray(data)) setTransactions(data);
     }
   } catch (err) { console.error("Error updating transactions:", err); }
 };
@@ -1169,6 +1165,7 @@ const fetchAnalytics =
    CREATE ORDER (TABLE MANAGEMENT - FIXED)
 ========================================= */
 const handleCreateOrder = async () => {
+
   if (cart.length === 0 || creatingOrder) return;
 
   if (!businessDay) {
@@ -1176,6 +1173,7 @@ const handleCreateOrder = async () => {
     return;
   }
 
+  // 🎯 FIX: Changed 'selectedTable' to 'selectedTableNumber' to match your state
   if (!selectedTableNumber) {
     addNotification("⚠️ Please select a table number before placing the order.", "warning");
     return;
@@ -1189,11 +1187,11 @@ const handleCreateOrder = async () => {
     items: cart,
     payment_mode: paymentMode, 
     status: "pending",
-    table_number: selectedTableNumber,
+    table_number: selectedTableNumber, // 🎯 FIX: Matches your state
     offline_uuid: offlineUuid
   };
 
-  // 🚨 NETWORK BOUNDARY CHECK (OFFLINE PATH)
+  // 🚨 NETWORK BOUNDARY CHECK
   if (!navigator.onLine) {
     try {
       await saveOfflineOrder(orderPayload);
@@ -1208,6 +1206,7 @@ const handleCreateOrder = async () => {
         }
       ]);
 
+      // 🔊 SOUND ONLY: Local offline storage verification audio chime
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
@@ -1216,7 +1215,7 @@ const handleCreateOrder = async () => {
       addNotification(`⚠️ Running Offline! Order queued locally for Table ${selectedTableNumber}.`, "warning");
 
       setCart([]);
-      setSelectedTableNumber(""); 
+      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
 
     } catch (dbErr) {
       console.error("Table floor local DB write error:", dbErr);
@@ -1242,36 +1241,29 @@ const handleCreateOrder = async () => {
     if (!res.ok) return;
     const data = await res.json();
 
-    // ✅ 1. Push directly into active orders pool instantly
     setOrders((prev) => [...prev, { ...data, items: data.items || [] }]);
 
-    // ✅ 2. MOVE OUTSIDE OF CALLBACK TRAP: Update state instantly!
-    addNotification(`🎉 Order sent to Kitchen for Table ${selectedTableNumber}!`, "success");
-    setCart([]);
-    setSelectedTableNumber(""); 
-
-    // ✅ 3. Run UI data refreshes immediately without blocking
-    await refreshTransactions(); 
-    await refreshSummary();      
-    await refreshAnalytics();
-
-    // 🔊 SOUND ONLY: Trigger audio confirmation right away
-    if (settings?.enable_sound && acceptSoundRef?.current) {
-      acceptSoundRef.current.currentTime = 0;
-      acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-    }
-
-    // ✅ 4. Trigger printer handler in background independently
     printToken(data, () => {
-      console.log("🖨️ Hardware printing task completed successfully.");
-    });
+      // 🔊 SOUND ONLY: Trigger success audio cue right when the print callback runs
+      if (settings?.enable_sound && acceptSoundRef?.current) {
+        acceptSoundRef.current.currentTime = 0;
+        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+      }
 
+      addNotification(`🎉 Order sent to Kitchen for Table ${selectedTableNumber}!`, "success");
+      setCart([]);
+      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
+      refreshTransactions(); // ✅ ADD
+      refreshSummary();      // ✅ ADD
+      refreshAnalytics();
+    });
   } catch (err) {
     console.error("Online table submit failed. Dropping back to local cache...", err);
     
     try {
       await saveOfflineOrder(orderPayload);
 
+      // 🔊 SOUND ONLY: Play audio confirmation for successful fallback save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
@@ -1289,7 +1281,7 @@ const handleCreateOrder = async () => {
 
       addNotification(`📡 Connection lost! Order securely saved offline for Table ${selectedTableNumber}.`, "warning");
       setCart([]);
-      setSelectedTableNumber(""); 
+      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
     } catch (innerDbErr) {
       console.error("Critical storage failure:", innerDbErr);
       addNotification("❌ Connection dropped and local storage failed.", "error");
