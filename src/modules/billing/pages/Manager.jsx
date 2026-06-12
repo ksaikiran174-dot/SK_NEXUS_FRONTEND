@@ -1234,12 +1234,13 @@ const handleCreateOrder = async () => {
     setCart([]);
     setPaymentMode("cash");
     
-    if (typeof fetchTransactions === "function") {
-      fetchTransactions(); 
-    }
+    // if (typeof fetchTransactions === "function") {
+    //   fetchTransactions(); 
+    // }
     
     refreshSummary();
     refreshAnalytics();
+    refreshTransactions();
     // Unlock checkout instantly for the next customer
     setCreatingOrder(false); 
 

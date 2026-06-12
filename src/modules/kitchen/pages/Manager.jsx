@@ -678,7 +678,7 @@ const [isLoading, setIsLoading] = useState(true);
 // Standalone manual triggers for actions/buttons
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setOrders(data);
@@ -694,6 +694,16 @@ const refreshSummary = async () => {
       setSummary(data); // Stored in data state
     }
   } catch (err) { console.error("Error updating summary:", err); }
+};
+
+const refreshAnalytics = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setAnalytics(data);
+    }
+  } catch (err) { console.error("Error updating analytics:", err); }
 };
 
 const loadSettings = async () => {
@@ -1267,6 +1277,7 @@ const handleCreateOrder = async () => {
       refreshTransactions(); // ✅ already implied
       refreshSummary();      // ✅ ADD THIS — updates summary page instantly
       refreshAnalytics();
+      setCreatingOrder(false); 
     });
 
   } catch (err) {
