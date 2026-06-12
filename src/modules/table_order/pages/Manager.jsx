@@ -1037,6 +1037,9 @@ useEffect(() => {
           );
         });
 
+        refreshSummary().catch(e => console.error(e));
+        refreshAnalytics().catch(e => console.error(e));
+        
         addNotification(
           `Order ${msg.data.token_id} ${msg.data.status}`,
           msg.data.status === "rejected" ? "error" : msg.data.status === "accepted" ? "success" : "info"
@@ -1051,6 +1054,9 @@ useEffect(() => {
           completeSoundRef.current.play().catch(() => {});
         }
         setOrders((prev) => prev.filter((o) => String(o.id) !== String(msg.data.id)));
+        refreshSummary().catch(err => console.error("Summary refresh failed:", err));
+        refreshTransactions().catch(err => console.error("Transactions refresh failed:", err));
+        refreshAnalytics().catch(err => console.error("Analytics refresh failed:", err));
         addNotification(`Order ${msg.data.token_id} completed `);
       }
     };
@@ -1288,83 +1294,6 @@ const handleCreateOrder = async () => {
     }
   } finally {
     setCreatingOrder(false);
-  }
-};
-
-/* =========================================================================
-    🚀 UNIFIED LOCAL ACTION HANDLERS (Direct Parent State Sync)
-========================================================================= */
-
-const handleUpdate = async (id, status) => {
-  if (processingOrders.includes(id)) return;
-  setProcessingOrders((prev) => [...prev, id]);
-  
-  try {
-    const res = await apiFetch(
-      `${import.meta.env.VITE_API_URL}/orders/${id}`, 
-      {
-        method: "PATCH",
-        body: JSON.stringify({ status: status })
-      }, 
-      "employee"
-    );
-
-    // ✅ If an order gets rejected, it affects order counts and analytics live!
-    if (res.ok && status === "rejected") {
-      // 1. Instantly drop it from the active orders UI view layout grid
-      setOrders((prev) => prev.filter((o) => String(o.id) !== String(id)));
-      
-      // 2. Fire manager metric refreshers instantly
-      if (typeof refreshSummary === "function") await refreshSummary();
-      if (typeof refreshAnalytics === "function") await refreshAnalytics();
-      
-      addNotification("❌ Order rejected. Summary updated.");
-    } else if (res.ok) {
-      // For normal updates (like changing pending to accepted/cooking)
-      setOrders((prev) =>
-        prev.map((o) => String(o.id) === String(id) ? { ...o, status: status } : o)
-      );
-      addNotification(`📦 Order status updated to ${status}`);
-    }
-
-  } catch (err) {
-    console.error("Local status update error:", err);
-    addNotification("❌ Failed to update order status");
-  } finally {
-    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
-  }
-};
-
-const handleComplete = async (id) => {
-  if (processingOrders.includes(id)) return;
-  setProcessingOrders((prev) => [...prev, id]);
-  
-  try {
-    const res = await apiFetch(
-      `${import.meta.env.VITE_API_URL}/orders/${id}/complete`, 
-      { method: "PATCH" }, // 🎯 Note: Changed from PUT to PATCH to match your snippet's working backend rule!
-      "employee"
-    );
-
-    if (res.ok) {
-      // 1. Instantly pull it out of the active kitchen queue grid array view
-      setOrders((prev) => prev.filter((o) => String(o.id) !== String(id)));
-
-      // 2. 🔥 THE MAGIC ENGINE: Pull live database calculations directly into view
-      if (typeof refreshSummary === "function") await refreshSummary();
-      if (typeof refreshTransactions === "function") await refreshTransactions();
-      if (typeof refreshAnalytics === "function") await refreshAnalytics();
-
-      addNotification("🎉 Order completed successfully! Dashboard metrics updated live.");
-    } else {
-      addNotification("❌ Failed to finalize completion route on server.", "error");
-    }
-
-  } catch (err) {
-    console.error("Local completion block crash:", err);
-    addNotification("❌ Error connecting to completion service.");
-  } finally {
-    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
   }
 };
 
