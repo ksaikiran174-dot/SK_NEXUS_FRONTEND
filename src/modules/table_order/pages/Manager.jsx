@@ -2855,7 +2855,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
-        {!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings && (
+        {!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings && (
           <>
             <div className="main-header">
 
