@@ -675,10 +675,9 @@ const printToken = (order, onComplete) => {
 const hasFetched = useRef(false);
 const [isLoading, setIsLoading] = useState(true);
 
-// Dedicated standalone manual triggers for real-time actions/buttons
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setTransactions(data);
@@ -691,15 +690,21 @@ const refreshSummary = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      // Keep state storage raw and raw-mappable just like your working setup!
-      setSummary(data); 
+      setSummary({
+        total_sales:      data.total_sales      ?? data.total_revenue  ?? 0,
+        cash_sales:       data.cash_sales        ?? 0,
+        online_sales:     data.online_sales      ?? 0,
+        completed_orders: data.completed_orders  ?? data.total_orders  ?? 0,
+        rejected_orders:  data.rejected_orders   ?? 0,
+        average_order:    data.average_order     ?? 0,
+      });
     }
   } catch (err) { console.error("Error updating summary:", err); }
 };
 
 const refreshAnalytics = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       setAnalytics(data);
@@ -713,123 +718,113 @@ const loadSettings = async () => {
     if (res.ok) {
       const data = await res.json();
       setSettings(prev => ({ ...prev, ...data }));
+      if (Array.isArray(data.tables_list) && data.tables_list.length > 0) {
+        setTablesList(data.tables_list);
+      }
     }
   } catch (err) { console.error("Settings fetch failed:", err); }
 };
 
-// MASTER INITIALIZATION LOOP
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
-
-  if (!token) {
-    window.location.href = "/";
-    return;
-  }
-
+  if (!token) { window.location.href = "/"; return; }
   if (hasFetched.current) return;
   hasFetched.current = true;
 
   const loadAllDashboardData = async () => {
     try {
       setIsLoading(true);
-      console.log("🔥 Firing clean single-batch parallel dashboard engine...");
 
-      // ⚡ Cleaned up extra overlapping network paths to prevent state locking!
       const [
-        ordersRes,
-        menuRes,
-        lowStockRes,
-        settingsRes,
-        activeDayRes,
-        summaryRes,
-        metadataRes,
-        employeeRes
+        ordersRes, menuRes, lowStockRes, settingsRes,
+        activeDayRes, summaryRes, employeeRes,
+        transactionsRes, analyticsRes
       ] = await Promise.all([
-        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager")
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e),
       ]);
 
-      // 📥 1. Sync Orders Data straight into Transactions
-      if (ordersRes.ok) {
-        const ordersData = await ordersRes.json();
-        if (Array.isArray(ordersData)) setOrders(ordersData);
+      if (ordersRes?.ok) {
+        const d = await ordersRes.json();
+        if (Array.isArray(d)) setOrders(d);
       }
-
-      // 📥 2. Sync Menu Data
-      if (menuRes.ok) {
-        const menuData = await menuRes.json();
-        if (Array.isArray(menuData)) setMenu(menuData);
+      if (menuRes?.ok) {
+        const d = await menuRes.json();
+        if (Array.isArray(d)) setMenu(d);
       }
-
-      // 📥 3. Sync Low Stock Data
-      if (lowStockRes.ok) {
-        const lowStockData = await lowStockRes.json();
-        if (Array.isArray(lowStockData)) {
-          setLowStockItems(lowStockData.map((item) => item.item_name || item));
+      if (lowStockRes?.ok) {
+        const d = await lowStockRes.json();
+        if (Array.isArray(d)) setLowStockItems(d.map(i => i.item_name || i));
+      }
+      if (settingsRes?.ok) {
+        const d = await settingsRes.json();
+        setSettings(prev => ({ ...prev, ...d }));
+        setIsLoadingSettings(false);
+        if (Array.isArray(d.tables_list) && d.tables_list.length > 0) {
+          setTablesList(d.tables_list);
+        } else {
+          setTablesList(prev => prev.length > 0 ? prev : ["1","2","3","4","5"]);
         }
       }
-
-      // 📥 4. Sync Settings & Metadata Matrix
-      let mergedSettings = {};
-      if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        mergedSettings = { ...mergedSettings, ...settingsData };
+      if (activeDayRes?.ok) {
+        const d = await activeDayRes.json();
+        setBusinessDay(d);
+        setBusinessDayData(d);
       }
-      if (metadataRes.ok) {
-        const metadataData = await metadataRes.json();
-        mergedSettings = { ...mergedSettings, ...metadataData };
+      if (summaryRes?.ok) {
+        const d = await summaryRes.json();
+        setSummary({
+          total_sales:      d.total_sales      ?? d.total_revenue  ?? 0,
+          cash_sales:       d.cash_sales        ?? 0,
+          online_sales:     d.online_sales      ?? 0,
+          completed_orders: d.completed_orders  ?? d.total_orders  ?? 0,
+          rejected_orders:  d.rejected_orders   ?? 0,
+          average_order:    d.average_order     ?? 0,
+        });
       }
-      setSettings(prev => ({ ...prev, ...mergedSettings }));
-
-      // 📥 5. Sync Active Business Day Status
-      if (activeDayRes.ok) {
-        const activeDayData = await activeDayRes.json();
-        setBusinessDay(activeDayData);
+      if (employeeRes?.ok) {
+        const d = await employeeRes.json();
+        if (Array.isArray(d)) setEmployees(d);
       }
-
-      // 📥 6. Sync Summary & Analytics Data Pools simultaneously
-      if (summaryRes.ok) {
-        const summaryData = await summaryRes.json();
-        setSummary(summaryData); // Perfectly mirrored data holder sync!
+      if (transactionsRes?.ok) {
+        const d = await transactionsRes.json();
+        if (Array.isArray(d)) setTransactions(d);
       }
-
-      // 📥 7. Sync Employees Data
-      if (employeeRes.ok) {
-        const employeeData = await employeeRes.json();
-        setEmployees(employeeData);
+      if (analyticsRes?.ok) {
+        const d = await analyticsRes.json();
+        setAnalytics(d);
       }
 
-    } catch (error) {
-      console.error("❌ Critical Dashboard Boot Failure:", error);
+    } catch (err) {
+      console.error("❌ Critical Dashboard Boot Failure:", err);
     } finally {
       setIsLoading(false);
+      setIsLoadingSettings(false);
     }
   };
 
-  /* =========================
-      🎵 AUDIO ENGINE PRELOADER
-  ========================= */
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
+    audio.load();
     return audio;
   };
-
   refillStockSoundRef.current = loadAudio("/sounds/for_lowStockRefillment.wav");
   lowStockSoundRef.current = loadAudio("/sounds/for_lowStockAlert.wav");
   acceptSoundRef.current = loadAudio("/sounds/for_acceptance.wav");
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-  // Fire execution loop
   loadAllDashboardData();
 }, []);
+
 
 
 /* =========================================================================
@@ -1889,7 +1884,7 @@ return (
       {/* ========== MAIN CONTENT ========== */}
       <main className="manager-main">
 
-        {/* ========== ANALYTICS PANEL ========== */}
+                {/* ========== ANALYTICS PANEL ========== */}
         {showAnalyticsView && analytics && (
           <div className="analytics-container">
             <div className="main-header">
@@ -2009,57 +2004,53 @@ return (
           </div>
         )} 
 
-{/* ==========================================
-          💳 2. TRANSACTIONS PANEL
-      ========================================== */}
-      {showTransactions && (
-        <div className="card">
-          <div className="card-header">
-            <h2>💳 Previous Transactions</h2>
-          </div>
+{/* ========== TRANSACTIONS PANEL ========== */}
+        {showTransactions && (
+          <div className="card">
+            <div className="card-header">
+              <h2>💳 Previous Transactions</h2>
+            </div>
 
-          <div className="filter-group">
-            <input
-              className="form-input"
-              placeholder="🔍 Search Token ID..."
-              value={filterToken}
-              onChange={(e) => setFilterToken(e.target.value)}
-            />
-            <select
-              className="form-select"
-              value={filterPayment}
-              onChange={(e) => setFilterPayment(e.target.value)}
-            >
-              <option value="">All Payment Methods</option>
-              <option value="cash">Cash</option>
-              <option value="online">Online</option>
-            </select>
-            
-            {/* Date Wrapper */}
-            <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className="filter-group">
               <input
                 className="form-input"
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                style={{ paddingRight: filterDate ? '30px' : '10px' }}
+                placeholder="🔍 Search Token ID..."
+                value={filterToken}
+                onChange={(e) => setFilterToken(e.target.value)}
               />
-              {filterDate && (
-                <button
-                  className="date-reset-btn"
-                  onClick={() => { setFilterDate(""); fetchTransactions(); }}
-                  title="Reset Date"
-                >
-                  ↺
-                </button>
-              )}
+              <select 
+                className="form-select"
+                value={filterPayment} 
+                onChange={(e) => setFilterPayment(e.target.value)}
+              >
+                <option value="">All Payment Methods</option>
+                <option value="cash">Cash</option>
+                <option value="online">Online</option>
+              </select>
+              {/* NEW: Date Wrapper */}
+  <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <input 
+      className="form-input"
+      type="date" 
+      value={filterDate} 
+      onChange={(e) => setFilterDate(e.target.value)} 
+      style={{ paddingRight: filterDate ? '30px' : '10px' }} // Make space for the arrow if date is picked
+    />
+    {filterDate && (
+      <button 
+        className="date-reset-btn" 
+        onClick={() => { setFilterDate(""); fetchTransactions(); }}
+        title="Reset Date"
+      >
+        ↺
+      </button>
+    )}
+  </div>
+              <button className="btn btn-primary" onClick={fetchTransactions}>
+                Apply
+              </button>
             </div>
-            <button className="btn btn-primary" onClick={fetchTransactions}>
-              Apply
-            </button>
-          </div>
 
-          
             {transactions.map((txn) => (
   <div
     key={txn.id}
@@ -2075,92 +2066,137 @@ return (
         <span className="transaction-token">
           Token #{txn.token_id}
         </span>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: "700",
-                      color: "#4f46e5",
-                      background: "#eff6ff",
-                      padding: "2px 8px",
-                      borderRadius: "6px",
-                      width: "fit-content",
-                      border: "1px solid #bfdbfe"
-                    }}
-                  >
-                    🔄 Cycle #{txn.cycle_number || "N/A"}
-                  </span>
-                </div>
+        
+        {/* 🚀 NEW BADGE: BUSINESS DAY CYCLE NUMBER */}
+        <span 
+          style={{
+            fontSize: "11px",
+            fontWeight: "700",
+            color: "#4f46e5", // Indigo theme color
+            background: "#eff6ff",
+            padding: "2px 8px",
+            borderRadius: "6px",
+            width: "fit-content",
+            border: "1px solid #bfdbfe"
+          }}
+        >
+          🔄 Cycle #{txn.cycle_number || "N/A"}
+        </span>
+      </div>
 
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  <span className={`status-badge ${txn.status}`}>
-                    {txn.status}
-                  </span>
-                  <span className={`transaction-payment ${txn.payment_mode}`}>
-                    {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"}{" "}
-                    {txn.payment_mode?.toUpperCase()}
-                  </span>
-                </div>
-              </div>
+      {/* HEADER RIGHT SIDE: STATUS & PAYMENT */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          alignItems: "center"
+        }}
+      >
+        <span
+          className={`status-badge ${
+            txn.status
+          }`}
+        >
+          {txn.status}
+        </span>
 
-              <div className="transaction-details">
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Items</div>
-                  <div className="transaction-detail-value">
-                    {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
-                  </div>
-                </div>
+        <span
+          className={`transaction-payment ${txn.payment_mode}`}
+        >
+          {txn.payment_mode?.toLowerCase() === "cash"
+            ? "💵"
+            : "💳"}{" "}
+          {txn.payment_mode?.toUpperCase()}
+        </span>
+      </div>
+    </div>
 
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Total Amount</div>
-                  <div
-                    className="transaction-detail-value"
-                    style={{
-                      color: txn.status === "rejected" ? "#dc2626" : "inherit",
-                      textDecoration: txn.status === "rejected" ? "line-through" : "none",
-                      fontWeight: "700"
-                    }}
-                  >
-                    ₹{txn.total_price}
-                  </div>
-                </div>
-
-                <div className="transaction-detail-row">
-                  <div className="transaction-detail-label">Order Time</div>
-                  <div className="transaction-detail-value">
-                    {new Date(txn.created_at).toLocaleTimeString("en-GB", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    }).toLowerCase()}
-                    {" • "}
-                    {new Date(txn.created_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    style={{ width: "100%", fontSize: "13px" }}
-                    onClick={() => downloadReceipt(txn)}
-                  >
-                    📥 Download Receipt
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          <div style={{ marginTop: "20px" }}>
-            <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
-              📥 Download Transactions PDF
-            </button>
-          </div>
+    <div className="transaction-details">
+      <div className="transaction-detail-row">
+        <div className="transaction-detail-label">
+          Items
         </div>
-      )}
+        <div className="transaction-detail-value">
+          {txn.items
+            .map(
+              (i) =>
+                `${i.name} x${i.quantity}`
+            )
+            .join(", ")}
+        </div>
+      </div>
+
+      <div className="transaction-detail-row">
+        <div className="transaction-detail-label">
+          Total Amount
+        </div>
+        <div
+          className="transaction-detail-value"
+          style={{
+            color:
+              txn.status === "rejected"
+                ? "#dc2626"
+                : "inherit",
+            textDecoration:
+              txn.status === "rejected"
+                ? "line-through"
+                : "none",
+            fontWeight: "700"
+          }}
+        >
+          ₹{txn.total_price}
+        </div>
+      </div>
+
+      <div className="transaction-detail-row">
+        <div className="transaction-detail-label">
+          Order Time
+        </div>
+        <div className="transaction-detail-value">
+          {new Date(
+            txn.created_at
+          ).toLocaleTimeString(
+            "en-GB",
+            {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }
+          ).toLowerCase()}
+          {" • "}
+          {new Date(
+            txn.created_at
+          ).toLocaleDateString(
+            "en-GB",
+            {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }
+          )}
+        </div>
+      </div>
+
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
+        <button
+          className="btn btn-primary btn-sm"
+          style={{ width: "100%", fontSize: "13px" }}
+          onClick={() => downloadReceipt(txn)}
+        >
+          📥 Download Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+))}
+
+            <div style={{ marginTop: "20px" }}>
+              <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
+                📥 Download Transactions PDF
+              </button>
+            </div>
+              </div>
+            )}
             
       
 {/* ========== SUMMARY PANEL ========== */}
