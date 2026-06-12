@@ -2060,14 +2060,21 @@ return (
           </div>
 
           
-          {/* ⚡ FIXED: Pointed to the running 'transactions' state pool updated on mount */}
-          {(transactions || []).map((txn) => (
-            <div key={txn.id || txn._id} className={`transaction-item ...`}>
-              <div className="transaction-header">
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <span className="transaction-token">
-                    Token #{txn.token_id}
-                  </span>
+            {transactions.map((txn) => (
+  <div
+    key={txn.id}
+    className={`transaction-item ${
+      txn.status === "rejected"
+        ? "rejected-order"
+        : ""
+    }`}
+  >
+    <div className="transaction-header">
+      {/* HEADER LEFT SIDE: TOKEN & CYCLE ID */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <span className="transaction-token">
+          Token #{txn.token_id}
+        </span>
                   <span
                     style={{
                       fontSize: "11px",
