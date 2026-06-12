@@ -681,7 +681,7 @@ const refreshTransactions = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) setOrders(data);
+      if (Array.isArray(data)) setTransactions(data);
     }
   } catch (err) { console.error("Error updating transactions:", err); }
 };
@@ -690,10 +690,21 @@ const refreshSummary = async () => {
   try {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
-      const data = await res.json();
-      setSummary(data); // Stored in data state
+      const summaryData = await res.json();
+      
+      // ✅ FIX: Normalize data keys exactly like your initialization engine does!
+      setSummary({
+        total_sales:       summaryData.total_sales      ?? summaryData.total_revenue   ?? 0,
+        cash_sales:        summaryData.cash_sales       ?? 0,
+        online_sales:      summaryData.online_sales     ?? 0,
+        completed_orders:  summaryData.completed_orders ?? summaryData.total_orders     ?? 0,
+        rejected_orders:   summaryData.rejected_orders  ?? 0,
+        average_order:     summaryData.average_order    ?? 0,
+      });
     }
-  } catch (err) { console.error("Error updating summary:", err); }
+  } catch (err) { 
+    console.error("Error updating summary:", err); 
+  }
 };
 
 const refreshAnalytics = async () => {
@@ -1277,7 +1288,7 @@ const handleCreateOrder = async () => {
       refreshTransactions(); // ✅ already implied
       refreshSummary();      // ✅ ADD THIS — updates summary page instantly
       refreshAnalytics();
-      setCreatingOrder(false); 
+      
     });
 
   } catch (err) {
