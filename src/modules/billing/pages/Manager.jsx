@@ -684,7 +684,7 @@ const [isLoading, setIsLoading] = useState(true); // Master loading spinner stat
 // Dedicated individual data fetchers you can call anytime an action happens
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setTransactions(data);
@@ -700,6 +700,16 @@ const refreshSummary = async () => {
       setSummary(data); // Stored in data state
     }
   } catch (err) { console.error("Error updating summary:", err); }
+};
+
+const refreshAnalytics = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setAnalytics(data);
+    }
+  } catch (err) { console.error("Error updating analytics:", err); }
 };
 
 useEffect(() => {
@@ -1229,7 +1239,7 @@ const handleCreateOrder = async () => {
     }
     
     refreshSummary();
-
+    refreshAnalytics();
     // Unlock checkout instantly for the next customer
     setCreatingOrder(false); 
 
