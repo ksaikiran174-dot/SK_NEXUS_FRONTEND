@@ -691,17 +691,6 @@ const refreshSummary = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      setSummary(data);
-      setAnalytics(data); 
-    }
-  } catch (err) { console.error("Error updating summary:", err); }
-};
-
-const refreshSummary = async () => {
-  try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
-    if (res.ok) {
-      const data = await res.json();
       setSummary(data); // ✅ Only summary state
     }
   } catch (err) { console.error("Error updating summary:", err); }
