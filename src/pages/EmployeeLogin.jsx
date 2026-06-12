@@ -12,129 +12,81 @@ function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
   const [success, setSuccess] = useState("");
 
 const handleLogin = async (e) => {
-
   e.preventDefault();
-
   setError("");
   setSuccess("");
   setLoading(true);
 
   // Basic validation
   if (!email || !password) {
-
-    setError(
-      "Please fill in all fields"
-    );
-
+    setError("Please fill in all fields");
     setLoading(false);
-
     return;
   }
 
   // Email validation
-  const emailRegex =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-
-    setError(
-      "Please enter a valid email address"
-    );
-
+    setError("Please enter a valid email address");
     setLoading(false);
-
     return;
   }
 
   try {
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/login`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-          email,
-          password,
-          role: "employee",
-        }),
-      }
-    );
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        role: "employee", // 🎯 Keeps it locked to employee role
+      }),
+    });
 
     if (response.ok) {
+      const data = await response.json();
+      setSuccess("✓ Login successful! Redirecting...");
 
-      const data =
-        await response.json();
+      // 🧼 Clear any leftover cross-contamination session data from previous accounts
+      localStorage.clear();
 
-      setSuccess(
-        "✓ Login successful! Redirecting..."
-      );
-
-      // ✅ SAVE TOKENS
-      localStorage.setItem(
-  "employeeAccessToken",
-  data.access_token
-);
-
-localStorage.setItem(
-  "employeeRefreshToken",
-  data.refresh_token
-);
-
-localStorage.setItem(
-  "role",
-  "employee"
-);
+      // 🎯 Safely resolve plan or any specific metadata flags if your system sends them
       const userPlan = data.user?.plan || data.plan || "basic";
-      localStorage.setItem("plan", userPlan);
-
-      // Remember email
-      if (rememberMe) {
-
-        localStorage.setItem(
-          "rememberedEmail",
-          email
-        );
+      
+      if (data.access_token) {
+        // 🔥 Mirrored storage logic using employee target identifiers
+        localStorage.setItem("employeeAccessToken", data.access_token);
+        localStorage.setItem("employeeRefreshToken", data.refresh_token);
+        localStorage.setItem("role", "employee");
+        localStorage.setItem("plan", userPlan);
       }
 
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      }
+
+      // ✅ Single, clean execution wrapper passing elements up to your App.jsx layout
       setTimeout(() => {
-
-        window.location.href = "/dashboard";
-
+        onLoginSuccess({ 
+          role: "employee",
+          plan: userPlan
+        });
       }, 1000);
 
     } else {
-
-      const errorData =
-        await response.json();
-
-      setError(
-        errorData.detail ||
-        "Invalid email or password"
-      );
+      const errorData = await response.json();
+      setError(errorData.detail || errorData.message || "Invalid email or password");
     }
-
   } catch (err) {
-
-    setError(
-      "Connection error. Please try again."
-    );
-
-    console.error(
-      "Login error:",
-      err
-    );
-
+    setError("Connection error. Please try again.");
+    console.error("Login error:", err);
   } finally {
-
     setLoading(false);
   }
 };
+
 
   return (
     <div className="auth-container employee-auth">
