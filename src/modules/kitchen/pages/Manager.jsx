@@ -758,7 +758,7 @@ useEffect(() => {
       // 📥 1. Sync Orders Data straight into Transactions
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
-        if (Array.isArray(ordersData)) setTransactions(ordersData);
+        if (Array.isArray(ordersData)) setOrders(ordersData);
       }
 
       // 📥 2. Sync Menu Data
