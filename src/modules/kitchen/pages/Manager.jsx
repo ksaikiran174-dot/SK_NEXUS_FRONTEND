@@ -691,14 +691,7 @@ const refreshSummary = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      setSummary({
-        total_sales:      data.total_sales      ?? data.total_revenue  ?? 0,
-        cash_sales:       data.cash_sales        ?? 0,
-        online_sales:     data.online_sales      ?? 0,
-        completed_orders: data.completed_orders  ?? data.total_orders  ?? 0,
-        rejected_orders:  data.rejected_orders   ?? 0,
-        average_order:    data.average_order     ?? 0,
-      });
+      setSummary(data); // Stored in data state
     }
   } catch (err) { console.error("Error updating summary:", err); }
 };
