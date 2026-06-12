@@ -1022,6 +1022,9 @@ useEffect(() => {
           );
         });
 
+        refreshSummary().catch(e => console.error(e));
+        refreshAnalytics().catch(e => console.error(e));
+
         addNotification(
           `Order ${msg.data.token_id} ${msg.data.status}`,
           msg.data.status === "rejected" ? "error" : msg.data.status === "accepted" ? "success" : "info"
@@ -1036,6 +1039,9 @@ useEffect(() => {
           completeSoundRef.current.play().catch(() => {});
         }
         setOrders((prev) => prev.filter((o) => String(o.id) !== String(msg.data.id)));
+        refreshSummary().catch(err => console.error("Summary refresh failed:", err));
+        refreshTransactions().catch(err => console.error("Transactions refresh failed:", err));
+        refreshAnalytics().catch(err => console.error("Analytics refresh failed:", err));
         addNotification(`Order ${msg.data.token_id} completed`);
       }
     };
