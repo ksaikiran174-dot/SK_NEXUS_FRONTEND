@@ -1028,6 +1028,9 @@ useEffect(() => {
             return prev.filter((o) => String(o.id) !== String(msg.data.id));
           }
 
+          await refreshSummary();
+          await refreshAnalytics();
+
           if (!exists) {
             return [...prev, { ...msg.data, items: msg.data.items || [] }];
           }
@@ -1051,6 +1054,9 @@ useEffect(() => {
           completeSoundRef.current.play().catch(() => {});
         }
         setOrders((prev) => prev.filter((o) => String(o.id) !== String(msg.data.id)));
+        await refreshSummary();      // Summary page updates totals live!
+        await refreshTransactions(); // Transaction log moves order records over!
+        await refreshAnalytics();
         addNotification(`Order ${msg.data.token_id} completed `);
       }
     };
