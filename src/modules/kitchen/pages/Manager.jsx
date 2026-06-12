@@ -681,7 +681,7 @@ const refreshTransactions = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) setTransactions(data);
+      if (Array.isArray(data)) setTransactions(data); setOrders(data);
     }
   } catch (err) { console.error("Error updating transactions:", err); }
 };
@@ -1263,7 +1263,7 @@ const handleCreateOrder = async () => {
 
     const data = await res.json();
 
-    // ✅ Add newly created verified order from backend to the active list instantly
+    // ✅ 1. Add newly created verified order to active state instantly
     setOrders((prev) => [
       ...prev,
       {
@@ -1272,23 +1272,25 @@ const handleCreateOrder = async () => {
       }
     ]);
 
+    // ✅ 2. MOVE REFRESHERS HERE: Break them out of the print callback trap!
+    // This guarantees your UI states re-sync with the database instantly.
+    addNotification("🎉 Kitchen Order Placed Successfully!", "success");
+    setCart([]);
+    setPaymentMode("cash");
+    
+    await refreshTransactions(); 
+    await refreshSummary();      
+    await refreshAnalytics();
 
+    // 🔊 SOUND ONLY: Trigger success audio cue instantly
+    if (settings?.enable_sound && acceptSoundRef?.current) {
+      acceptSoundRef.current.currentTime = 0;
+      acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+    }
 
+    // ✅ 3. Run hardware printing independently in the background
     printToken(data, () => {
-
-      // 🔊 SOUND ONLY: Trigger success audio cue right when the print callback runs
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
-
-      addNotification("🎉 Kitchen Order Placed Successfully!", "success");
-      setCart([]);
-      setPaymentMode("cash");
-      refreshTransactions(); // ✅ already implied
-      refreshSummary();      // ✅ ADD THIS — updates summary page instantly
-      refreshAnalytics();
-      
+      console.log("🖨️ Hardware Token print routine completed.");
     });
 
   } catch (err) {
@@ -1298,7 +1300,6 @@ const handleCreateOrder = async () => {
     try {
       await saveOfflineOrder(orderPayload);
       
-      // 🔊 SOUND ONLY: Play audio confirmation for successful fallback save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
