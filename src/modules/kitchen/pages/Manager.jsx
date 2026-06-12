@@ -670,18 +670,18 @@ const printToken = (order, onComplete) => {
 
 
 /* =========================================================================
-    🚀 UNIFIED DASHBOARD MOUNT ENGINE (With Employees Fully Integrated)
+    🚀 UNIFIED DASHBOARD MOUNT ENGINE (Perfect Sync & Clean Key Mapping)
 ========================================================================= */
 const hasFetched = useRef(false);
 const [isLoading, setIsLoading] = useState(true);
 
-// Standalone manual triggers for actions/buttons
+// Dedicated standalone manual triggers for real-time actions/buttons
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data)) setTransactions(data); setOrders(data);
+      if (Array.isArray(data)) setTransactions(data);
     }
   } catch (err) { console.error("Error updating transactions:", err); }
 };
@@ -690,26 +690,16 @@ const refreshSummary = async () => {
   try {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
-      const summaryData = await res.json();
-      
-      // ✅ FIX: Normalize data keys exactly like your initialization engine does!
-      setSummary({
-        total_sales:       summaryData.total_sales      ?? summaryData.total_revenue   ?? 0,
-        cash_sales:        summaryData.cash_sales       ?? 0,
-        online_sales:      summaryData.online_sales     ?? 0,
-        completed_orders:  summaryData.completed_orders ?? summaryData.total_orders     ?? 0,
-        rejected_orders:   summaryData.rejected_orders  ?? 0,
-        average_order:     summaryData.average_order    ?? 0,
-      });
+      const data = await res.json();
+      // Keep state storage raw and raw-mappable just like your working setup!
+      setSummary(data); 
     }
-  } catch (err) { 
-    console.error("Error updating summary:", err); 
-  }
+  } catch (err) { console.error("Error updating summary:", err); }
 };
 
 const refreshAnalytics = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       setAnalytics(data);
@@ -742,47 +732,43 @@ useEffect(() => {
   const loadAllDashboardData = async () => {
     try {
       setIsLoading(true);
-      console.log("🔥 Firing Single-Batch Kitchen Extension Parallel Engine...");
+      console.log("🔥 Firing clean single-batch parallel dashboard engine...");
 
-      // ⚡ Added employeeRes to the parallel Promise batch!
+      // ⚡ Cleaned up extra overlapping network paths to prevent state locking!
       const [
-  ordersRes,
-  menuRes,
-  lowStockRes,
-  settingsRes,
-  activeDayRes,
-  summaryRes,
-  metadataRes,
-  employeeRes,
-  transactionsRes,  // ✅ NEW
-  analyticsRes      // ✅ NEW
-] = await Promise.all([
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e),
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),  // ✅ NEW
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e)      // ✅ NEW
-]);
+        ordersRes,
+        menuRes,
+        lowStockRes,
+        settingsRes,
+        activeDayRes,
+        summaryRes,
+        metadataRes,
+        employeeRes
+      ] = await Promise.all([
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager")
+      ]);
 
-      // 📥 1. Sync Orders Data
-      if (ordersRes?.ok) {
+      // 📥 1. Sync Orders Data straight into Transactions
+      if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
-        if (Array.isArray(ordersData)) setOrders(ordersData);
+        if (Array.isArray(ordersData)) setTransactions(ordersData);
       }
 
       // 📥 2. Sync Menu Data
-      if (menuRes?.ok) {
+      if (menuRes.ok) {
         const menuData = await menuRes.json();
         if (Array.isArray(menuData)) setMenu(menuData);
       }
 
       // 📥 3. Sync Low Stock Data
-      if (lowStockRes?.ok) {
+      if (lowStockRes.ok) {
         const lowStockData = await lowStockRes.json();
         if (Array.isArray(lowStockData)) {
           setLowStockItems(lowStockData.map((item) => item.item_name || item));
@@ -791,49 +777,31 @@ useEffect(() => {
 
       // 📥 4. Sync Settings & Metadata Matrix
       let mergedSettings = {};
-      if (settingsRes?.ok) {
+      if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         mergedSettings = { ...mergedSettings, ...settingsData };
       }
-      if (metadataRes?.ok) {
+      if (metadataRes.ok) {
         const metadataData = await metadataRes.json();
         mergedSettings = { ...mergedSettings, ...metadataData };
       }
       setSettings(prev => ({ ...prev, ...mergedSettings }));
 
       // 📥 5. Sync Active Business Day Status
-      if (activeDayRes?.ok) {
+      if (activeDayRes.ok) {
         const activeDayData = await activeDayRes.json();
         setBusinessDay(activeDayData);
       }
 
-      // 📥 6. Sync Summary & Analytics Data Pools
-      if (summaryRes?.ok) {
+      // 📥 6. Sync Summary & Analytics Data Pools simultaneously
+      if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
-        setSummary({
-          total_sales:       summaryData.total_sales      ?? summaryData.total_revenue     ?? 0,
-          cash_sales:        summaryData.cash_sales        ?? 0,
-          online_sales:      summaryData.online_sales      ?? 0,
-          completed_orders:  summaryData.completed_orders  ?? summaryData.total_orders      ?? 0,
-          rejected_orders:   summaryData.rejected_orders   ?? 0,
-          average_order:     summaryData.average_order     ?? 0,
-        } );
+        setSummary(summaryData);
+        setAnalytics(summaryData); // Perfectly mirrored data holder sync!
       }
 
-      // 📥 8. Sync Transactions
-      if (transactionsRes?.ok) {
-        const transactionsData = await transactionsRes.json();
-        if (Array.isArray(transactionsData)) setTransactions(transactionsData);
-      }
-
-      // 📥 9. Sync Analytics
-      if (analyticsRes?.ok) {
-        const analyticsData = await analyticsRes.json();
-        setAnalytics(analyticsData);
-      }
-
-      // 📥 7. Sync Employees Data (Using your clean global handler layout)
-      if (employeeRes?.ok) {
+      // 📥 7. Sync Employees Data
+      if (employeeRes.ok) {
         const employeeData = await employeeRes.json();
         setEmployees(employeeData);
       }
@@ -851,7 +819,6 @@ useEffect(() => {
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
-    audio.load();
     return audio;
   };
 
@@ -1263,7 +1230,7 @@ const handleCreateOrder = async () => {
 
     const data = await res.json();
 
-    // ✅ 1. Add newly created verified order to active state instantly
+    // ✅ Add newly created verified order from backend to the active list instantly
     setOrders((prev) => [
       ...prev,
       {
@@ -1272,25 +1239,23 @@ const handleCreateOrder = async () => {
       }
     ]);
 
-    // ✅ 2. MOVE REFRESHERS HERE: Break them out of the print callback trap!
-    // This guarantees your UI states re-sync with the database instantly.
-    addNotification("🎉 Kitchen Order Placed Successfully!", "success");
-    setCart([]);
-    setPaymentMode("cash");
-    
-    await refreshTransactions(); 
-    await refreshSummary();      
-    await refreshAnalytics();
 
-    // 🔊 SOUND ONLY: Trigger success audio cue instantly
-    if (settings?.enable_sound && acceptSoundRef?.current) {
-      acceptSoundRef.current.currentTime = 0;
-      acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-    }
 
-    // ✅ 3. Run hardware printing independently in the background
     printToken(data, () => {
-      console.log("🖨️ Hardware Token print routine completed.");
+
+      // 🔊 SOUND ONLY: Trigger success audio cue right when the print callback runs
+      if (settings?.enable_sound && acceptSoundRef?.current) {
+        acceptSoundRef.current.currentTime = 0;
+        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+      }
+
+      addNotification("🎉 Kitchen Order Placed Successfully!", "success");
+      setCart([]);
+      setPaymentMode("cash");
+      refreshTransactions(); // ✅ already implied
+      refreshSummary();      // ✅ ADD THIS — updates summary page instantly
+      refreshAnalytics();
+      
     });
 
   } catch (err) {
@@ -1300,6 +1265,7 @@ const handleCreateOrder = async () => {
     try {
       await saveOfflineOrder(orderPayload);
       
+      // 🔊 SOUND ONLY: Play audio confirmation for successful fallback save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
