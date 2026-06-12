@@ -796,8 +796,7 @@ useEffect(() => {
       // 📥 6. Sync Summary & Analytics Data Pools simultaneously
       if (summaryRes.ok) {
         const summaryData = await summaryRes.json();
-        setSummary(summaryData);
-        setAnalytics(summaryData); // Perfectly mirrored data holder sync!
+        setSummary(summaryData); // Perfectly mirrored data holder sync!
       }
 
       // 📥 7. Sync Employees Data
@@ -1757,7 +1756,6 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
-              fetchAnalytics();
             }}
           >
             <span className="sidebar-icon">📊</span>
@@ -1775,7 +1773,6 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
-              fetchTransactions(); 
             }}
           >
             <span className="sidebar-icon">💳</span>
