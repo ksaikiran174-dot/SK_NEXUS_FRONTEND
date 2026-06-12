@@ -1873,7 +1873,7 @@ return (
             onClick={() => {
               clearManagerData();
               localStorage.removeItem("role");
-              window.location.href = "/login";
+              window.location.href = "/";
             }}
           >
             <span className="sidebar-icon">🚪</span>

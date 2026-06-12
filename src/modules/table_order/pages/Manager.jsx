@@ -32,6 +32,84 @@ import { saveOfflineOrder } from "../../../utils/db";
 import { downloadSalesReport } from "../../../utils/reports";
 import EmployeeRegister from "../../../pages/EmployeeRegister";
 
+
+// 🎯 HIGH-SPEED COMPRESSION + CLOUDINARY FIXED UPLOADER
+const uploadDirectToCloudinary = async (file) => {
+  if (!file) return "";
+
+  const compressImage = (sourceFile) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(sourceFile);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          
+          const MAX_WIDTH = 600; 
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, "image/jpeg", 0.75);
+        };
+      };
+    });
+  };
+
+  try {
+    console.log(`⏳ Original raw size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    
+    // 1. Get the compressed binary blob
+    const compressedBlob = await compressImage(file);
+    
+    // 🛠️ THE FIX: Convert the raw blob into a fully valid File instance wrapper
+    const optimizedFile = new File([compressedBlob], "menu_item.jpg", { type: "image/jpeg" });
+    console.log(`⚡ Compressed optimized size: ${(optimizedFile.size / 1024).toFixed(2)} KB`);
+
+    const formData = new FormData();
+    
+    // 2. Append our brand new clean File object instance
+    formData.append("file", optimizedFile);
+    
+    // ⚠️ COPIED EXACTLY FROM YOUR CREDENTIAL LOG DATA 👇
+    formData.append("upload_preset", "sk_nexus_preset"); // Ensure this is your correct preset string name!
+    const cloudName = "dcwc8blaa"; 
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: "POST", body: formData }
+    );
+
+    if (!response.ok) {
+      // Let's log the exact error reason from Cloudinary if it fails again
+      const errData = await response.json();
+      console.error("Cloudinary Engine Rejection Reason:", errData);
+      throw new Error(errData.error?.message || "Direct upload failed");
+    }
+
+    const data = await response.json();
+    return data.secure_url; 
+  } catch (error) {
+    console.error("Cloudinary upload utility crashed:", error);
+    throw error;
+  }
+};
+
+
 function TableManager() {
   const [orders, setOrders] = useState([]);
   const [item, setItem] = useState("");
@@ -45,7 +123,6 @@ function TableManager() {
   const [cart, setCart] = useState([]);
   const [paymentMode, setPaymentMode] = useState("cash");
   const [showMenu, setShowMenu] = useState(false);
-  const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [selectedInfoItem, setSelectedInfoItem] = useState(null);
   const [filterToken, setFilterToken] = useState("");
@@ -109,6 +186,10 @@ function TableManager() {
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
 
+  const [showSummaryView, setShowSummaryView] = useState(true);
+  const [showAnalyticsView, setShowAnalyticsView] = useState(false);
+  const [showTransactions, setShowTransactions] = useState(false);
+  
 const [showPasswordForm, setShowPasswordForm] = useState(false);
 const [passwordPayload, setPasswordPayload] = useState({
   current_password: "",
@@ -147,7 +228,8 @@ const [settings, setSettings] = useState(() => {
     gst_number: "",
     token_prefix: "TOK",
     // 🎯 Set initial states from localStorage dynamically!
-    enable_sound: prefs.enable_sound   
+    enable_sound: prefs.enable_sound,
+    email: ""   
   };
 });
 
@@ -634,73 +716,190 @@ const printToken = (order, onComplete) => {
   }, 400); 
 };
 
+const hasFetched = useRef(false);
+const [isLoading, setIsLoading] = useState(true);
 
+const refreshTransactions = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) setTransactions(data);
+    }
+  } catch (err) { console.error("Error updating transactions:", err); }
+};
 
-/* =========================
-   INITIAL LOAD
-========================= */
+const refreshSummary = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSummary({
+        total_sales:      data.total_sales      ?? data.total_revenue  ?? 0,
+        cash_sales:       data.cash_sales        ?? 0,
+        online_sales:     data.online_sales      ?? 0,
+        completed_orders: data.completed_orders  ?? data.total_orders  ?? 0,
+        rejected_orders:  data.rejected_orders   ?? 0,
+        average_order:    data.average_order     ?? 0,
+      });
+    }
+  } catch (err) { console.error("Error updating summary:", err); }
+};
+
+const refreshAnalytics = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setAnalytics(data);
+    }
+  } catch (err) { console.error("Error updating analytics:", err); }
+};
+
+const loadSettings = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSettings(prev => ({ ...prev, ...data }));
+      if (Array.isArray(data.tables_list) && data.tables_list.length > 0) {
+        setTablesList(data.tables_list);
+      }
+    }
+  } catch (err) { console.error("Settings fetch failed:", err); }
+};
+
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
+  if (!token) { window.location.href = "/"; return; }
+  if (hasFetched.current) return;
+  hasFetched.current = true;
 
-  // Redirect if no token is found
-  if (!token) {
-    window.location.href = "/";
-    return;
-  }
+  const loadAllDashboardData = async () => {
+    try {
+      setIsLoading(true);
 
-  const headers = {
-    Authorization: `Bearer ${token}`,
+      const [
+        ordersRes, menuRes, lowStockRes, settingsRes,
+        activeDayRes, summaryRes, employeeRes,
+        transactionsRes, analyticsRes
+      ] = await Promise.all([
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e),
+      ]);
+
+      if (ordersRes?.ok) {
+        const d = await ordersRes.json();
+        if (Array.isArray(d)) setOrders(d);
+      }
+      if (menuRes?.ok) {
+        const d = await menuRes.json();
+        if (Array.isArray(d)) setMenu(d);
+      }
+      if (lowStockRes?.ok) {
+        const d = await lowStockRes.json();
+        if (Array.isArray(d)) setLowStockItems(d.map(i => i.item_name || i));
+      }
+      if (settingsRes?.ok) {
+        const d = await settingsRes.json();
+        setSettings(prev => ({ ...prev, ...d }));
+        setIsLoadingSettings(false);
+        if (Array.isArray(d.tables_list) && d.tables_list.length > 0) {
+          setTablesList(d.tables_list);
+        } else {
+          setTablesList(prev => prev.length > 0 ? prev : ["1","2","3","4","5"]);
+        }
+      }
+      if (activeDayRes?.ok) {
+        const d = await activeDayRes.json();
+        setBusinessDay(d);
+        setBusinessDayData(d);
+      }
+      if (summaryRes?.ok) {
+        const d = await summaryRes.json();
+        setSummary({
+          total_sales:      d.total_sales      ?? d.total_revenue  ?? 0,
+          cash_sales:       d.cash_sales        ?? 0,
+          online_sales:     d.online_sales      ?? 0,
+          completed_orders: d.completed_orders  ?? d.total_orders  ?? 0,
+          rejected_orders:  d.rejected_orders   ?? 0,
+          average_order:    d.average_order     ?? 0,
+        });
+      }
+      if (employeeRes?.ok) {
+        const d = await employeeRes.json();
+        if (Array.isArray(d)) setEmployees(d);
+      }
+      if (transactionsRes?.ok) {
+        const d = await transactionsRes.json();
+        if (Array.isArray(d)) setTransactions(d);
+      }
+      if (analyticsRes?.ok) {
+        const d = await analyticsRes.json();
+        setAnalytics(d);
+      }
+
+    } catch (err) {
+      console.error("❌ Critical Dashboard Boot Failure:", err);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingSettings(false);
+    }
   };
 
-
-  
-  /* 2. FETCH ORDERS */
-  apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setOrders(data);
-      } else {
-        console.error("Orders fetch error:", data);
-      }
-    })
-    .catch(console.error);
-
-  /* 3. FETCH MENU */
-  apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setMenu(data);
-      }
-    })
-    .catch(console.error);
-
-  /* 4. FETCH LOW STOCK */
-  apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager")
-    .then((res) => res.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        setLowStockItems(data.map((item) => item.item_name));
-      }
-    })
-    .catch(console.error);
-
-  /* 5. LOAD SOUNDS */
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
     audio.load();
     return audio;
   };
-
   refillStockSoundRef.current = loadAudio("/sounds/for_lowStockRefillment.wav");
   lowStockSoundRef.current = loadAudio("/sounds/for_lowStockAlert.wav");
   acceptSoundRef.current = loadAudio("/sounds/for_acceptance.wav");
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
-}, []); // Dependency array is empty because initialization happens once on mount
+  loadAllDashboardData();
+}, []);
+
+// Clock timer
+useEffect(() => {
+  const t = setInterval(() => setCurrentTime(Date.now()), 60000);
+  return () => clearInterval(t);
+}, []);
+
+// Subscription countdown
+useEffect(() => {
+  const expiryDateString = settings?.subscription_expires;
+  if (!expiryDateString) { setSubscriptionTimeLeft('No Active Plan'); return; }
+  const calc = () => {
+    const diff = new Date(expiryDateString) - new Date();
+    if (diff <= 0) { setSubscriptionTimeLeft('Expired'); setIsExpiryCritical(true); return; }
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    setIsExpiryCritical(days < 3);
+    setSubscriptionTimeLeft(`${days}d ${hours}h remaining`);
+  };
+  calc();
+  const t = setInterval(calc, 60000);
+  return () => clearInterval(t);
+}, [settings?.subscription_expires]);
+
+// Background subscription sync
+useEffect(() => {
+  let id;
+  if (settings?.subscription_status === "pending_renewal") {
+    id = setInterval(() => loadSettings(), 5000);
+  }
+  return () => { if (id) clearInterval(id); };
+}, [settings?.subscription_status]);
 
 
 const addNotification = (text, type) => {
@@ -1054,6 +1253,9 @@ const handleCreateOrder = async () => {
       addNotification(`🎉 Order sent to Kitchen for Table ${selectedTableNumber}!`, "success");
       setCart([]);
       setSelectedTableNumber(""); // 🎯 FIX: Matches your state
+      refreshTransactions(); // ✅ ADD
+      refreshSummary();      // ✅ ADD
+      refreshAnalytics();
     });
   } catch (err) {
     console.error("Online table submit failed. Dropping back to local cache...", err);
@@ -1115,90 +1317,28 @@ const COLORS = [
 ];
 
 
-const handleLogoUpload =
-  async (e) => {
-
-    const file =
-      e.target.files[0];
-
-    if (!file) return;
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "file",
-      file
+const handleLogoUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const logoUrl = await uploadDirectToCloudinary(file);
+    const updatedSettings = { ...settings, logo_url: logoUrl };
+    setSettings(updatedSettings);
+    await apiFetch(
+      `${import.meta.env.VITE_API_URL}/settings`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings)
+      },
+      "manager"
     );
-
-    try {
-
-      const uploadRes =
-        await apiFetch(
-          `${import.meta.env.VITE_API_URL}/settings/upload-logo`,
-          {
-            method: "POST",
-            body: formData
-          },"manager"
-        );
-
-      const uploadData =
-        await uploadRes.json();
-
-      const updatedSettings = {
-        ...settings,
-        logo_url:
-          uploadData.logo_url
-      };
-
-      setSettings(
-        updatedSettings
-      );
-
-      // SAVE TO DATABASE
-      await apiFetch(
-        `${import.meta.env.VITE_API_URL}/settings`,
-        {
-          method: "PATCH",
-
-          body: JSON.stringify(
-            updatedSettings
-          )
-        },
-        "manager"
-      );
-
-    } catch (err) {
-
-      console.error(err);
-    }
+    addNotification("✅ Logo updated successfully!", "success");
+  } catch (err) {
+    console.error(err);
+    addNotification("❌ Logo upload failed.", "error");
+  }
 };
-
-
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/settings`,
-    {},
-    "manager"
-  )
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setSettings(prev => ({
-  ...prev,
-  ...data
-}));
-    })
-
-    .catch(console.error);
-
-}, []);
-
-
-
-
 
 const handleSaveSettings = async () => {
   try {
@@ -1238,171 +1378,24 @@ const handleSaveSettings = async () => {
 };
 
 
-
-useEffect(() => {
-  apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${localStorage.getItem("managerAccessToken")}`
-    }
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data) {
-        // 🎯 FIX 1: Merge data instead of overwriting everything! 
-        // This preserves your registered email ID if it was already stored in settings!
-        if (typeof setSettings === 'function') {
-          setSettings((prev) => ({
-            ...prev,
-            ...data
-          }));
-        }
-        
-        console.log("Incoming settings data from backend on load:", data);
-
-        // 🎯 EXPANDED ULTRA-SAFE PROPERTY CHECKER
-        let detectedTables = null;
-
-        if (Array.isArray(data.tables_list) && data.tables_list.length > 0) {
-          detectedTables = data.tables_list;
-        } else if (Array.isArray(data.tables) && data.tables.length > 0) {
-          detectedTables = data.tables;
-        } else if (data.settings && Array.isArray(data.settings.tables_list)) {
-          detectedTables = data.settings.tables_list;
-        }
-
-        // 🎯 APPLY OR FALLBACK
-        if (detectedTables) {
-          console.log("🎯 Dynamic Tables Found and Parsed Successfully:", detectedTables);
-          setTablesList(detectedTables);
-        } else {
-          console.log("❌ Keys didn't match or table list is empty. Available keys are:", Object.keys(data));
-          // Only fallback if tablesList is completely uninitialized
-          setTablesList((prev) => (prev && prev.length > 0 ? prev : ["1", "2", "3", "4", "5"])); 
-        }
-      }
-    })
-    .catch((err) => {
-      console.error("Settings profile initialization error:", err);
-      // Keep whatever tables we have in state instead of blinding resetting to 5 on network glitches
-      setTablesList((prev) => (prev && prev.length > 0 ? prev : ["1", "2", "3", "4", "5"]));
-    });
-}, []);
-
-
-useEffect(() => {
-  // 1️⃣ Your standard initial data loader function
-  const loadSettings = async () => {
-    try {
-      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
-      const data = await res.json();
-      
-      setSettings(prev => ({
-        ...prev,
-        ...data
-      }));
-    } catch (err) {
-      console.error("Settings fetch failed:", err);
-    }
-  };
-
-  loadSettings();
-
-  // 2️⃣ 🚀 THE REAL-TIME SYNC ENGINE:
-  // If the status is pending, check the backend automatically every 5 seconds!
-  let intervalId;
-  if (settings?.subscription_status === "pending_renewal") {
-    intervalId = setInterval(() => {
-      console.log("🕵️ Checking background approval sync updates...");
-      loadSettings();
-    }, 5000); // 5000ms = 5 seconds
+// ✅ Add optimistic reset before the API call
+const handleStartDay = async () => {
+  setSummary({ total_sales: 0, cash_sales: 0, online_sales: 0, completed_orders: 0 });
+  setOrders([]);
+  setCart([]);
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/start`, { method: "POST" }, "manager");
+    if (!res.ok) { addNotification("❌ Failed to start day", "error"); return; }
+    const data = await res.json();
+    setBusinessDay(data);
+    setBusinessDayData(data);
+    addNotification("✅ Business day started");
+  } catch (err) {
+    console.error(err);
+    addNotification("❌ Failed to start day");
   }
-
-  // 🧹 CLEANUP LAYER: Destroys the timer when the component unmounts
-  return () => {
-    if (intervalId) clearInterval(intervalId);
-  };
-
-}, [settings?.subscription_status]); // 🚀 CRITICAL: Re-runs this effect loop when the status keys shift!
-
-
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/active`,
-    {},
-    "manager"
-  )
-
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      setBusinessDay(data);
-      setBusinessDayData(data);
-    })
-
-    .catch(console.error);
-
-}, []);
-
-const handleStartDay =
-  async () => {
-
-    try {
-
-      const res =
-        await apiFetch(
-          `${import.meta.env.VITE_API_URL}/business-day/start`,
-          {
-            method: "POST"
-          },
-          "manager"
-        );
-
-      const data =
-        await res.json();
-
-      setSummary({
-      total_sales: 0,
-      cash_sales: 0,
-      online_sales: 0,
-      completed_orders: 0
-    });
-
-      setBusinessDay(data);
-      setBusinessDayData(data);
-
-      addNotification(
-        "✅ Business day started"
-      );
-
-
-    } catch (err) {
-
-      console.error(err);
-
-      addNotification(
-        "❌ Failed to start day"
-      );
-    }
 };
 
-useEffect(() => {
-
-  const timer =
-    setInterval(() => {
-
-      setCurrentTime(
-        Date.now()
-      );
-
-    }, 60000);
-
-  return () =>
-    clearInterval(timer);
-
-}, []);
 
 const handleCloseDay = async () => {
   setConfirmationModal({
@@ -1469,28 +1462,6 @@ const handleCloseDay = async () => {
 };
 
 
-useEffect(() => {
-
-  apiFetch(
-    `${import.meta.env.VITE_API_URL}/business-day/summary`,
-    {},
-    "manager"
-  )
-
-    .then((res) => res.json())
-
-    .then((data) => {
-
-      console.log(data);
-
-      setSummary(data);
-      setBusinessDay(data);
-    })
-
-    .catch(console.error);
-
-}, []);
-
 const fetchEmployees = async () => {
 
   try {
@@ -1515,12 +1486,6 @@ const fetchEmployees = async () => {
   }
 };
 
-useEffect(() => {
-
-  fetchEmployees();
-
-}, []);
-
 const runCountdownCalculation = (expiryDateString) => {
   if (!expiryDateString) return;
   
@@ -1539,79 +1504,6 @@ const runCountdownCalculation = (expiryDateString) => {
   setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
 };
 
-useEffect(() => {
-  // 🚀 FIXED: Swapped out key string to match your exact backend structure!
-  const expiryDateString = settings?.subscription_expires; 
-  if (!expiryDateString) {
-    setSubscriptionTimeLeft('No Active Plan');
-    return;
-  }
-
-  const calculateRemainingDays = () => {
-    const totalTimeDiff = new Date(expiryDateString) - new Date();
-    
-    if (totalTimeDiff <= 0) {
-      setSubscriptionTimeLeft('Expired');
-      setIsExpiryCritical(true);
-      return;
-    }
-
-    const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-    const remainingHours = Math.floor((totalTimeDiff / (1000 * 60 * 60)) % 24);
-
-    if (remainingDays < 3) {
-      setIsExpiryCritical(true);
-    } else {
-      setIsExpiryCritical(false);
-    }
-
-    setSubscriptionTimeLeft(`${remainingDays}d ${remainingHours}h remaining`);
-  };
-
-  calculateRemainingDays();
-  const timerInterval = setInterval(calculateRemainingDays, 60000); 
-  return () => clearInterval(timerInterval);
-}, [settings?.subscription_expires]); // 🚀 FIXED KEY HERE TOO
-
-
-
-
-// 🚀 CORE DATA FETCH: Fires once when the dashboard mounts
-useEffect(() => {
-  const loadDashboardMetadata = async () => {
-    try {
-      const response = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("managerAccessToken")}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // 🚀 1. Merge the data so we never lose GST/Address or Subscription keys
-        setSettings(prev => ({ ...prev, ...data })); 
-        
-        // 🚀 2. Calculate days left directly from the fresh incoming data
-        if (data?.subscription_expires) {
-          const totalTimeDiff = new Date(data.subscription_expires) - new Date();
-          if (totalTimeDiff <= 0) {
-            setSubscriptionTimeLeft('Expired');
-          } else {
-            const remainingDays = Math.floor(totalTimeDiff / (1000 * 60 * 60 * 24));
-            setSubscriptionTimeLeft(`${remainingDays} days remaining`);
-          }
-        } else {
-          setSubscriptionTimeLeft('No Active Plan');
-        }
-      }
-    } catch (error) {
-      console.error("Failed loading setup matrix", error);
-    }
-  };
-
-  loadDashboardMetadata();
-}, []); // Runs exactly once when the component mounts
 
 const submitPasswordChange = async (e) => {
   e.preventDefault();
@@ -1881,50 +1773,47 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         </div>
 
         <nav className="sidebar-nav">
-          <div
-            className={`sidebar-link ${!showSubscription && !analytics && !showTransactions && !summary && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
-            onClick={() => {
-              setShowTransactions(false);
-              setSummary(null);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
-          >
+          <div className={`sidebar-link ${!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
+  onClick={() => {
+    setShowTransactions(false);
+    setShowSummaryView(false);
+    setShowAnalyticsView(false);
+    setShowManageMenu(false);
+    setShowCreateMenu(false);
+    setShowSettings(false);
+    setShowSubscription(false);
+  }}
+>
             <span className="sidebar-icon">📝</span>
             <span>Orders</span>
           </div>
 
-          <div
-            className={`sidebar-link ${analytics ? 'active' : ''}`}
-            onClick={async () => {
-              await fetchAnalytics();
-              setShowTransactions(false);
-              setSummary(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
-          >
+          <div className={`sidebar-link ${showAnalyticsView ? 'active' : ''}`}
+  onClick={() => {
+    setShowAnalyticsView(true);
+    setShowTransactions(false);
+    setShowSummaryView(false);
+    setShowManageMenu(false);
+    setShowCreateMenu(false);
+    setShowSettings(false);
+    setShowSubscription(false);
+  }}
+>
             <span className="sidebar-icon">📊</span>
             <span>Analytics</span>
           </div>
 
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
-            onClick={async () => {
-              await fetchTransactions();
-              setShowTransactions(true);
-              setSummary(null);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            onClick={() => {
+  setShowTransactions(true);
+  setShowSummaryView(false);
+  setShowAnalyticsView(false);
+  setShowManageMenu(false);
+  setShowCreateMenu(false);
+  setShowSettings(false);
+  setShowSubscription(false);
+}}
           >
             <span className="sidebar-icon">💳</span>
             <span>Transactions</span>
@@ -1932,17 +1821,15 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
           <div
             className={`sidebar-link ${summary ? 'active' : ''}`}
-            onClick={async () => {
-              const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
-              const data = await res.json();
-              setSummary(data);
-              setShowTransactions(false);
-              setAnalytics(null);
-              setShowManageMenu(false);
-              setShowCreateMenu(false);
-              setShowSettings(false);
-              setShowSubscription(false);
-            }}
+            onClick={() => {
+  setShowSummaryView(true);
+  setShowTransactions(false);
+  setShowAnalyticsView(false);
+  setShowManageMenu(false);
+  setShowCreateMenu(false);
+  setShowSettings(false);
+  setShowSubscription(false);
+}}
           >
             <span className="sidebar-icon">📈</span>
             <span>Today's Summary</span>
@@ -1953,8 +1840,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             onClick={() => {
               setShowManageMenu(true);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
@@ -1970,8 +1857,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
               setShowCreateMenu(true);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSettings(false);
               setShowSubscription(false);
             }}
@@ -1989,8 +1876,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       setShowCreateMenu(false);
       setShowManageMenu(false);
       setShowTransactions(false);
-      setAnalytics(null);
-      setSummary(null);
+      setShowAnalyticsView(false);
+      setShowSummaryView(false);
 
     }}
   >
@@ -2005,8 +1892,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
               setShowCreateMenu(false);
               setShowManageMenu(false);
               setShowTransactions(false);
-              setAnalytics(null);
-              setSummary(null);
+              setShowAnalyticsView(false);
+              setShowSummaryView(false);
               setShowSubscription(false);
             }}
           >
@@ -2026,7 +1913,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             onClick={() => {
               clearManagerData();
               localStorage.removeItem("role");
-              window.location.href = "/login";
+              window.location.href = "/";
             }}
           >
             <span className="sidebar-icon">🚪</span>
@@ -2039,7 +1926,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       <main className="manager-main">
 
         {/* ========== ANALYTICS PANEL ========== */}
-        {analytics && (
+        {showAnalyticsView && analytics && (
           <div className="analytics-container">
             <div className="main-header">
               <h1>📊 Analytics & Performance</h1>
@@ -2354,7 +2241,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
       
 {/* ========== SUMMARY PANEL ========== */}
-{summary && (
+{showSummaryView && (
   <>
     {/* BUSINESS STATUS CARD */}
     <div className="status-card">
@@ -2646,24 +2533,15 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                             let imagePath = item.image;
                             const finalizedCategory = editCategory.trim();
 
-                            if (editSelectedFile) {
-                              const formData = new FormData();
-                              formData.append("file", editSelectedFile);
-                              try {
-                                const uploadRes = await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                                  { method: "POST", body: formData },
-                                  "manager"
-                                );
-                                if (uploadRes.ok) {
-                                  const uploadData = await uploadRes.json();
-                                  imagePath = uploadData.image;
-                                }
-                              } catch (error) {
-                                console.error("Image upload failed:", error);
-                                return;
-                              }
-                            }
+                                    if (editSelectedFile) {
+                                      try {
+                                        imagePath = await uploadDirectToCloudinary(editSelectedFile);
+                                      } catch (error) {
+                                        addNotification("❌ Image upload failed.", "error");
+                                        setIsSaving(null);
+                                        return;
+                                      }
+                                    }
 
                             const updatedItem = {
                               name: editName,
@@ -2921,28 +2799,16 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
                   let imagePath = "";
 
-                  if (selectedFile) {
-                    const formData = new FormData();
-                    formData.append("file", selectedFile);
-
-                    try {
-                      const uploadRes = await apiFetch(
-                        `${import.meta.env.VITE_API_URL}/menu/upload-image`,
-                        {
-                          method: "POST",
-                          body: formData,
-                        }, "manager"
-                      );
-
-                      if (uploadRes.ok) {
-                        const uploadData = await uploadRes.json();
-                        imagePath = uploadData.image;
-                      }
-                    } catch (error) {
-                      console.error("Image upload failed:", error);
-                      return;
-                    }
-                  }
+          if (selectedFile) {
+            try {
+              imagePath = await uploadDirectToCloudinary(selectedFile);
+              console.log("⚡ Cloudinary Secure URL Acquired directly:", imagePath);
+            } catch (error) {
+              addNotification("❌ Image upload to storage provider failed.", "error");
+              setLoading(false);
+              return;
+            }
+          }
 
                   const newItem = {
                     name: newItemName,
