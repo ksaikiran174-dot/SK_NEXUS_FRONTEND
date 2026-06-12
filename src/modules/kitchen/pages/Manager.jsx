@@ -691,7 +691,14 @@ const refreshSummary = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      setSummary(data); // ✅ Only summary state
+      setSummary({
+        total_sales:      data.total_sales      ?? data.total_revenue  ?? 0,
+        cash_sales:       data.cash_sales        ?? 0,
+        online_sales:     data.online_sales      ?? 0,
+        completed_orders: data.completed_orders  ?? data.total_orders  ?? 0,
+        rejected_orders:  data.rejected_orders   ?? 0,
+        average_order:    data.average_order     ?? 0,
+      });
     }
   } catch (err) { console.error("Error updating summary:", err); }
 };
@@ -725,24 +732,28 @@ useEffect(() => {
 
       // ⚡ Added employeeRes to the parallel Promise batch!
       const [
-        ordersRes,
-        menuRes,
-        lowStockRes,
-        settingsRes,
-        activeDayRes,
-        summaryRes,
-        metadataRes,
-        employeeRes
-      ] = await Promise.all([
-        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e) // 🔥 BATCHED!
-      ]);
+  ordersRes,
+  menuRes,
+  lowStockRes,
+  settingsRes,
+  activeDayRes,
+  summaryRes,
+  metadataRes,
+  employeeRes,
+  transactionsRes,  // ✅ NEW
+  analyticsRes      // ✅ NEW
+] = await Promise.all([
+  apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e),
+  apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),  // ✅ NEW
+  apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e)      // ✅ NEW
+]);
 
       // 📥 1. Sync Orders Data
       if (ordersRes?.ok) {
@@ -785,7 +796,26 @@ useEffect(() => {
       // 📥 6. Sync Summary & Analytics Data Pools
       if (summaryRes?.ok) {
         const summaryData = await summaryRes.json();
-        setSummary(summaryData); 
+        setSummary({
+          total_sales:       summaryData.total_sales      ?? summaryData.total_revenue     ?? 0,
+          cash_sales:        summaryData.cash_sales        ?? 0,
+          online_sales:      summaryData.online_sales      ?? 0,
+          completed_orders:  summaryData.completed_orders  ?? summaryData.total_orders      ?? 0,
+          rejected_orders:   summaryData.rejected_orders   ?? 0,
+          average_order:     summaryData.average_order     ?? 0,
+        } );
+      }
+
+      // 📥 8. Sync Transactions
+      if (transactionsRes?.ok) {
+        const transactionsData = await transactionsRes.json();
+        if (Array.isArray(transactionsData)) setTransactions(transactionsData);
+      }
+
+      // 📥 9. Sync Analytics
+      if (analyticsRes?.ok) {
+        const analyticsData = await analyticsRes.json();
+        setAnalytics(analyticsData);
       }
 
       // 📥 7. Sync Employees Data (Using your clean global handler layout)
