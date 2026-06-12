@@ -1219,7 +1219,7 @@ const handleCreateOrder = async () => {
     
     // 🖨️ STEP 1: Open print window and pause code execution!
     // React halts right here while the user interacts with the Print dialog.
-    await printToken(data); 
+    printToken(data); 
     
     // 🔊 SOUND ONLY: Audio confirmation plays right along with the layout completion notification
     if (settings?.enable_sound && acceptSoundRef?.current) {
@@ -1431,6 +1431,20 @@ const handleSaveSettings =
 
 
 const handleStartDay = async () => {
+
+      // 🎯 THE MAGIC RESET: Zero out the summary object instantly
+    // This clears the dashboard values while keeping your analytics page safe
+    setSummary({
+      total_sales: 0,
+      cash_sales: 0,
+      online_sales: 0,
+      completed_orders: 0
+    });
+
+    // Clear the active orders list so the dashboard is empty for the new shift
+    setOrders([]);
+    setCart([]);
+
   try {
     const res = await apiFetch(
       `${import.meta.env.VITE_API_URL}/business-day/start`,
@@ -1445,18 +1459,7 @@ const handleStartDay = async () => {
 
     const data = await res.json();
 
-    // 🎯 THE MAGIC RESET: Zero out the summary object instantly
-    // This clears the dashboard values while keeping your analytics page safe
-    setSummary({
-      total_sales: 0,
-      cash_sales: 0,
-      online_sales: 0,
-      completed_orders: 0
-    });
 
-    // Clear the active orders list so the dashboard is empty for the new shift
-    setOrders([]);
-    setCart([]);
 
     // 2. Update the business day state (this flips the button from 'Start' to 'Close')
     setBusinessDay(data);
@@ -1523,8 +1526,10 @@ const handleCloseDay = async () => {
           });
 
           // This uses your existing utility function we just polished!
-          downloadSalesReport(data.cycle_summary, "cycle", settings);
+          
           addNotification("🎉 Milestone Reached! 15 Working Days Cycle Completed & Archived.", "success");
+          setTimeout(() => downloadSalesReport(data.cycle_summary, "cycle", settings), 0);
+        
         } else {
           // 📊 Standard track: Show regular night-close summary modal
           setCloseDaySummary({
@@ -1908,7 +1913,7 @@ return (
             onClick={() => {
               clearManagerData();
               localStorage.removeItem("role");
-              window.location.href = "/login";
+              navigate("/");
             }}
           >
             <span className="sidebar-icon">🚪</span>
