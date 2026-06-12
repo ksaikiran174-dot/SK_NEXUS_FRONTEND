@@ -1756,6 +1756,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchAnalytics();
             }}
           >
             <span className="sidebar-icon">📊</span>
@@ -1773,6 +1774,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              fetchTransactions(); 
             }}
           >
             <span className="sidebar-icon">💳</span>
@@ -1889,7 +1891,7 @@ return (
       {/* ========== MAIN CONTENT ========== */}
       <main className="manager-main">
 
-                {/* ========== ANALYTICS PANEL ========== */}
+        {/* ========== ANALYTICS PANEL ========== */}
         {showAnalyticsView && analytics && (
           <div className="analytics-container">
             <div className="main-header">
@@ -2009,199 +2011,151 @@ return (
           </div>
         )} 
 
-{/* ========== TRANSACTIONS PANEL ========== */}
-        {showTransactions && (
-          <div className="card">
-            <div className="card-header">
-              <h2>💳 Previous Transactions</h2>
-            </div>
+{/* ==========================================
+          💳 2. TRANSACTIONS PANEL
+      ========================================== */}
+      {showTransactions && (
+        <div className="card">
+          <div className="card-header">
+            <h2>💳 Previous Transactions</h2>
+          </div>
 
-            <div className="filter-group">
+          <div className="filter-group">
+            <input
+              className="form-input"
+              placeholder="🔍 Search Token ID..."
+              value={filterToken}
+              onChange={(e) => setFilterToken(e.target.value)}
+            />
+            <select
+              className="form-select"
+              value={filterPayment}
+              onChange={(e) => setFilterPayment(e.target.value)}
+            >
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="online">Online</option>
+            </select>
+            
+            {/* Date Wrapper */}
+            <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
                 className="form-input"
-                placeholder="🔍 Search Token ID..."
-                value={filterToken}
-                onChange={(e) => setFilterToken(e.target.value)}
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                style={{ paddingRight: filterDate ? '30px' : '10px' }}
               />
-              <select 
-                className="form-select"
-                value={filterPayment} 
-                onChange={(e) => setFilterPayment(e.target.value)}
-              >
-                <option value="">All Payment Methods</option>
-                <option value="cash">Cash</option>
-                <option value="online">Online</option>
-              </select>
-              {/* NEW: Date Wrapper */}
-  <div className="date-input-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-    <input 
-      className="form-input"
-      type="date" 
-      value={filterDate} 
-      onChange={(e) => setFilterDate(e.target.value)} 
-      style={{ paddingRight: filterDate ? '30px' : '10px' }} // Make space for the arrow if date is picked
-    />
-    {filterDate && (
-      <button 
-        className="date-reset-btn" 
-        onClick={() => { setFilterDate(""); fetchTransactions(); }}
-        title="Reset Date"
-      >
-        ↺
-      </button>
-    )}
-  </div>
-              <button className="btn btn-primary" onClick={fetchTransactions}>
-                Apply
-              </button>
+              {filterDate && (
+                <button
+                  className="date-reset-btn"
+                  onClick={() => { setFilterDate(""); fetchTransactions(); }}
+                  title="Reset Date"
+                >
+                  ↺
+                </button>
+              )}
             </div>
+            <button className="btn btn-primary" onClick={fetchTransactions}>
+              Apply
+            </button>
+          </div>
 
-            {transactions.map((txn) => (
-  <div
-    key={txn.id}
-    className={`transaction-item ${
-      txn.status === "rejected"
-        ? "rejected-order"
-        : ""
-    }`}
-  >
-    <div className="transaction-header">
-      {/* HEADER LEFT SIDE: TOKEN & CYCLE ID */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <span className="transaction-token">
-          Token #{txn.token_id}
-        </span>
-        
-        {/* 🚀 NEW BADGE: BUSINESS DAY CYCLE NUMBER */}
-        <span 
-          style={{
-            fontSize: "11px",
-            fontWeight: "700",
-            color: "#4f46e5", // Indigo theme color
-            background: "#eff6ff",
-            padding: "2px 8px",
-            borderRadius: "6px",
-            width: "fit-content",
-            border: "1px solid #bfdbfe"
-          }}
-        >
-          🔄 Cycle #{txn.cycle_number || "N/A"}
-        </span>
-      </div>
+          
+          {/* ⚡ FIXED: Pointed to the running 'transactions' state pool updated on mount */}
+          {(transactions || []).map((txn) => (
+            <div key={txn.id || txn._id} className={`transaction-item ...`}>
+              <div className="transaction-header">
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <span className="transaction-token">
+                    Token #{txn.token_id}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      color: "#4f46e5",
+                      background: "#eff6ff",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      width: "fit-content",
+                      border: "1px solid #bfdbfe"
+                    }}
+                  >
+                    🔄 Cycle #{txn.cycle_number || "N/A"}
+                  </span>
+                </div>
 
-      {/* HEADER RIGHT SIDE: STATUS & PAYMENT */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center"
-        }}
-      >
-        <span
-          className={`status-badge ${
-            txn.status
-          }`}
-        >
-          {txn.status}
-        </span>
-
-        <span
-          className={`transaction-payment ${txn.payment_mode}`}
-        >
-          {txn.payment_mode?.toLowerCase() === "cash"
-            ? "💵"
-            : "💳"}{" "}
-          {txn.payment_mode?.toUpperCase()}
-        </span>
-      </div>
-    </div>
-
-    <div className="transaction-details">
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Items
-        </div>
-        <div className="transaction-detail-value">
-          {txn.items
-            .map(
-              (i) =>
-                `${i.name} x${i.quantity}`
-            )
-            .join(", ")}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Total Amount
-        </div>
-        <div
-          className="transaction-detail-value"
-          style={{
-            color:
-              txn.status === "rejected"
-                ? "#dc2626"
-                : "inherit",
-            textDecoration:
-              txn.status === "rejected"
-                ? "line-through"
-                : "none",
-            fontWeight: "700"
-          }}
-        >
-          ₹{txn.total_price}
-        </div>
-      </div>
-
-      <div className="transaction-detail-row">
-        <div className="transaction-detail-label">
-          Order Time
-        </div>
-        <div className="transaction-detail-value">
-          {new Date(
-            txn.created_at
-          ).toLocaleTimeString(
-            "en-GB",
-            {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }
-          ).toLowerCase()}
-          {" • "}
-          {new Date(
-            txn.created_at
-          ).toLocaleDateString(
-            "en-GB",
-            {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            }
-          )}
-        </div>
-      </div>
-
-      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
-        <button
-          className="btn btn-primary btn-sm"
-          style={{ width: "100%", fontSize: "13px" }}
-          onClick={() => downloadReceipt(txn)}
-        >
-          📥 Download Receipt
-        </button>
-      </div>
-    </div>
-  </div>
-))}
-
-            <div style={{ marginTop: "20px" }}>
-              <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
-                📥 Download Transactions PDF
-              </button>
-            </div>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span className={`status-badge ${txn.status}`}>
+                    {txn.status}
+                  </span>
+                  <span className={`transaction-payment ${txn.payment_mode}`}>
+                    {txn.payment_mode?.toLowerCase() === "cash" ? "💵" : "💳"}{" "}
+                    {txn.payment_mode?.toUpperCase()}
+                  </span>
+                </div>
               </div>
-            )}
+
+              <div className="transaction-details">
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Items</div>
+                  <div className="transaction-detail-value">
+                    {txn.items?.map((i) => `${i.name} x${i.quantity}`).join(", ")}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Total Amount</div>
+                  <div
+                    className="transaction-detail-value"
+                    style={{
+                      color: txn.status === "rejected" ? "#dc2626" : "inherit",
+                      textDecoration: txn.status === "rejected" ? "line-through" : "none",
+                      fontWeight: "700"
+                    }}
+                  >
+                    ₹{txn.total_price}
+                  </div>
+                </div>
+
+                <div className="transaction-detail-row">
+                  <div className="transaction-detail-label">Order Time</div>
+                  <div className="transaction-detail-value">
+                    {new Date(txn.created_at).toLocaleTimeString("en-GB", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    }).toLowerCase()}
+                    {" • "}
+                    {new Date(txn.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ width: "100%", fontSize: "13px" }}
+                    onClick={() => downloadReceipt(txn)}
+                  >
+                    📥 Download Receipt
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: "20px" }}>
+            <button className="btn btn-primary" onClick={downloadTransactionsPDF}>
+              📥 Download Transactions PDF
+            </button>
+          </div>
+        </div>
+      )}
             
       
 {/* ========== SUMMARY PANEL ========== */}
