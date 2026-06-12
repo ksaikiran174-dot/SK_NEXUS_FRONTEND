@@ -697,6 +697,16 @@ const refreshSummary = async () => {
   } catch (err) { console.error("Error updating summary:", err); }
 };
 
+const refreshSummary = async () => {
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    if (res.ok) {
+      const data = await res.json();
+      setSummary(data); // ✅ Only summary state
+    }
+  } catch (err) { console.error("Error updating summary:", err); }
+};
+
 const loadSettings = async () => {
   try {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager");
@@ -786,8 +796,7 @@ useEffect(() => {
       // 📥 6. Sync Summary & Analytics Data Pools
       if (summaryRes?.ok) {
         const summaryData = await summaryRes.json();
-        setSummary(summaryData);
-        setAnalytics(summaryData); 
+        setSummary(summaryData); 
       }
 
       // 📥 7. Sync Employees Data (Using your clean global handler layout)
@@ -1243,7 +1252,9 @@ const handleCreateOrder = async () => {
       addNotification("🎉 Kitchen Order Placed Successfully!", "success");
       setCart([]);
       setPaymentMode("cash");
-      
+      refreshTransactions(); // ✅ already implied
+      refreshSummary();      // ✅ ADD THIS — updates summary page instantly
+      refreshAnalytics();
     });
 
   } catch (err) {
@@ -1405,51 +1416,62 @@ const handleSaveSettings = async () => {
 };
 
 
+const handleStartDay = async () => {
+  setSummary({ total_sales: 0, cash_sales: 0, online_sales: 0, completed_orders: 0 });
+  setOrders([]);
+  setCart([]);
 
-
-
-
-const handleStartDay =
-  async () => {
-
-    try {
-
-      const res =
-        await apiFetch(
-          `${import.meta.env.VITE_API_URL}/business-day/start`,
-          {
-            method: "POST"
-          },
-          "manager"
-        );
-
-      const data =
-        await res.json();
-
-      setSummary({
-      total_sales: 0,
-      cash_sales: 0,
-      online_sales: 0,
-      completed_orders: 0
-    });
-
-      setBusinessDay(data);
-
-      addNotification(
-        "✅ Business day started"
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      addNotification(
-        "❌ Failed to start day"
-      );
+  try {
+    const res = await apiFetch(
+      `${import.meta.env.VITE_API_URL}/business-day/start`,
+      { method: "POST" },
+      "manager"
+    );
+    if (!res.ok) {
+      addNotification("❌ Failed to start day", "error");
+      return;
     }
+    const data = await res.json();
+    setBusinessDay(data);
+    addNotification("✅ Business day started");
+  } catch (err) {
+    console.error(err);
+    addNotification("❌ Failed to start day");
+  }
 };
 
 
+const handleDeleteMenuItem = (itemId, itemName) => {
+  setConfirmationModal({
+    isOpen: true,
+    title: "Delete Menu Item",
+    message: `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
+    isDangerous: true,
+    confirmText: "Delete",
+    onConfirm: async () => {
+      setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
+      setIsSaving(itemId);
+      try {
+        const res = await apiFetch(
+          `${import.meta.env.VITE_API_URL}/menu/${itemId}`,
+          { method: "DELETE" },
+          "manager"
+        );
+        if (res.ok) {
+          setMenu((prev) => prev.filter((m) => m.id !== itemId));
+          addNotification("🗑️ Menu item deleted successfully.", "success");
+        } else {
+          addNotification("❌ Failed to delete menu item.", "error");
+        }
+      } catch (err) {
+        console.error("Delete menu item error:", err);
+        addNotification("❌ Network error while deleting item.", "error");
+      } finally {
+        setIsSaving(null);
+      }
+    },
+  });
+};
 
 const handleCloseDay = async () => {
   setConfirmationModal({
@@ -2298,7 +2320,7 @@ return (
                               >
                                 ✏️ Edit
                               </button>
-                              <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => { /* Delete handler */ }}>
+                              <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => handleDeleteMenuItem(item.id, item.name)}>
                                 🗑️ Delete
                               </button>
                             </div>
