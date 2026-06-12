@@ -675,9 +675,10 @@ const printToken = (order, onComplete) => {
 const hasFetched = useRef(false);
 const [isLoading, setIsLoading] = useState(true);
 
+// Dedicated standalone manual triggers for real-time actions/buttons
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setTransactions(data);
@@ -690,21 +691,15 @@ const refreshSummary = async () => {
     const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
-      setSummary({
-        total_sales:      data.total_sales      ?? data.total_revenue  ?? 0,
-        cash_sales:       data.cash_sales        ?? 0,
-        online_sales:     data.online_sales      ?? 0,
-        completed_orders: data.completed_orders  ?? data.total_orders  ?? 0,
-        rejected_orders:  data.rejected_orders   ?? 0,
-        average_order:    data.average_order     ?? 0,
-      });
+      // Keep state storage raw and raw-mappable just like your working setup!
+      setSummary(data); 
     }
   } catch (err) { console.error("Error updating summary:", err); }
 };
 
 const refreshAnalytics = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       setAnalytics(data);
@@ -718,113 +713,123 @@ const loadSettings = async () => {
     if (res.ok) {
       const data = await res.json();
       setSettings(prev => ({ ...prev, ...data }));
-      if (Array.isArray(data.tables_list) && data.tables_list.length > 0) {
-        setTablesList(data.tables_list);
-      }
     }
   } catch (err) { console.error("Settings fetch failed:", err); }
 };
 
+// MASTER INITIALIZATION LOOP
 useEffect(() => {
   const token = localStorage.getItem("managerAccessToken");
-  if (!token) { window.location.href = "/"; return; }
+
+  if (!token) {
+    window.location.href = "/";
+    return;
+  }
+
   if (hasFetched.current) return;
   hasFetched.current = true;
 
   const loadAllDashboardData = async () => {
     try {
       setIsLoading(true);
+      console.log("🔥 Firing clean single-batch parallel dashboard engine...");
 
+      // ⚡ Cleaned up extra overlapping network paths to prevent state locking!
       const [
-        ordersRes, menuRes, lowStockRes, settingsRes,
-        activeDayRes, summaryRes, employeeRes,
-        transactionsRes, analyticsRes
+        ordersRes,
+        menuRes,
+        lowStockRes,
+        settingsRes,
+        activeDayRes,
+        summaryRes,
+        metadataRes,
+        employeeRes
       ] = await Promise.all([
-        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
-        apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager")
       ]);
 
-      if (ordersRes?.ok) {
-        const d = await ordersRes.json();
-        if (Array.isArray(d)) setOrders(d);
-      }
-      if (menuRes?.ok) {
-        const d = await menuRes.json();
-        if (Array.isArray(d)) setMenu(d);
-      }
-      if (lowStockRes?.ok) {
-        const d = await lowStockRes.json();
-        if (Array.isArray(d)) setLowStockItems(d.map(i => i.item_name || i));
-      }
-      if (settingsRes?.ok) {
-        const d = await settingsRes.json();
-        setSettings(prev => ({ ...prev, ...d }));
-        setIsLoadingSettings(false);
-        if (Array.isArray(d.tables_list) && d.tables_list.length > 0) {
-          setTablesList(d.tables_list);
-        } else {
-          setTablesList(prev => prev.length > 0 ? prev : ["1","2","3","4","5"]);
-        }
-      }
-      if (activeDayRes?.ok) {
-        const d = await activeDayRes.json();
-        setBusinessDay(d);
-        setBusinessDayData(d);
-      }
-      if (summaryRes?.ok) {
-        const d = await summaryRes.json();
-        setSummary({
-          total_sales:      d.total_sales      ?? d.total_revenue  ?? 0,
-          cash_sales:       d.cash_sales        ?? 0,
-          online_sales:     d.online_sales      ?? 0,
-          completed_orders: d.completed_orders  ?? d.total_orders  ?? 0,
-          rejected_orders:  d.rejected_orders   ?? 0,
-          average_order:    d.average_order     ?? 0,
-        });
-      }
-      if (employeeRes?.ok) {
-        const d = await employeeRes.json();
-        if (Array.isArray(d)) setEmployees(d);
-      }
-      if (transactionsRes?.ok) {
-        const d = await transactionsRes.json();
-        if (Array.isArray(d)) setTransactions(d);
-      }
-      if (analyticsRes?.ok) {
-        const d = await analyticsRes.json();
-        setAnalytics(d);
+      // 📥 1. Sync Orders Data straight into Transactions
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json();
+        if (Array.isArray(ordersData)) setOrders(ordersData);
       }
 
-    } catch (err) {
-      console.error("❌ Critical Dashboard Boot Failure:", err);
+      // 📥 2. Sync Menu Data
+      if (menuRes.ok) {
+        const menuData = await menuRes.json();
+        if (Array.isArray(menuData)) setMenu(menuData);
+      }
+
+      // 📥 3. Sync Low Stock Data
+      if (lowStockRes.ok) {
+        const lowStockData = await lowStockRes.json();
+        if (Array.isArray(lowStockData)) {
+          setLowStockItems(lowStockData.map((item) => item.item_name || item));
+        }
+      }
+
+      // 📥 4. Sync Settings & Metadata Matrix
+      let mergedSettings = {};
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        mergedSettings = { ...mergedSettings, ...settingsData };
+      }
+      if (metadataRes.ok) {
+        const metadataData = await metadataRes.json();
+        mergedSettings = { ...mergedSettings, ...metadataData };
+      }
+      setSettings(prev => ({ ...prev, ...mergedSettings }));
+
+      // 📥 5. Sync Active Business Day Status
+      if (activeDayRes.ok) {
+        const activeDayData = await activeDayRes.json();
+        setBusinessDay(activeDayData);
+      }
+
+      // 📥 6. Sync Summary & Analytics Data Pools simultaneously
+      if (summaryRes.ok) {
+        const summaryData = await summaryRes.json();
+        setSummary(summaryData); // Perfectly mirrored data holder sync!
+      }
+
+      // 📥 7. Sync Employees Data
+      if (employeeRes.ok) {
+        const employeeData = await employeeRes.json();
+        setEmployees(employeeData);
+      }
+
+    } catch (error) {
+      console.error("❌ Critical Dashboard Boot Failure:", error);
     } finally {
       setIsLoading(false);
-      setIsLoadingSettings(false);
     }
   };
 
+  /* =========================
+      🎵 AUDIO ENGINE PRELOADER
+  ========================= */
   const loadAudio = (path) => {
     const audio = new Audio(path);
     audio.preload = "auto";
-    audio.load();
     return audio;
   };
+
   refillStockSoundRef.current = loadAudio("/sounds/for_lowStockRefillment.wav");
   lowStockSoundRef.current = loadAudio("/sounds/for_lowStockAlert.wav");
   acceptSoundRef.current = loadAudio("/sounds/for_acceptance.wav");
   completeSoundRef.current = loadAudio("/sounds/for_completion.wav");
   rejectSoundRef.current = loadAudio("/sounds/for_rejection.wav");
 
+  // Fire execution loop
   loadAllDashboardData();
 }, []);
-
 
 
 /* =========================================================================
