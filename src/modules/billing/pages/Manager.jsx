@@ -199,6 +199,12 @@ function BillingManager() {
 const [showAnalyticsView, setShowAnalyticsView] = useState(false);
 const [showTransactions, setShowTransactions] = useState(false);
 
+
+const [sidebarOpen, setSidebarOpen] = useState(false);
+// Helper: close sidebar (call this in every tab onClick)
+const closeSidebar = () => setSidebarOpen(false);
+
+
   const [
   currentTime,
   setCurrentTime
@@ -734,14 +740,19 @@ useEffect(() => {
         lowStockRes, 
         settingsRes, 
         activeDayRes, 
-        summaryRes
+        summaryRes,
+        transactionsRes, 
+        analyticsRes
       ] = await Promise.all([
         apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager")
+        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e), 
+
       ]);
 
       // Sync data arrays directly to state pools
@@ -779,6 +790,16 @@ useEffect(() => {
         const summaryData = await summaryRes.json();
         setSummary(summaryData);
         setAnalytics(summaryData) // Saved into a dedicated data holder variable!
+      }
+
+      if (transactionsRes?.ok) {
+        const d = await transactionsRes.json();
+        if (Array.isArray(d)) setTransactions(d);
+      }
+
+      if (analyticsRes?.ok) {
+        const d = await analyticsRes.json();
+        setAnalytics(d);
       }
 
     } catch (error) {
@@ -1742,9 +1763,38 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
 return (
     <div className="manager-container manager-dashboard-layout">
-      
+
+      {/* ── MOBILE OVERLAY ── */}
+    <div
+      className={`sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
+      onClick={closeSidebar}
+    />
+
+    {/* ── MOBILE TOP BAR ── */}
+    <div className="mobile-topbar" style={{ display: "none" }} 
+         ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}>
+      {settings?.logo_url ? (
+        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+      ) : (
+        <span className="mobile-logo-placeholder">🍽️</span>
+      )}
+      <span className="mobile-restaurant-name">
+        {settings?.restaurant_name || "Restaurant"}
+      </span>
+      <button
+        className={`hamburger-btn ${sidebarOpen ? "is-open" : ""}`}
+        onClick={() => setSidebarOpen(prev => !prev)}
+        aria-label="Toggle menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+    </div>
+
+
       {/* ========== SIDEBAR (Left Panel) ========== */}
-      <aside className="manager-sidebar">
+      <aside className={`manager-sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-header">
           {settings?.logo_url ? (
             <img
@@ -1770,6 +1820,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">📝</span>
@@ -1787,7 +1838,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
-              fetchAnalytics();
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">📊</span>
@@ -1804,8 +1855,8 @@ return (
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
-              setShowSubscription(false);
-              fetchTransactions(); 
+              setShowSubscription(false); 
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">💳</span>
@@ -1823,6 +1874,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">📈</span>
@@ -1840,6 +1892,7 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">✏️</span>
@@ -1857,6 +1910,7 @@ return (
               setShowSummaryView(false);
               setShowSettings(false);
               setShowSubscription(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">➕</span>
@@ -1874,6 +1928,7 @@ return (
               setShowTransactions(false);
               setShowAnalyticsView(false);
               setShowSummaryView(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">⏳</span>
@@ -1891,6 +1946,7 @@ return (
               setShowAnalyticsView(false);
               setShowSummaryView(false);
               setShowSubscription(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">⚙️</span>
@@ -1910,6 +1966,7 @@ return (
               clearManagerData();
               localStorage.removeItem("role");
               window.location.href = window.location.origin + "/";
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">🚪</span>
