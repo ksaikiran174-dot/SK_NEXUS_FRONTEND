@@ -2688,12 +2688,44 @@
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
-  .filter-group { flex-wrap: wrap !important; gap: 8px !important; }
-  .filter-group .form-input, .filter-group .form-select {
+  
+/* ── FILTER GROUP FLEX GRID PATCH ── */
+  .filter-group {
+    display: flex !important;
+    flex-direction: row !important; /* Keep items horizontal */
+    flex-wrap: wrap !important;     /* Let elements wrap rows cleanly */
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  /* 1. Force the Search Input to own the top line fully */
+  .filter-group > input.form-input {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: unset !important;
+  }
+
+  /* 2. Force Select Dropdown & Date Wrapper to split the second line perfectly */
+  .filter-group .form-select,
+  .filter-group .date-input-wrapper {
+    width: calc(50% - 4px) !important;  /* Perfect split factoring layout gaps */
     min-width: calc(50% - 4px) !important;
     flex: 1 !important;
+    box-sizing: border-box !important;
   }
-  .filter-group .btn { width: 100% !important; }
+
+  /* Ensure the date input inside its wrapper expands correctly */
+  .filter-group .date-input-wrapper .form-input {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* 3. Drop the Apply Button to its own clean action line at the bottom */
+  .filter-group .btn {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
   .card, .settings-card { padding: 16px !important; }
   .main-header h1 { font-size: 22px !important; }
   .main-header h2 { font-size: 18px !important; }
