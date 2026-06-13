@@ -742,7 +742,6 @@ useEffect(() => {
         settingsRes,
         activeDayRes,
         summaryRes,
-        metadataRes,
         employeeRes,
         transactionsRes, 
         analyticsRes
@@ -753,7 +752,6 @@ useEffect(() => {
         apiFetch(`${import.meta.env.VITE_API_URL}/settings`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
         apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e), 
@@ -779,17 +777,11 @@ useEffect(() => {
         }
       }
 
-      // 📥 4. Sync Settings & Metadata Matrix
-      let mergedSettings = {};
       if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        mergedSettings = { ...mergedSettings, ...settingsData };
+        const settingsData = settingsRes.ok ? await settingsRes.json() : {};
+        setSettings(prev => ({ ...prev, ...settingsData }));
+        setIsLoadingSettings(false); 
       }
-      if (metadataRes.ok) {
-        const metadataData = await metadataRes.json();
-        mergedSettings = { ...mergedSettings, ...metadataData };
-      }
-      setSettings(prev => ({ ...prev, ...mergedSettings }));
 
       // 📥 5. Sync Active Business Day Status
       if (activeDayRes.ok) {
