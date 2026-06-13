@@ -3000,37 +3000,34 @@ return (
         <ToastContainer notifications={notifications} />
 
 
- {/* ========================================================
+{/* ========================================================
     MAIN CONTENT AREA: SUBSCRIPTION MANAGEMENT PANEL
-    ======================================================== */}
+======================================================== */}
 {showSubscription && (
-  <div style={{ padding: "30px", maxWidth: "800px", margin: "0 auto" }}>
-    <h2 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "6px", color: "#1e293b" }}>
+  <div className="subscription-panel-wrapper">
+    <h2 className="subscription-main-title">
       🛡️ Subscription Management
     </h2>
-    <p style={{ color: "#64748b", marginBottom: "24px", fontSize: "14px" }}>
+    <p className="subscription-subtitle">
       Monitor your active registration duration lifecycle and extend your setup securely.
     </p>
 
     {/* ⚠️ HIGH VISIBILITY CONFLICT WARNING BOX */}
-    <div style={{
-      backgroundColor: '#fffbeb', borderLeft: '4px solid #f59e0b',
-      padding: '16px', borderRadius: '6px', marginBottom: '24px'
-    }}>
-      <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.6', color: '#b45309', fontWeight: '600' }}>
+    <div className="subscription-warning-box">
+      <p className="subscription-warning-text">
         ⚠️ NOTICE: Please recharge early to avoid automatic workspace lockout conflicts! Manual validation processing from the superadmin takes time. Your platform features remain entirely operational while approval is pending.
       </p>
     </div>
 
     {/* METRICS GRID: EXPIRY & COUNTDOWN */}
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "30px" }}>
+    <div className="subscription-metrics-grid">
       
       {/* Expiry Date Card */}
-      <div style={{ background: "#f8fafc", padding: "20px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
-        <span style={{ fontSize: "12px", color: "#64748b", textTransform: "uppercase", fontWeight: "700" }}>Expiration Date</span>
-        <h3 style={{ fontSize: "20px", color: "#1e293b", margin: "8px 0 0 0", fontWeight: "800" }}>
+      <div className="subscription-meta-card">
+        <span className="meta-card-label">Expiration Date</span>
+        <h3 className="meta-card-value">
           {settings === null ? (
-            <span style={{ color: "#94a3b8", fontSize: "16px", fontWeight: "500" }}>Loading details...</span>
+            <span className="meta-card-loading">Loading details...</span>
           ) : settings?.subscription_expires ? (
             new Date(settings.subscription_expires).toLocaleDateString('en-IN', { dateStyle: 'long' }) 
           ) : (
@@ -3044,7 +3041,7 @@ return (
     </div>
 
     {/* DYNAMIC RECHARGE INTERFACE CONTAINER */}
-    <div style={{ background: "#ffffff", padding: "24px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+    <div className="subscription-recharge-card">
       
       {/* 🔄 STATE A: DEFAULT ACTIVE / READY TO PAY */}
       {(settings?.subscription_status === "active" || !settings?.subscription_status) && (
@@ -3054,9 +3051,9 @@ return (
             Click below to open manual payment gateway details and upload your receipt copy.
           </p>
 
-          <div style={{ backgroundColor: '#f1f5f9', padding: '14px', borderRadius: '8px', display: 'inline-block', width: '100%', maxWidth: '300px', marginBottom: '20px' }}>
-            <span style={{ fontSize: '11px', color: '#64748b', display: 'block', fontWeight: "700", textTransform: 'uppercase' }}>Renewal Cost</span>
-            <span style={{ fontSize: '24px', fontWeight: '800', color: '#2563eb' }}>₹499</span>
+          <div className="subscription-cost-badge">
+            <span className="cost-badge-label">Renewal Cost</span>
+            <span className="cost-badge-value">₹499</span>
           </div>
 
           <br />
@@ -3064,40 +3061,21 @@ return (
           <button
             type="button"
             onClick={() => setShowRechargeModal(true)}
-            style={{
-              background: "#2563eb", color: "#ffffff", border: "none",
-              padding: "12px 30px", borderRadius: "8px", fontWeight: "700",
-              fontSize: "16px", cursor: "pointer", transition: "all 0.2s"
-            }}
-            onMouseOver={(e) => e.target.style.background = "#1d4ed8"}
-            onMouseOut={(e) => e.target.style.background = "#2563eb"}
+            className="btn-subscription-submit"
           >
             Make Payment ₹499
           </button>
         </div>
       )}
 
-      {/* 🎉 STATE B: REQUEST PENDING APPROVAL (Persists across page refreshes!) */}
+      {/* 🎉 STATE B: REQUEST PENDING APPROVAL */}
       {settings?.subscription_status === "pending_renewal" && (
-        <div style={{ 
-          textAlign: "center", 
-          padding: "12px 0",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}>
+        <div style={{ textAlign: "center", padding: "12px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: "40px", marginBottom: "12px" }}>⏳</div>
           <h3 style={{ margin: "0 0 8px 0", fontSize: "19px", fontWeight: "700", color: "#d97706" }}>
             Request Made to the Admin!
           </h3>
-          <p style={{ 
-            fontSize: "14px", 
-            color: "#475569", 
-            maxWidth: "480px", 
-            margin: "0 0 14px 0", 
-            lineHeight: "1.6",
-            fontWeight: "500" 
-          }}>
+          <p style={{ fontSize: "14px", color: "#475569", maxWidth: "480px", margin: "0 0 14px 0", lineHeight: "1.6", fontWeight: "500" }}>
             Your payment verification request has been safely logged. Your subscription expiry date will be automatically extended as soon as the superadmin approves the transaction.
           </p>
           
@@ -3109,28 +3087,16 @@ return (
         </div>
       )}
 
-      {/* ❌ STATE C: ADMIN DECLINED RECHARGE (Shows precise reason & acknowledgment reset) */}
+      {/* ❌ STATE C: ADMIN DECLINED RECHARGE */}
       {settings?.subscription_status === "declined" && (
-        <div style={{ 
-          textAlign: "center", 
-          padding: "12px 0",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}>
+        <div style={{ textAlign: "center", padding: "12px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: "40px", marginBottom: "12px" }}>❌</div>
           <h3 style={{ margin: "0 0 8px 0", fontSize: "19px", fontWeight: "700", color: "#dc2626" }}>
             Recharge Request Declined
           </h3>
           
-          <div style={{
-            background: "#fef2f2", borderLeft: "4px solid #dc2626",
-            padding: "12px 18px", borderRadius: "8px", margin: "10px 0 20px 0",
-            maxWidth: "500px", textAlign: "left"
-          }}>
-            <span style={{ fontSize: "12px", fontWeight: "700", color: "#991b1b", display: "block", textTransform: "uppercase", marginBottom: "4px" }}>
-              Reason from Admin:
-            </span>
+          <div className="subscription-rejection-box">
+            <span className="rejection-box-label">Reason from Admin:</span>
             <p style={{ margin: 0, fontSize: "13px", color: "#b91c1c", lineHeight: "1.5", fontWeight: "500" }}>
               {settings?.rejection_reason || "The uploaded transaction receipt details could not be validated by our bank logs."}
             </p>
@@ -3138,14 +3104,8 @@ return (
 
           <button
             type="button"
-            onClick={handleResetDecline} // Hits PUT /subscription-state with action: "acknowledge_decline"
-            style={{
-              background: "#dc2626", color: "#ffffff", border: "none",
-              padding: "10px 24px", borderRadius: "8px", fontWeight: "700",
-              fontSize: "14px", cursor: "pointer", transition: "all 0.2s"
-            }}
-            onMouseOver={(e) => e.target.style.background = "#b91c1c"}
-            onMouseOut={(e) => e.target.style.background = "#dc2626"}
+            onClick={handleResetDecline}
+            className="btn-subscription-decline-ack"
           >
             Acknowledge & Try Again
           </button>
@@ -3154,23 +3114,18 @@ return (
 
     </div>
 
-    {/* ========================================================
-        INJECTED POPUP MANUAL PAYMENT MODAL OVERLAY
-        ======================================================== */}
+    {/* Popup Modal stays untouched */}
     <ManualRechargeModal 
       isOpen={showRechargeModal} 
       onClose={() => setShowRechargeModal(false)} 
       onSuccess={async (utrValue) => {
         setSubmittedUtr(utrValue);
         setShowRechargeModal(false);
-        
-        // 🚀 Trigger our single backend PUT handler to save the status persistent in DB
         await handleRechargeRequest(); 
       }}
     />
   </div>
 )}
-
 
         {/* ========== SETTINGS PANEL ========== */}
         {showSettings && (
