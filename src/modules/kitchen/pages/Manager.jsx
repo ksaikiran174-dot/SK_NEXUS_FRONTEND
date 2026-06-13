@@ -3539,7 +3539,7 @@ return (
         type="email"
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
-        value={isLoadingSettings ? "Loading..." : (settings.email || "Not available")} // Pulls email from your state tracking matrix
+        value={settings.email || "Loading..."} 
         style={{ 
           background: "#f1f5f9", 
           cursor: "not-allowed", 

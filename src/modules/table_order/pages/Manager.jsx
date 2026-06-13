@@ -3619,7 +3619,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         type="email"
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
-        value={settings.email || ""} // Pulls email from your state tracking matrix
+        value={settings.email || "Loading..."} // Pulls email from your state tracking matrix
         style={{ 
           background: "#f1f5f9", 
           cursor: "not-allowed", 
