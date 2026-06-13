@@ -1812,7 +1812,8 @@ return (
           {/* ========== ORDERS TAB ========== */}
           <div
             className={`sidebar-link ${!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowTransactions(false);
               setShowSummaryView(false);
               setShowAnalyticsView(false);
@@ -1830,7 +1831,8 @@ return (
           {/* ========== ANALYTICS TAB ========== */}
           <div
             className={`sidebar-link ${showAnalyticsView ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowAnalyticsView(true);
               setShowTransactions(false);
               setShowSummaryView(false);
@@ -1848,7 +1850,8 @@ return (
           {/* ========== TRANSACTIONS TAB ========== */}
           <div
             className={`sidebar-link ${showTransactions ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowTransactions(true);
               setShowSummaryView(false);
               setShowAnalyticsView(false);
@@ -1866,7 +1869,8 @@ return (
           {/* ========== TODAY'S SUMMARY TAB ========== */}
           <div
             className={`sidebar-link ${showSummaryView ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowSummaryView(true);
               setShowTransactions(false);
               setShowAnalyticsView(false);
@@ -1884,7 +1888,8 @@ return (
           {/* ========== MANAGE MENU TAB ========== */}
           <div
             className={`sidebar-link ${showManageMenu ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowManageMenu(true);
               setShowTransactions(false);
               setShowAnalyticsView(false);
@@ -1902,7 +1907,8 @@ return (
           {/* ========== ADD MENU ITEM TAB ========== */}
           <div
             className={`sidebar-link ${showCreateMenu ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowCreateMenu(true);
               setShowManageMenu(false);
               setShowTransactions(false);
@@ -1920,7 +1926,8 @@ return (
           {/* ========== SUBSCRIPTION TAB ========== */}
           <div
             className={`sidebar-link ${showSubscription ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowSubscription(true);
               setShowSettings(false);
               setShowCreateMenu(false);
@@ -1938,7 +1945,8 @@ return (
           {/* ========== SETTINGS TAB ========== */}
           <div
             className={`sidebar-link ${showSettings ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowSettings(true);
               setShowCreateMenu(false);
               setShowManageMenu(false);

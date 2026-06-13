@@ -2679,13 +2679,14 @@
     height: 100vh;
     width: 280px;
     padding: 24px 20px;
-    z-index: 2000;
+    z-index: 99999 !important;
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    pointer-events: all !important;
   }
 
   .manager-sidebar.sidebar-open {
@@ -2738,7 +2739,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 1999;
+    z-index: 99998 !important;
     backdrop-filter: blur(2px);
   }
 
