@@ -678,7 +678,7 @@ const [isLoading, setIsLoading] = useState(true);
 // Dedicated standalone manual triggers for real-time actions/buttons
 const refreshTransactions = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) setTransactions(data);
@@ -699,7 +699,7 @@ const refreshSummary = async () => {
 
 const refreshAnalytics = async () => {
   try {
-    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager");
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager");
     if (res.ok) {
       const data = await res.json();
       setAnalytics(data);
@@ -743,7 +743,9 @@ useEffect(() => {
         activeDayRes,
         summaryRes,
         metadataRes,
-        employeeRes
+        employeeRes,
+        transactionsRes, 
+        analyticsRes
       ] = await Promise.all([
         apiFetch(`${import.meta.env.VITE_API_URL}/orders`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {}, "manager"),
@@ -752,7 +754,9 @@ useEffect(() => {
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/active`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/summary`, {}, "manager"),
         apiFetch(`${import.meta.env.VITE_API_URL}/business-day/settings`, {}, "manager"),
-        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager")
+        apiFetch(`${import.meta.env.VITE_API_URL}/employees`, {}, "manager"),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/transactions`, {}, "manager").catch(e => e),
+        apiFetch(`${import.meta.env.VITE_API_URL}/orders/analytics`, {}, "manager").catch(e => e), 
       ]);
 
       // 📥 1. Sync Orders Data straight into Transactions
@@ -803,6 +807,16 @@ useEffect(() => {
       if (employeeRes.ok) {
         const employeeData = await employeeRes.json();
         setEmployees(employeeData);
+      }
+
+      if (transactionsRes?.ok) {
+        const d = await transactionsRes.json();
+        if (Array.isArray(d)) setTransactions(d);
+      }
+
+      if (analyticsRes?.ok) {
+        const d = await analyticsRes.json();
+        setAnalytics(d);
       }
 
     } catch (error) {
@@ -1756,7 +1770,6 @@ return (
               setShowCreateMenu(false);
               setShowSettings(false);
               setShowSubscription(false);
-              fetchAnalytics();
             }}
           >
             <span className="sidebar-icon">📊</span>
@@ -1773,8 +1786,7 @@ return (
               setShowManageMenu(false);
               setShowCreateMenu(false);
               setShowSettings(false);
-              setShowSubscription(false);
-              fetchTransactions(); 
+              setShowSubscription(false); 
             }}
           >
             <span className="sidebar-icon">💳</span>
