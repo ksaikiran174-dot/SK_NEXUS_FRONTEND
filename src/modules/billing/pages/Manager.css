@@ -780,6 +780,8 @@
 
   overflow: hidden;
 
+  margin-top: 24px;
+
   padding: 30px;
 
   border-radius: 24px;
@@ -1232,6 +1234,7 @@
   display: block;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .cost-badge-value {
   font-size: 24px;
@@ -1569,6 +1572,14 @@
 
 [data-theme="dark"] .security-password-form {
   border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .cost-badge-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .cost-badge-value {
+  color: #3b82f6; /* Higher glow ratio contrast value for visibility */
 }
 
 
@@ -3666,6 +3677,10 @@
   .countdown-value {
     font-size: 16px;
     margin-top: 4px;
+  }
+  
+  .summary-panel {
+    margin-top: 16px; /* Slightly smaller gap on mobile so it doesn't push content too far down */
   }
   
   /* Compact Modal Tweaks */
