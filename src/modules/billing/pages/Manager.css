@@ -1220,11 +1220,13 @@
   border-radius: 12px;
 }
 .subscription-cost-badge {
-  background-color: #f8fafc; /* Light mode background */
-  padding: 12px;
+  background-color: #f1f5f9;
+  padding: 14px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  display: inline-block; /* or block depending on your layout */
+  display: inline-block;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 20px;
 }
 .cost-badge-label {
   font-size: 11px;
@@ -1572,6 +1574,10 @@
   border-top-color: var(--border-color);
 }
 
+[data-theme="dark"] .subscription-cost-badge {
+  background-color: var(--bg-color);       /* Swaps background to your dark mode layout background */
+  border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
+}
 
 /* Countdown Card */
 .sub-countdown-card {
@@ -1912,11 +1918,6 @@
 
 [data-theme="dark"] .recharts-pie-label-text {
   fill: var(--text-primary) !important;
-}
-
-[data-theme="dark"] .subscription-cost-badge {
-  background-color: var(--bg-color);       /* Swaps background to your dark mode layout background */
-  border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
 }
 
 [data-theme="dark"] .cost-badge-label {
