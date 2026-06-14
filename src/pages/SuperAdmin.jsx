@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./SuperAdmin.css";
 import ToastContainer from "../components/ToastContainer";
 import { inferToastType } from "../utils/ToastHelpers";
-import ConfirmationModal from "./ConfirmationModal"; // 🚀 Import our custom modal framework
+import ConfirmationModal from "../components/ConfirmationModal"; // 🚀 Import our custom modal framework
 
 function SuperAdmin() {
   const [restaurants, setRestaurants] = useState([]);
