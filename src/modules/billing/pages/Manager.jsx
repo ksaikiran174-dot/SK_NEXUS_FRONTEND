@@ -2484,62 +2484,73 @@ return (
     </div>
 
     {/* Charts Section */}
-    <div className="grid grid-2">
-      {/* 🎯 TARGET 1: Payment Pie Chart Component Wrapper */}
-      <div id="payment-pie-chart" className="chart-container" style={{ background: '#ffffff', padding: '15px', borderRadius: '8px' }}>
-        <h3 className="chart-title">Payment Distribution</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={paymentData}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={100}
-              label
-            >
-              {paymentData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+{/* Charts Section */}
+<div className="grid grid-2">
+  {/* 🎯 TARGET 1: Payment Pie Chart Component Wrapper */}
+  <div id="payment-pie-chart" className="chart-container chart-card-wrapper">
+    <h3 className="chart-title">Payment Distribution</h3>
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={paymentData}
+          dataKey="value"
+          nameKey="name"
+          outerRadius={100}
+          label={{ fill: 'var(--text-primary)', fontSize: 12 }} /* ⚡ Dynamic text color for pie labels */
+        >
+          {paymentData.map((entry, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={COLORS[index % COLORS.length]}
+            />
+          ))}
+        </Pie>
+        {/* We use contentStyle and itemStyle here to make sure tooltip styling changes automatically */}
+        <Tooltip 
+          contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+          itemStyle={{ color: 'var(--text-primary)' }}
+        />
+        <Legend wrapperStyle={{ paddingTop: 10 }} />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+</div>
 
-    <div className="grid grid-2">
-      {/* 🎯 TARGET 2: Top Selling Items Bar Chart Component Wrapper */}
-      <div id="sales-trend-bar-chart" className="chart-container" style={{ background: '#ffffff', padding: '15px', borderRadius: '8px' }}>
-        <h3 className="chart-title">Top Selling Items</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="sold" fill="#2563eb" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+<div className="grid grid-2">
+  {/* 🎯 TARGET 2: Top Selling Items Bar Chart Component Wrapper */}
+  <div id="sales-trend-bar-chart" className="chart-container chart-card-wrapper">
+    <h3 className="chart-title">Top Selling Items</h3>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={chartData}>
+        <CartesianGrid stroke="var(--chart-grid-color)" strokeDasharray="3 3" />
+        <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
+        <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
+        <Tooltip 
+          contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+          itemStyle={{ color: 'var(--text-primary)' }}
+        />
+        <Bar dataKey="sold" fill="#2563eb" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
 
-      {/* Rush Hour Box wrapper remains untouched */}
-      <div className="chart-container" style={{ background: '#ffffff', padding: '15px', borderRadius: '8px' }}>
-        <h3 className="chart-title">Rush Hour Analytics</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={analytics.rush_hours}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="hour" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="orders" fill="#10b981" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+  {/* Rush Hour Box wrapper */}
+  <div className="chart-container chart-card-wrapper">
+    <h3 className="chart-title">Rush Hour Analytics</h3>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={analytics.rush_hours}>
+        <CartesianGrid stroke="var(--chart-grid-color)" strokeDasharray="3 3" />
+        <XAxis dataKey="hour" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
+        <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
+        <Tooltip 
+          contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)' }}
+          itemStyle={{ color: 'var(--text-primary)' }}
+        />
+        <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+</div>
   </div>
 )}
 

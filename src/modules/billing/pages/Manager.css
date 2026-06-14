@@ -1679,6 +1679,71 @@
   color: var(--text-primary);
 }
 
+
+/* ========================================================
+   CHART COMPONENT LAYOUTS & BASE LIGHT MODES
+   ======================================================== */
+
+:root {
+  --chart-grid-color: #e2e8f0; /* Default subtle light mode line color */
+}
+
+.chart-card-wrapper {
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Recharts Legend Global Overrides */
+.recharts-legend-item-text {
+  color: #475569 !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+
+
+/* ========================================================
+   🌗 DARK MODE ENHANCEMENTS (DATA-THEME="DARK")
+   ======================================================== */
+
+[data-theme="dark"] {
+  --chart-grid-color: #334155; /* Dark slate line splits for grids */
+}
+
+[data-theme="dark"] .chart-card-wrapper {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .chart-title {
+  color: var(--text-primary);
+}
+
+/* Make Legend labels readable in dark mode */
+[data-theme="dark"] .recharts-legend-item-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Ensure the Recharts responsive labels change colors automatically */
+[data-theme="dark"] .recharts-text {
+  fill: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .recharts-pie-label-text {
+  fill: var(--text-primary) !important;
+}
+
+
 /* ========================================================
    SUBSCRIPTION MANAGEMENT CORE THEME STYLES
    ======================================================== */
@@ -3423,7 +3488,7 @@
     margin-top: 4px !important;
   }
 
-  
+
   .sub-countdown-card {
     padding: 14px;
     border-radius: 8px;
