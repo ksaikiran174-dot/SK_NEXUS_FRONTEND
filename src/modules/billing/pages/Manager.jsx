@@ -3614,6 +3614,7 @@ return (
   );
 }
 
+
 /* ========================================================
    SUB-COMPONENT: REAL-TIME COUNTDOWN CALCULATION
    ======================================================== */
@@ -3645,16 +3646,9 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
   }, [expiryDate]);
 
   return (
-    <div style={{ 
-      background: isCritical ? "#fff5f5" : "#f8fafc", 
-      padding: "20px", 
-      borderRadius: "10px", 
-      border: isCritical ? "1px solid #feb2b2" : "1px solid #e2e8f0" 
-    }}>
-      <span style={{ fontSize: "12px", color: isCritical ? "#c53030" : "#64748b", textTransform: "uppercase", fontWeight: "700" }}>Time Remaining</span>
-      <h3 style={{ fontSize: "20px", color: isCritical ? "#9b1c1c" : "#1e293b", margin: "8px 0 0 0", fontWeight: "800" }}>
-        {timeLeft}
-      </h3>
+    <div className={`sub-countdown-card ${isCritical ? 'critical' : ''}`}>
+      <span className="countdown-label">Time Remaining</span>
+      <h3 className="countdown-value">{timeLeft}</h3>
     </div>
   );
 };
@@ -3662,7 +3656,7 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
 /* ========================================================
    SUB-COMPONENT: SCREENSHOT TRANSACTION UPLOADER
    ======================================================== */
-const RechargeFormHandler = ({onNotify}) => {
+const RechargeFormHandler = ({ onNotify }) => {
   const [screenshot, setScreenshot] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
@@ -3710,27 +3704,19 @@ const RechargeFormHandler = ({onNotify}) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "15px", alignItems: "center" }}>
-      <input type="file" accept="image/*" onChange={handleFile} style={{ fontSize: "14px" }} />
+    <div className="recharge-form-wrapper">
+      <input type="file" accept="image/*" onChange={handleFile} className="file-input-field" />
       
       {preview && (
-        <img src={preview} alt="Receipt preview" style={{ width: "100%", maxHeight: "200px", objectFit: "contain", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
+        <img src={preview} alt="Receipt preview" className="receipt-preview-img" />
       )}
 
-      <button
-        onClick={submitRecharge}
-        disabled={loading}
-        style={{
-          width: "100%", padding: "12px", background: "#10b981", color: "white",
-          border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer"
-        }}
-      >
+      <button onClick={submitRecharge} disabled={loading} className="btn-upload-submit">
         {loading ? "Uploading Proof..." : "🚀 Send Renewal Screenshot to Admin"}
       </button>
     </div>
   );
 };
-
 
 /* ========================================================
    SUB-COMPONENT: MANUAL RECHARGE PAYMENT MODAL WITH UTR
@@ -3765,7 +3751,7 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
 
     const formData = new FormData();
     formData.append("screenshot", screenshot);
-    formData.append("utr_id", utr.trim()); // 🚀 Sent to backend
+    formData.append("utr_id", utr.trim());
     formData.append("duration_days", 30);
 
     try {
@@ -3778,11 +3764,8 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
       });
 
       if (res.ok) {
-        // Clear forms out cleanly
         setScreenshot(null);
         setPreview('');
-        
-        // Pass UTR up to main screen and trigger success panel change view
         onSuccess(utr.trim()); 
         onClose(); 
       } else {
@@ -3796,37 +3779,28 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-      backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-    }}>
-      <div style={{
-        background: '#ffffff', padding: '28px', borderRadius: '16px',
-        maxWidth: '460px', width: '90%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-          <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '800', color: '#1e293b' }}>
-            💳 Secure Manual Payment
-          </h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "22px", cursor: "pointer", color: "#94a3b8", lineHeight: "1" }}>×</button>
+    <div className="modal-overlay-backdrop">
+      <div className="modal-content-card">
+        <div className="modal-header-row">
+          <h3 className="modal-card-heading">💳 Secure Manual Payment</h3>
+          <button onClick={onClose} className="modal-close-cross-btn">×</button>
         </div>
 
-        <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0', lineHeight: "1.5" }}>
+        <p className="modal-info-paragraph">
           Scan the official merchant QR code and make a bank transfer of exactly <strong>₹499</strong>.
         </p>
 
         {/* MERCHANT GATEWAY BOX */}
-        <div style={{ textAlign: "center", backgroundColor: "#f8fafc", padding: "12px", borderRadius: "12px", border: "1px solid #e2e8f0", marginBottom: "16px" }}>
-          <div style={{ width: "140px", height: "140px", backgroundColor: "#cbd5e1", margin: "0 auto 8px auto", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", color: "#475569", fontSize: "12px" }}>
+        <div className="merchant-gateway-box">
+          <div className="merchant-qr-placeholder-img">
             [ MERCHANT QR IMAGE ]
           </div>
-          <span style={{ fontSize: "12px", color: "#334155", fontWeight: "700" }}>UPI ID: business@upi</span>
+          <span className="merchant-upi-text">UPI ID: business@upi</span>
         </div>
 
-        {/* 🚀 NEW STEP: UTR INPUT TEXT AREA */}
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+        {/* UTR INPUT BLOCK */}
+        <div className="input-group-field-block">
+          <label className="input-field-label">
             Reference UTR / Transaction ID (12 Digits)
           </label>
           <input 
@@ -3834,44 +3808,28 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
             placeholder="Enter 12-digit UTR identifier number" 
             value={utr}
             onChange={(e) => setUtr(e.target.value)}
-            style={{ 
-              width: "100%", padding: "10px", borderRadius: "6px", 
-              border: "1px solid #cbd5e1", fontSize: "13px", boxSizing: "border-box" 
-            }}
+            className="text-input-field"
           />
         </div>
 
-        {/* FILE UPLOADER GATES */}
-        <div style={{ border: '2px dashed #cbd5e1', padding: '14px', borderRadius: '10px', marginBottom: '20px', textAlign: 'center' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px', cursor: 'pointer' }}>
+        {/* FILE UPLOADER DRAWER */}
+        <div className="dashed-uploader-container">
+          <label className="uploader-clickable-label">
             📸 Upload Payment Receipt Screenshot
           </label>
-          <input type="file" accept="image/*" onChange={handleFileChange} style={{ fontSize: '12px', width: "100%" }} />
+          <input type="file" accept="image/*" onChange={handleFileChange} className="file-input-field" />
           
           {preview && (
-            <img src={preview} alt="Receipt Preview" style={{ width: '100%', maxHeight: '100px', objectFit: 'contain', marginTop: '10px', borderRadius: '4px' }} />
+            <img src={preview} alt="Receipt Preview" className="receipt-thumbnail-preview" />
           )}
         </div>
 
-        {/* BUTTON SYSTEM */}
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            onClick={handleReceiptSubmission}
-            disabled={loading}
-            style={{
-              flex: 1, padding: '12px', background: '#10b981', color: 'white',
-              border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: "14px"
-            }}
-          >
+        {/* BUTTON GROUP ROW */}
+        <div className="modal-btn-row-group">
+          <button onClick={handleReceiptSubmission} disabled={loading} className="btn-modal-action-primary">
             {loading ? "Verifying Reference..." : "🚀 Submit Extension Proof"}
           </button>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '12px 18px', background: '#f1f5f9', color: '#475569',
-              border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: "14px"
-            }}
-          >
+          <button onClick={onClose} className="btn-modal-action-secondary">
             Cancel
           </button>
         </div>

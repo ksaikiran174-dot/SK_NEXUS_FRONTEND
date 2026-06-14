@@ -1402,6 +1402,282 @@
   min-width: 200px;
 }
 
+/* Countdown Card */
+.sub-countdown-card {
+  background-color: #f8fafc;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+.sub-countdown-card.critical {
+  background-color: #fff5f5;
+  border-color: #feb2b2;
+}
+.countdown-label {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.sub-countdown-card.critical .countdown-label {
+  color: #c53030;
+}
+.countdown-value {
+  font-size: 20px;
+  color: #1e293b;
+  margin: 8px 0 0 0;
+  font-weight: 800;
+}
+.sub-countdown-card.critical .countdown-value {
+  color: #9b1c1c;
+}
+
+/* Form Uploader Sub-container */
+.recharge-form-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+  width: 100%;
+}
+.receipt-preview-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+.btn-upload-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Modal Core Setup */
+.modal-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-content-card {
+  background-color: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  max-width: 460px;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+.modal-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.modal-card-heading {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: #1e293b;
+}
+.modal-close-cross-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #94a3b8;
+  line-height: 1;
+}
+.modal-info-paragraph {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+/* Merchant Gateway Box Details */
+.merchant-gateway-box {
+  text-align: center;
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+.merchant-qr-placeholder-img {
+  width: 140px;
+  height: 140px;
+  background-color: #cbd5e1;
+  margin: 0 auto 8px auto;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #475569;
+  font-size: 12px;
+}
+.merchant-upi-text {
+  font-size: 12px;
+  color: #334155;
+  font-weight: 700;
+}
+
+/* Inputs & Uploader Groups */
+.input-group-field-block {
+  margin-bottom: 16px;
+  width: 100%;
+}
+.input-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.text-input-field {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+.dashed-uploader-container {
+  border: 2px dashed #cbd5e1;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.uploader-clickable-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.receipt-thumbnail-preview {
+  width: 100%;
+  max-height: 100px;
+  object-fit: contain;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+/* Footer Action Buttons inside Modal */
+.modal-btn-row-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+.btn-modal-action-primary {
+  flex: 1;
+  padding: 12px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-modal-action-secondary {
+  padding: 12px 18px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ========================================================
+   🌗 INTERACTIVE DARK MODE ADAPTABILITY [DATA-THEME="DARK"]
+   ======================================================== */
+
+[data-theme="dark"] .sub-countdown-card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .sub-countdown-card.critical {
+  background-color: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+[data-theme="dark"] .countdown-label {
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .sub-countdown-card.critical .countdown-label {
+  color: #fca5a5;
+}
+[data-theme="dark"] .countdown-value {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .sub-countdown-card.critical .countdown-value {
+  color: #fca5a5;
+}
+
+[data-theme="dark"] .receipt-preview-img {
+  border-color: var(--border-color);
+}
+
+/* Modal Structures on Dark Theme */
+[data-theme="dark"] .modal-content-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+[data-theme="dark"] .modal-card-heading {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .modal-info-paragraph,
+[data-theme="dark"] .modal-close-cross-btn {
+  color: var(--text-secondary);
+}
+
+/* Internal Inner-Card Blocks */
+[data-theme="dark"] .merchant-gateway-box {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .merchant-qr-placeholder-img {
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+}
+[data-theme="dark"] .merchant-upi-text,
+[data-theme="dark"] .input-field-label,
+[data-theme="dark"] .uploader-clickable-label {
+  color: var(--text-primary);
+}
+[data-theme="dark"] .text-input-field {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .dashed-uploader-container {
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .btn-modal-action-secondary {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
 
 /* ========================================================
    SUBSCRIPTION MANAGEMENT CORE THEME STYLES
@@ -3146,6 +3422,64 @@
     width: 100% !important;
     margin-top: 4px !important;
   }
+
+  
+  .sub-countdown-card {
+    padding: 14px;
+    border-radius: 8px;
+  }
+  .countdown-value {
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  
+  /* Compact Modal Tweaks */
+  .modal-content-card {
+    padding: 20px 16px;
+    max-width: 430px; /* Clamps popup box inside target size safely */
+  }
+  .modal-card-heading {
+    font-size: 16px;
+  }
+  .modal-info-paragraph {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .merchant-gateway-box {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  .merchant-qr-placeholder-img {
+    width: 110px;
+    height: 110px;
+    font-size: 11px;
+  }
+  .text-input-field {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .dashed-uploader-container {
+    padding: 10px;
+    margin-bottom: 16px;
+  }
+  
+  /* Thumb-friendly grid conversions */
+  .modal-btn-row-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-modal-action-primary,
+  .btn-modal-action-secondary {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .btn-modal-action-secondary {
+    order: 2; /* Ensures cancel slides under the execution button on stacked views */
+  }
+
+
 
   .card, .settings-card { padding: 16px !important; }
   .main-header h1 { font-size: 22px !important; }
