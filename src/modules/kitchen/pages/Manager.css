@@ -2643,4 +2643,320 @@
 }
 
 
+/* ── MOBILE TOP BAR — Hidden on desktop, layout prepared for mobile ── */
+.mobile-topbar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100% !important; /* 🎯 Forces full horizontal coverage edge-to-edge */
+  z-index: 1500;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  padding: 10px 16px;
+  height: 56px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-sizing: border-box; /* Prevents padding from breaking width bounds */
+}
+
+/* =========================================================================
+   📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
+   Hamburger drawer sidebar — 60% Width & Blur Redesign
+   ========================================================================= */
+
+@media (max-width: 430px) {
+
+  /* ── SIDEBAR: Hidden off-screen, handles custom 60% horizontal canvas ── */
+.manager-container {
+    --manager-sidebar-width: 0px !important;
+  }
+
+  .manager-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 60% !important; /* 🎯 Occupies exactly 60% horizontal width */
+    min-width: 230px;      /* Safeguard minimum space to keep link text clean */
+    padding: 20px 14px !important; /* Tighter padding for small screens */
+    z-index: 99999 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    pointer-events: all !important;
+  }
+
+  .manager-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  /* ── 🎯 SIDEBAR HEADER GAP FIX ── */
+  .manager-sidebar .sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important; /* Spacing between logo image/placeholder and h1 title text */
+    width: 100% !important;
+    margin-bottom: 16px !important; /* Keeps structural margin consistent */
+  }
+
+  /* Scale down interior font and icon sizes for smaller layouts */
+  .manager-sidebar.sidebar-open .sidebar-header h1 {
+    display: block !important;
+    font-size: 16px !important; 
+    margin: 0 !important; /* Prevents default heading margins from breaking vertical alignment */
+  }
+
+  .manager-sidebar.sidebar-open .sidebar-link {
+    width: 100% !important;
+    height: auto !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    padding: 10px 12px !important; /* Thinner padding footprint */
+    justify-content: flex-start !important;
+    border-radius: 8px !important;
+    gap: 8px !important; /* Tighter gap layout */
+  }
+
+  .manager-sidebar.sidebar-open .sidebar-link > span:not(.sidebar-icon) {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: static !important;
+    font-size: 13px !important; /* Smaller text scale */
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .manager-sidebar.sidebar-open .sidebar-icon {
+    font-size: 16px !important; /* Scaled down sidebar icons */
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .manager-sidebar .sidebar-nav,
+  .manager-sidebar .sidebar-footer {
+    width: 100%;
+    align-items: flex-start;
+    gap: 4px !important;
+  }
+
+  /* ── SUBSCRIPTION RESPONSIVE PHONE PATCH ── */
+  .subscription-panel-wrapper {
+    padding: 12px 4px !important; /* Drops large spacing bloat on small screens */
+    width: 100% !important;
+  }
+
+  .subscription-main-title {
+    font-size: 20px !important; /* Slightly more compact header title */
+  }
+
+  .subscription-metrics-grid {
+    grid-template-columns: 1fr !important; /* 🎯 Collapse 2 columns down to 1 single column */
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .subscription-meta-card {
+    padding: 16px !important; /* Slimmer inner layout padding */
+  }
+
+  .meta-card-value {
+    font-size: 18px !important; /* Prevents long text string overflows */
+  }
+
+  .subscription-recharge-card {
+    padding: 20px 14px !important;
+  }
+
+  .subscription-cost-badge {
+    max-width: 100% !important; /* Stretches badge full container width */
+    box-sizing: border-box !important;
+  }
+
+  .btn-subscription-submit,
+  .btn-subscription-decline-ack {
+    width: 100% !important; /* 🎯 Big, thumb-friendly full-width mobile action targets */
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+  }
+
+  .subscription-rejection-box {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ── OVERLAY backdrop: Blurred background execution ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.4) !important; /* Soft dark tint */
+    z-index: 99998 !important; /* Behind the drawer sidebar layout */
+    backdrop-filter: blur(4px) !important; /* 🎯 Blurs out main underlying content */
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  .sidebar-overlay.overlay-visible {
+    display: block !important;
+  }
+
+  /* ── MAIN CONTENT AREA: Fills out 100% layout space ── */
+  .manager-main {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important; /* 🎯 Reclaims the sidebar's blank space area */
+    max-width: 100% !important;
+    padding: 16px !important;
+    padding-top: 72px !important; /* Clean space below the fixed top bar */
+    box-sizing: border-box;
+  }
+
+  .mobile-topbar {
+    display: flex !important; /* Ensures display activates on cell devices */
+  }
+
+  .mobile-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .mobile-logo-placeholder {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .mobile-restaurant-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hamburger-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    transition: background 0.2s ease;
+  }
+
+  .hamburger-btn:hover {
+    background: rgba(255,255,255,0.25);
+  }
+
+  .hamburger-line {
+    width: 18px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  /* X animation rules */
+  .hamburger-btn.is-open .hamburger-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger-btn.is-open .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .hamburger-btn.is-open .hamburger-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-topbar-hidden {
+    display: none !important;
+  }
+
+  /* ── INTERIOR BLOCK GRIDS RESPONSIVENESS OVERRIDES ── */
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  .stat-value { font-size: 22px !important; }
+  .stat-label { font-size: 11px !important; }
+  .summary-items { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .summary-item-value { font-size: 26px !important; }
+  .grid-2, .grid-3, .order-container, .transaction-details {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+/* ── FILTER GROUP FLEX GRID PATCH ── */
+  .filter-group {
+    display: flex !important;
+    flex-direction: row !important; /* Keep items horizontal */
+    flex-wrap: wrap !important;     /* Let elements wrap rows cleanly */
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  /* 1. Force the Search Input to own the top line fully */
+  .filter-group > input.form-input {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: unset !important;
+  }
+
+  /* 2. Force Select Dropdown & Date Wrapper to split the second line perfectly */
+  .filter-group .form-select,
+  .filter-group .date-input-wrapper {
+    width: calc(50% - 4px) !important;  /* Perfect split factoring layout gaps */
+    min-width: calc(50% - 4px) !important;
+    flex: 1 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure the date input inside its wrapper expands correctly */
+  .filter-group .date-input-wrapper .form-input {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* 3. Drop the Apply Button to its own clean action line at the bottom */
+  .filter-group .btn {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
+  .card, .settings-card { padding: 16px !important; }
+  .main-header h1 { font-size: 22px !important; }
+  .main-header h2 { font-size: 18px !important; }
+  .top-status-row { display: none !important; }
+  .analytics-container { gap: 16px !important; }
+  .summary-actions { flex-direction: column !important; }
+  .summary-actions button { width: 100% !important; }
+  .status-card { min-height: 100px !important; padding: 16px !important; }
+  .payment-modal-overlay { padding: 16px !important; }
+  .payment-modal { max-width: 100% !important; padding: 20px !important; }
+}
 
