@@ -3538,7 +3538,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
   </div>
 )}
 
-
         {/* ========== SETTINGS PANEL ========== */}
         {showSettings && (
           <div className="settings-container">
@@ -3637,12 +3636,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
         value={settings.email || "Loading..."} // Pulls email from your state tracking matrix
-        style={{ 
-          background: "#f1f5f9", 
-          cursor: "not-allowed", 
-          color: "#64748b",
-          fontWeight: "500"
-        }}
       />
     </div>
 
@@ -3671,75 +3664,75 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       </div>
     )}
 
-    {/* PASSWORD CHANGING UTILITY ACCORDION CARD */}
-    <div style={{ marginTop: "30px", padding: "20px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#fff" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h4 style={{ margin: 0, fontSize: "16px", color: "#1e293b", fontWeight: "700" }}>Account Security Management</h4>
-          <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}>Update your secret authentication key details phrase.</p>
-        </div>
-        <button 
-          type="button"
-          onClick={() => setShowPasswordForm(!showPasswordForm)}
-          style={{ padding: "8px 16px", background: showPasswordForm ? "#64748b" : "#4f46e5", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "600" }}
-        >
-          {showPasswordForm ? "Cancel Request" : "Modify Password"}
-        </button>
-      </div>
-
-      {/* CONDITIONAL COMPONENT SLIDE VIEW ENGINE */}
-      {showPasswordForm && (
-        <form onSubmit={submitPasswordChange} style={{ marginTop: "20px", borderTop: "1px dashed #e2e8f0", paddingTop: "20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px", marginBottom: "15px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>Current Password</label>
-              <input 
-                type="password" 
-                name="current_password"
-                required
-                value={passwordPayload.current_password}
-                onChange={handlePasswordInputChange}
-                placeholder="••••••••"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
+          {/* ACCOUNT SECURITY CARD */}
+          <div className="security-accordion-card">
+            <div className="security-card-header">
+              <div className="security-header-info">
+                <h4 className="security-card-title">Account Security Management</h4>
+                <p className="security-card-subtitle">Update your secret authentication key details phrase.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowPasswordForm(!showPasswordForm)}
+                className={`btn-security-toggle ${showPasswordForm ? 'active' : ''}`}
+              >
+                {showPasswordForm ? "Cancel Request" : "Modify Password"}
+              </button>
             </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>New Password</label>
-              <input 
-                type="password" 
-                name="new_password"
-                required
-                value={passwordPayload.new_password}
-                onChange={handlePasswordInputChange}
-                placeholder="Min 6 characters"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
+            {/* PASSWORD RE-AUTHENTICATION SUB-FORM */}
+            {showPasswordForm && (
+              <form onSubmit={submitPasswordChange} className="security-password-form">
+                <div className="password-inputs-grid">
+                  <div className="setting-group">
+                    <label className="password-input-label">Current Password</label>
+                    <input 
+                      type="password" 
+                      name="current_password"
+                      required
+                      value={passwordPayload.current_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="••••••••"
+                      className="setting-input"
+                    />
+                  </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>Confirm New Password</label>
-              <input 
-                type="password" 
-                name="confirm_password"
-                required
-                value={passwordPayload.confirm_password}
-                onChange={handlePasswordInputChange}
-                placeholder="Repeat new password"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
-          </div>
+                  <div className="setting-group">
+                    <label className="password-input-label">New Password</label>
+                    <input 
+                      type="password" 
+                      name="new_password"
+                      required
+                      value={passwordPayload.new_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="Min 6 characters"
+                      className="setting-input"
+                    />
+                  </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button 
-              type="submit" 
-              disabled={passwordSubmitting}
-              style={{ padding: "10px 24px", background: "#22c55e", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "700" }}
-            >
-              {passwordSubmitting ? "Encrypting Strings..." : "Save Secure Password"}
-            </button>
-          </div>
+                  <div className="setting-group">
+                    <label className="password-input-label">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      name="confirm_password"
+                      required
+                      value={passwordPayload.confirm_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="Repeat new password"
+                      className="setting-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="password-form-actions">
+                  <button 
+                    type="submit" 
+                    disabled={passwordSubmitting}
+                    className="btn-password-save"
+                  >
+                    {passwordSubmitting ? "Encrypting Strings..." : "Save Secure Password"}
+                  </button>
+                </div>
         </form>
       )}
     </div>
@@ -3753,9 +3746,9 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", margin: "20px 0" }}>
         {tablesList.map((tableNum) => (
-          <div key={tableNum} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", backgroundColor: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px" }}>
+          <div key={tableNum} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px" }}>
             <span>Table {tableNum}</span>
-            <button onClick={() => handleRemoveTable(tableNum)} style={{ color: "#ef4444", border: "none", background: "none", cursor: "pointer" }}>✕</button>
+            <button onClick={() => handleRemoveTable(tableNum)} style={{ color: "#ef4444", border: "none", cursor: "pointer" }}>✕</button>
           </div>
         ))}
         <button onClick={() => handleAddTable()} style={{ padding: "8px 12px", border: "2px dashed #3b82f6", borderRadius: "8px", color: "#3b82f6", cursor: "pointer" }}>
