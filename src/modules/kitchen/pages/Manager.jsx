@@ -4027,19 +4027,13 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
   }, [expiryDate]);
 
   return (
-    <div style={{ 
-      background: isCritical ? "#fff5f5" : "#f8fafc", 
-      padding: "20px", 
-      borderRadius: "10px", 
-      border: isCritical ? "1px solid #feb2b2" : "1px solid #e2e8f0" 
-    }}>
-      <span style={{ fontSize: "12px", color: isCritical ? "#c53030" : "#64748b", textTransform: "uppercase", fontWeight: "700" }}>Time Remaining</span>
-      <h3 style={{ fontSize: "20px", color: isCritical ? "#9b1c1c" : "#1e293b", margin: "8px 0 0 0", fontWeight: "800" }}>
-        {timeLeft}
-      </h3>
+    <div className={`sub-countdown-card ${isCritical ? 'critical' : ''}`}>
+      <span className="countdown-label">Time Remaining</span>
+      <h3 className="countdown-value">{timeLeft}</h3>
     </div>
   );
 };
+
 
 /* ========================================================
    SUB-COMPONENT: SCREENSHOT TRANSACTION UPLOADER

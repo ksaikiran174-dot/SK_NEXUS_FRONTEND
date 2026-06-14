@@ -3748,7 +3748,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         {tablesList.map((tableNum) => (
           <div key={tableNum} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px" }}>
             <span>Table {tableNum}</span>
-            <button onClick={() => handleRemoveTable(tableNum)} style={{ color: "#ef4444", border: "none", cursor: "pointer" }}>✕</button>
+            <button onClick={() => handleRemoveTable(tableNum)} style={{ color: "#ef4444", border: "none", background: "none", cursor: "pointer" }}>✕</button>
           </div>
         ))}
         <button onClick={() => handleAddTable()} style={{ padding: "8px 12px", border: "2px dashed #3b82f6", borderRadius: "8px", color: "#3b82f6", cursor: "pointer" }}>
@@ -4139,19 +4139,13 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
   }, [expiryDate]);
 
   return (
-    <div style={{ 
-      background: isCritical ? "#fff5f5" : "#f8fafc", 
-      padding: "20px", 
-      borderRadius: "10px", 
-      border: isCritical ? "1px solid #feb2b2" : "1px solid #e2e8f0" 
-    }}>
-      <span style={{ fontSize: "12px", color: isCritical ? "#c53030" : "#64748b", textTransform: "uppercase", fontWeight: "700" }}>Time Remaining</span>
-      <h3 style={{ fontSize: "20px", color: isCritical ? "#9b1c1c" : "#1e293b", margin: "8px 0 0 0", fontWeight: "800" }}>
-        {timeLeft}
-      </h3>
+    <div className={`sub-countdown-card ${isCritical ? 'critical' : ''}`}>
+      <span className="countdown-label">Time Remaining</span>
+      <h3 className="countdown-value">{timeLeft}</h3>
     </div>
   );
 };
+
 
 /* ========================================================
    SUB-COMPONENT: SCREENSHOT TRANSACTION UPLOADER
