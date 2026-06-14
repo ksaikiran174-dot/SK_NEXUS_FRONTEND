@@ -1220,13 +1220,11 @@
   border-radius: 12px;
 }
 .subscription-cost-badge {
-  background-color: #f1f5f9;
-  padding: 14px;
+  background-color: #f8fafc; /* Light mode background */
+  padding: 12px;
   border-radius: 8px;
-  display: inline-block;
-  width: 100%;
-  max-width: 300px;
-  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  display: inline-block; /* or block depending on your layout */
 }
 .cost-badge-label {
   font-size: 11px;
@@ -1574,14 +1572,6 @@
   border-top-color: var(--border-color);
 }
 
-[data-theme="dark"] .cost-badge-label {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .cost-badge-value {
-  color: #3b82f6; /* Higher glow ratio contrast value for visibility */
-}
-
 
 /* Countdown Card */
 .sub-countdown-card {
@@ -1924,6 +1914,18 @@
   fill: var(--text-primary) !important;
 }
 
+[data-theme="dark"] .subscription-cost-badge {
+  background-color: var(--bg-color);       /* Swaps background to your dark mode layout background */
+  border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
+}
+
+[data-theme="dark"] .cost-badge-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .cost-badge-value {
+  color: #3b82f6; /* Higher glow ratio contrast value for visibility */
+}
 
 /* ========================================================
    SUBSCRIPTION MANAGEMENT CORE THEME STYLES
@@ -3682,7 +3684,7 @@
   .summary-panel {
     margin-top: 16px; /* Slightly smaller gap on mobile so it doesn't push content too far down */
   }
-  
+
   /* Compact Modal Tweaks */
   .modal-content-card {
     padding: 20px 16px;
