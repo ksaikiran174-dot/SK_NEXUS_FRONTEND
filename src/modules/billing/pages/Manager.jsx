@@ -3045,9 +3045,9 @@ return (
       
       {/* 🔄 STATE A: DEFAULT ACTIVE / READY TO PAY */}
       {(settings?.subscription_status === "active" || !settings?.subscription_status) && (
-        <div style={{ textAlign: "center" }}>
-          <h3 style={{ margin: "0 0 6px 0", fontSize: "18px", fontWeight: "700" }}>🔄 Extend Plan for 30 Days</h3>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 20px 0" }}>
+        <div className="sub-state-container">
+          <h3 className="sub-state-title">🔄 Extend Plan for 30 Days</h3>
+          <p className="sub-state-desc">
             Click below to open manual payment gateway details and upload your receipt copy.
           </p>
 
@@ -3070,18 +3070,18 @@ return (
 
       {/* 🎉 STATE B: REQUEST PENDING APPROVAL */}
       {settings?.subscription_status === "pending_renewal" && (
-        <div style={{ textAlign: "center", padding: "12px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>⏳</div>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: "19px", fontWeight: "700", color: "#d97706" }}>
+        <div className="sub-state-container state-pending">
+          <div className="sub-state-icon">⏳</div>
+          <h3 className="sub-state-title-pending">
             Request Made to the Admin!
           </h3>
-          <p style={{ fontSize: "14px", color: "#475569", maxWidth: "480px", margin: "0 0 14px 0", lineHeight: "1.6", fontWeight: "500" }}>
+          <p className="sub-state-desc-pending">
             Your payment verification request has been safely logged. Your subscription expiry date will be automatically extended as soon as the superadmin approves the transaction.
           </p>
           
           {submittedUtr && (
-            <span style={{ fontSize: "12px", background: "#f1f5f9", padding: "6px 14px", borderRadius: "20px", color: "#475569", fontWeight: "600", border: "1px solid #e2e8f0" }}>
-              UTR Reference: <strong style={{ color: "#1e293b" }}>{submittedUtr}</strong>
+            <span className="sub-utr-badge">
+              UTR Reference: <strong className="sub-utr-value">{submittedUtr}</strong>
             </span>
           )}
         </div>
@@ -3089,15 +3089,15 @@ return (
 
       {/* ❌ STATE C: ADMIN DECLINED RECHARGE */}
       {settings?.subscription_status === "declined" && (
-        <div style={{ textAlign: "center", padding: "12px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>❌</div>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: "19px", fontWeight: "700", color: "#dc2626" }}>
+        <div className="sub-state-container state-declined">
+          <div className="sub-state-icon">❌</div>
+          <h3 className="sub-state-title-declined">
             Recharge Request Declined
           </h3>
           
           <div className="subscription-rejection-box">
             <span className="rejection-box-label">Reason from Admin:</span>
-            <p style={{ margin: 0, fontSize: "13px", color: "#b91c1c", lineHeight: "1.5", fontWeight: "500" }}>
+            <p className="rejection-box-text">
               {settings?.rejection_reason || "The uploaded transaction receipt details could not be validated by our bank logs."}
             </p>
           </div>

@@ -1402,6 +1402,240 @@
   min-width: 200px;
 }
 
+
+/* ========================================================
+   SUBSCRIPTION MANAGEMENT CORE THEME STYLES
+   ======================================================== */
+
+/* Main Containers & Typography */
+.subscription-panel-wrapper {
+  width: 100%;
+}
+
+.subscription-main-title {
+  color: #1e293b;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.subscription-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* ⚠️ High Visibility Warning Box */
+.subscription-warning-box {
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+.subscription-warning-text {
+  margin: 0;
+  font-size: 13px;
+  color: #b45309;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Metrics Cards Setup */
+.subscription-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.subscription-meta-card, 
+.subscription-recharge-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.meta-card-label {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.meta-card-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Inner State UI Blocks */
+.sub-state-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-state-title {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sub-state-desc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.sub-state-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+/* Pending Request States */
+.sub-state-title-pending {
+  margin: 0 0 8px 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+.sub-state-desc-pending {
+  font-size: 14px;
+  color: #475569;
+  max-width: 480px;
+  margin: 0 0 14px 0;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.sub-utr-badge {
+  font-size: 12px;
+  background-color: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #475569;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.sub-utr-value {
+  color: #1e293b;
+}
+
+/* Declined Request States */
+.sub-state-title-declined {
+  margin: 0 0 8px 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.subscription-rejection-box {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 480px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.rejection-box-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #991b1b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.rejection-box-text {
+  margin: 0;
+  font-size: 13px;
+  color: #b91c1c;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+
+/* ========================================================
+   🌗 DARK MODE ENHANCEMENTS (DATA-THEME="DARK")
+   ======================================================== */
+
+[data-theme="dark"] .subscription-main-title {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .subscription-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Dark Warning Box Layout */
+[data-theme="dark"] .subscription-warning-box {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+[data-theme="dark"] .subscription-warning-text {
+  color: #fef3c7;
+}
+
+/* Dark Architecture Card Layers */
+[data-theme="dark"] .subscription-meta-card,
+[data-theme="dark"] .subscription-recharge-card {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .meta-card-label,
+[data-theme="dark"] .sub-state-desc {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .meta-card-value,
+[data-theme="dark"] .sub-state-title {
+  color: var(--text-primary);
+}
+
+/* Dark Pending Status Adaptations */
+[data-theme="dark"] .sub-state-desc-pending {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .sub-utr-badge {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .sub-utr-value {
+  color: var(--text-primary);
+}
+
+/* Dark Decline Box Components */
+[data-theme="dark"] .subscription-rejection-box {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-theme="dark"] .rejection-box-label {
+  color: #fecaca;
+}
+
+[data-theme="dark"] .rejection-box-text {
+  color: #fca5a5;
+}
+
 /* ============================================
    MODAL SECTION
    ============================================ */

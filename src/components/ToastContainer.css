@@ -202,3 +202,51 @@
     max-width: none;
   }
 }
+
+
+/* ============================================
+   EXTRA SMALL MOBILE DEVICES (MAX-WIDTH: 430PX)
+   ============================================ */
+
+@media (max-width: 430px) {
+  /* Restrict the stack from blowing up horizontally */
+  .toast-stack {
+    top: 16px;
+    right: 16px;
+    left: auto; /* ⚡ Cancels out full-width stretching */
+    width: calc(100vw - 32px);
+    max-width: 320px; /* 🎯 Clamps the toast to a premium, small profile */
+    align-items: flex-end; /* Ensures toasts pile cleanly against the right side */
+  }
+
+  .toast {
+    padding: 10px 14px;
+    font-size: 13px;
+    gap: 10px;
+    border-radius: 10px;
+    box-shadow:
+      0 8px 20px rgba(15, 23, 42, 0.15),
+      0 2px 6px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Compact sizing for inner toast components */
+  .toast-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .toast-message {
+    padding-top: 2px;
+    line-height: 1.4;
+  }
+
+  /* Keep anchored bottom individual toasts compact too */
+  .toast--anchored-bottom {
+    right: 16px;
+    left: auto; /* ⚡ Prevents full-width stretch on bottom anchored items */
+    bottom: 16px;
+    width: calc(100vw - 32px);
+    max-width: 320px;
+  }
+}
