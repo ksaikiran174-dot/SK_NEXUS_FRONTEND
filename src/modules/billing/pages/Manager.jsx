@@ -3139,249 +3139,238 @@ return (
   </div>
 )}
 
-        {/* ========== SETTINGS PANEL ========== */}
-        {showSettings && (
-          <div className="settings-container">
-            <div className="main-header">
-              <h1>⚙️ Business Settings</h1>
-            </div>
-
-            <div className="settings-section">
-              <div className="settings-card">
-  <div className="settings-header">
-    <h2>🏪 Business Information</h2>
-  </div>
-
-  <div className="settings-content">
-    <div className="setting-group">
-      <label className="setting-label">Business Name</label>
-      <input
-        className="setting-input"
-        placeholder="SK Restaurants"
-        value={settings.restaurant_name}
-        onChange={(e) =>
-          setSettings({
-            ...settings,
-            restaurant_name: e.target.value
-          })
-        }
-      />
+{/* ========== SETTINGS PANEL ========== */}
+{showSettings && (
+  <div className="settings-container">
+    <div className="main-header">
+      <h1>⚙️ Business Settings</h1>
     </div>
 
-    <div className="setting-group">
-      <label className="setting-label">Address</label>
-      <input
-        className="setting-input"
-        placeholder="Address"
-        value={settings.address}
-        onChange={(e) =>
-          setSettings({
-            ...settings,
-            address: e.target.value
-          })
-        }
-      />
-    </div>
-
-    <div className="setting-group">
-      <label className="setting-label">Phone</label>
-      <input
-        className="setting-input"
-        placeholder="Phone"
-        value={settings.phone}
-        onChange={(e) =>
-          setSettings({
-            ...settings,
-            phone: e.target.value
-          })
-        }
-      />
-    </div>
-
-    <div className="setting-group">
-      <label className="setting-label">GST Number</label>
-      <input
-        className="setting-input"
-        placeholder="GST Number"
-        value={settings.gst_number}
-        onChange={(e) =>
-          setSettings({
-            ...settings,
-            gst_number: e.target.value
-          })
-        }
-      />
-    </div>
-
-    <div className="setting-group">
-      <label className="setting-label">Token Prefix</label>
-      <input
-        className="setting-input"
-        placeholder="TOK"
-        value={settings.token_prefix}
-        onChange={(e) =>
-          setSettings({
-            ...settings,
-            token_prefix: e.target.value
-          })
-        }
-      />
-    </div>
-
-    {/* 🚀 NEW SECTION: REGISTERED EMAIL ID (READ-ONLY) */}
-    <div className="setting-group">
-      <label className="setting-label">Registered Email ID</label>
-      <input
-        className="setting-input"
-        type="email"
-        readOnly // 🔒 Makes it non-editable
-        disabled // 🛡️ Grays it out slightly to visually indicate it's locked
-        value={isLoadingSettings ? "Loading..." : (settings.email || "Not available")}// Pulls email from your state tracking matrix
-        style={{ 
-          background: "#f1f5f9", 
-          cursor: "not-allowed", 
-          color: "#64748b",
-          fontWeight: "500"
-        }}
-      />
-    </div>
-
-    <div className="setting-group">
-      <label className="setting-label">Logo</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleLogoUpload}
-      /> 
-    </div>
-    
-    {settings?.logo_url && (
-      <div style={{ marginTop: "10px" }}>
-        <img
-          src={settings.logo_url}
-          alt="logo"
-          style={{
-            width: "100px",
-            height: "100px",
-            objectFit: "cover",
-            borderRadius: "12px"
-          }}
-        />
-        <p>Logo uploaded ✅</p>
-      </div>
-    )}
-
-    {/* PASSWORD CHANGING UTILITY ACCORDION CARD */}
-    <div style={{ marginTop: "30px", padding: "20px", border: "1px solid #e2e8f0", borderRadius: "8px", background: "#fff" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
-          <h4 style={{ margin: 0, fontSize: "16px", color: "#1e293b", fontWeight: "700" }}>Account Security Management</h4>
-          <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}>Update your secret authentication key details phrase.</p>
+    <div className="settings-section">
+      <div className="settings-card">
+        <div className="settings-header">
+          <h2>🏪 Business Information</h2>
         </div>
-        <button 
-          type="button"
-          onClick={() => setShowPasswordForm(!showPasswordForm)}
-          style={{ padding: "8px 16px", background: showPasswordForm ? "#64748b" : "#4f46e5", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "600" }}
-        >
-          {showPasswordForm ? "Cancel Request" : "Modify Password"}
-        </button>
-      </div>
 
-      {/* CONDITIONAL COMPONENT SLIDE VIEW ENGINE */}
-      {showPasswordForm && (
-        <form onSubmit={submitPasswordChange} style={{ marginTop: "20px", borderTop: "1px dashed #e2e8f0", paddingTop: "20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px", marginBottom: "15px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>Current Password</label>
-              <input 
-                type="password" 
-                name="current_password"
-                required
-                value={passwordPayload.current_password}
-                onChange={handlePasswordInputChange}
-                placeholder="••••••••"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>New Password</label>
-              <input 
-                type="password" 
-                name="new_password"
-                required
-                value={passwordPayload.new_password}
-                onChange={handlePasswordInputChange}
-                placeholder="Min 6 characters"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "5px", textTransform: "uppercase" }}>Confirm New Password</label>
-              <input 
-                type="password" 
-                name="confirm_password"
-                required
-                value={passwordPayload.confirm_password}
-                onChange={handlePasswordInputChange}
-                placeholder="Repeat new password"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #cbd5e1" }}
-              />
-            </div>
+        <div className="settings-content">
+          <div className="setting-group">
+            <label className="setting-label">Business Name</label>
+            <input
+              className="setting-input"
+              placeholder="SK Restaurants"
+              value={settings.restaurant_name}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  restaurant_name: e.target.value
+                })
+              }
+            />
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button 
-              type="submit" 
-              disabled={passwordSubmitting}
-              style={{ padding: "10px 24px", background: "#22c55e", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "700" }}
-            >
-              {passwordSubmitting ? "Encrypting Strings..." : "Save Secure Password"}
-            </button>
+          <div className="setting-group">
+            <label className="setting-label">Address</label>
+            <input
+              className="setting-input"
+              placeholder="Address"
+              value={settings.address}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  address: e.target.value
+                })
+              }
+            />
           </div>
-        </form>
-      )}
-    </div>
-  </div>
-</div>
 
-              <div className="settings-card">
-                <div className="settings-header">
-                  <h2>🔧 Preferences</h2>
-                </div>
+          <div className="setting-group">
+            <label className="setting-label">Phone</label>
+            <input
+              className="setting-input"
+              placeholder="Phone"
+              value={settings.phone}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  phone: e.target.value
+                })
+              }
+            />
+          </div>
 
-                <div className="settings-content">
-                  <div className="setting-group checkbox">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={settings.enable_sound}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            enable_sound: e.target.checked
-                          })
-                        }
-                      />
-                      <span>🔊 Enable Sound Notifications</span>
-                    </label>
+          <div className="setting-group">
+            <label className="setting-label">GST Number</label>
+            <input
+              className="setting-input"
+              placeholder="GST Number"
+              value={settings.gst_number}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  gst_number: e.target.value
+                })
+              }
+            />
+          </div>
+
+          <div className="setting-group">
+            <label className="setting-label">Token Prefix</label>
+            <input
+              className="setting-input"
+              placeholder="TOK"
+              value={settings.token_prefix}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  token_prefix: e.target.value
+                })
+              }
+            />
+          </div>
+
+          {/* 🚀 REGISTERED EMAIL ID (READ-ONLY) */}
+          <div className="setting-group">
+            <label className="setting-label">Registered Email ID</label>
+            <input
+              className="setting-input setting-input-readonly"
+              type="email"
+              readOnly
+              disabled
+              value={isLoadingSettings ? "Loading..." : (settings.email || "Not available")}
+            />
+          </div>
+
+          <div className="setting-group">
+            <label className="setting-label">Logo</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="setting-file-input"
+            /> 
+          </div>
+          
+          {settings?.logo_url && (
+            <div className="setting-logo-preview-box">
+              <img
+                src={settings.logo_url}
+                alt="logo"
+                className="setting-logo-preview-img"
+              />
+              <p className="setting-logo-success-text">Logo uploaded ✅</p>
+            </div>
+          )}
+
+          {/* ACCOUNT SECURITY CARD */}
+          <div className="security-accordion-card">
+            <div className="security-card-header">
+              <div className="security-header-info">
+                <h4 className="security-card-title">Account Security Management</h4>
+                <p className="security-card-subtitle">Update your secret authentication key details phrase.</p>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setShowPasswordForm(!showPasswordForm)}
+                className={`btn-security-toggle ${showPasswordForm ? 'active' : ''}`}
+              >
+                {showPasswordForm ? "Cancel Request" : "Modify Password"}
+              </button>
+            </div>
+
+            {/* PASSWORD RE-AUTHENTICATION SUB-FORM */}
+            {showPasswordForm && (
+              <form onSubmit={submitPasswordChange} className="security-password-form">
+                <div className="password-inputs-grid">
+                  <div className="setting-group">
+                    <label className="password-input-label">Current Password</label>
+                    <input 
+                      type="password" 
+                      name="current_password"
+                      required
+                      value={passwordPayload.current_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="••••••••"
+                      className="setting-input"
+                    />
                   </div>
 
-                </div>
-              </div>
+                  <div className="setting-group">
+                    <label className="password-input-label">New Password</label>
+                    <input 
+                      type="password" 
+                      name="new_password"
+                      required
+                      value={passwordPayload.new_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="Min 6 characters"
+                      className="setting-input"
+                    />
+                  </div>
 
-              <div className="settings-actions">
-                <button
-                  className="btn btn-success btn-lg"
-                  onClick={handleSaveSettings}
-                >
-                  💾 Save Settings
-                </button>
-              </div>
-            </div>
+                  <div className="setting-group">
+                    <label className="password-input-label">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      name="confirm_password"
+                      required
+                      value={passwordPayload.confirm_password}
+                      onChange={handlePasswordInputChange}
+                      placeholder="Repeat new password"
+                      className="setting-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="password-form-actions">
+                  <button 
+                    type="submit" 
+                    disabled={passwordSubmitting}
+                    className="btn-password-save"
+                  >
+                    {passwordSubmitting ? "Encrypting Strings..." : "Save Secure Password"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+
+      <div className="settings-card">
+        <div className="settings-header">
+          <h2>🔧 Preferences</h2>
+        </div>
+
+        <div className="settings-content">
+          <div className="setting-group checkbox">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={settings.enable_sound}
+                onChange={(e) =>
+                  setSettings({
+                    ...settings,
+                    enable_sound: e.target.checked
+                  })
+                }
+              />
+              <span>🔊 Enable Sound Notifications</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-actions">
+        <button
+          className="btn btn-success btn-lg btn-settings-save-main"
+          onClick={handleSaveSettings}
+        >
+          💾 Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
         
         {/* ========== INFO MODAL ========== */}
