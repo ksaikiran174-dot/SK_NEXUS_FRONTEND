@@ -1578,12 +1578,12 @@ const submitPasswordChange = async (e) => {
 
   // 🛡️ Frontend Client-Side Verification Guard Check
   if (passwordPayload.new_password !== passwordPayload.confirm_password) {
-    alert("❌ Error: New Password and Confirm Password fields do not match!");
+    addNotification("❌ Error: New Password and Confirm Password fields do not match!");
     return;
   }
 
   if (passwordPayload.new_password.length < 6) {
-    alert("❌ Security Guard: New password must be at least 6 characters long.");
+    addNotification("❌ Security Guard: New password must be at least 6 characters long.");
     return;
   }
 
@@ -1604,16 +1604,16 @@ const submitPasswordChange = async (e) => {
     const result = await response.json();
 
     if (response.ok) {
-      alert("🚀 Password changed successfully! Keep it safe.");
+      addNotification("🚀 Password changed successfully! Keep it safe.");
       // Reset form view and clean states
       setPasswordPayload({ current_password: "", new_password: "", confirm_password: "" });
       setShowPasswordForm(false);
     } else {
-      alert(`❌ Modification Blocked: ${result.detail || "Verification failed"}`);
+      addNotification(`❌ Modification Blocked: ${result.detail || "Verification failed"}`);
     }
   } catch (error) {
     console.error("Password trace submission block crash:", error);
-    alert("❌ Server connection lost processing credentials pipeline.");
+    addNotification("❌ Server connection lost processing credentials pipeline.");
   } finally {
     setPasswordSubmitting(false);
   }
@@ -1685,7 +1685,7 @@ const handleRechargeRequest = async () => {
         ...prev,
         subscription_status: "pending_renewal"
       }));
-      alert("Recharge request successfully submitted to the admin! ✅");
+      addNotification("Recharge request successfully submitted to the admin! ✅");
     }
   } catch (err) {
     console.error("Recharge request execution crash:", err);
@@ -2677,12 +2677,12 @@ return (
             : newItemCategory;
 
           if (!finalizedCategory) {
-            alert("Please select a category or write a brand new custom heading name!");
+            addNotification ("Please select a category or write a brand new custom heading name!");
             return;
           }
 
           if (!newItemName || !newItemPrice) {
-            alert("Item Name and Price are required fields!");
+            addNotification("Item Name and Price are required fields!");
             return;
           }
 
@@ -4050,7 +4050,7 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
 /* ========================================================
    SUB-COMPONENT: SCREENSHOT TRANSACTION UPLOADER
    ======================================================== */
-const RechargeFormHandler = () => {
+const RechargeFormHandler = ({onNotify}) => {
   const [screenshot, setScreenshot] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
@@ -4065,7 +4065,7 @@ const RechargeFormHandler = () => {
 
   const submitRecharge = async () => {
     if (!screenshot) {
-      alert("Please upload your transaction screenshot first!");
+      onNotify("Please upload your transaction screenshot first!");
       return;
     }
     setLoading(true);
@@ -4084,14 +4084,14 @@ const RechargeFormHandler = () => {
       });
 
       if (res.ok) {
-        alert("✨ Extension receipt dispatched successfully! Superadmin authorization pending.");
+        onNotify("✨ Extension receipt dispatched successfully! Superadmin authorization pending.");
         setScreenshot(null);
         setPreview('');
       } else {
-        alert("❌ Database submission rejected.");
+        onNotify("❌ Database submission rejected.");
       }
     } catch (err) {
-      alert("❌ Error hitting backend transmission line.");
+      onNotify("❌ Error hitting backend transmission line.");
     } finally {
       setLoading(false);
     }
@@ -4123,7 +4123,7 @@ const RechargeFormHandler = () => {
 /* ========================================================
    SUB-COMPONENT: MANUAL RECHARGE PAYMENT MODAL WITH UTR
    ======================================================== */
-const ManualRechargeModal = ({ isOpen, onClose, onSuccess }) => {
+const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
   const [utr, setUtr] = useState('');
   const [screenshot, setScreenshot] = useState(null);
   const [preview, setPreview] = useState('');
@@ -4141,11 +4141,11 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess }) => {
 
   const handleReceiptSubmission = async () => {
     if (!utr.trim()) {
-      alert("Please input your transaction reference UTR ID first!");
+      onNotify("Please input your transaction reference UTR ID first!");
       return;
     }
     if (!screenshot) {
-      alert("Please upload your payment screenshot file proof!");
+      onNotify("Please upload your payment screenshot file proof!");
       return;
     }
     
@@ -4174,10 +4174,10 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess }) => {
         onSuccess(utr.trim()); 
         onClose(); 
       } else {
-        alert("❌ Database submission rejected by server infrastructure.");
+        onNotify("❌ Database submission rejected by server infrastructure.");
       }
     } catch (err) {
-      alert("❌ Critical runtime transmission fault handling backend data line.");
+      onNotify("❌ Critical runtime transmission fault handling backend data line.");
     } finally {
       setLoading(false);
     }
