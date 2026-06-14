@@ -1188,3 +1188,153 @@ body {
     gap: 8px;
   }
 }
+
+
+/* ============================================
+   EXTRA SMALL MOBILE DEVICES (MAX-WIDTH: 430PX)
+   ============================================ */
+
+@media (max-width: 430px) {
+  /* Containers & Layout */
+  .auth-container,
+  .login-container {
+    padding: 10px;
+  }
+
+  .auth-wrapper {
+    border-radius: 12px;
+    --auth-radius: 12px;
+  }
+
+  /* Visual Section (Left Side turned Top) */
+  .auth-visual {
+    padding: 20px 16px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .visual-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 16px;
+    font-size: 36px;
+  }
+
+  .visual-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .visual-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .visual-description {
+    font-size: 12px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  /* Form Section (Right Side turned Bottom) */
+  .auth-form-container,
+  .login-box {
+    padding: 20px 16px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .login-box {
+    border-radius: 12px;
+  }
+
+  .form-header,
+  .login-header {
+    margin-bottom: 18px;
+  }
+
+  .form-title,
+  .login-title {
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+
+  .form-subtitle,
+  .login-subtitle {
+    font-size: 12px;
+  }
+
+  /* Forms & Inputs */
+  .form {
+    gap: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+    gap: 4px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 14px; /* Keeps iOS from zooming in automatically on focus */
+    border-radius: 6px;
+  }
+
+  /* Buttons & Action Items */
+  .btn,
+  .btn-login,
+  .btn-register,
+  .btn-forgot-submit,
+  .btn-cancel,
+  .btn-back {
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .footer-buttons {
+    grid-template-columns: 1fr; /* Stack buttons vertically if they crowd */
+    gap: 10px;
+  }
+
+  .footer-link-btn {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  /* Messages & Banners */
+  .info-banner,
+  .alert,
+  .error-message,
+  .success-message {
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+  }
+
+  /* Modals */
+  .forgot-password-modal {
+    max-width: 100%;
+  }
+
+  .forgot-modal-header {
+    padding: 16px 16px 10px;
+  }
+
+  .forgot-modal-title {
+    font-size: 16px;
+  }
+
+  .forgot-form {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .forgot-description {
+    font-size: 12px;
+  }
+}

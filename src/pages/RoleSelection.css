@@ -672,3 +672,87 @@ body {
     );
 }
 
+/* ============================================
+   EXTRA SMALL MOBILE DEVICES (MAX-WIDTH: 430PX)
+   ============================================ */
+
+@media (max-width: 430px) {
+  /* Container & Layout */
+  .role-selection-container {
+    padding: 12px;
+  }
+
+  .role-selection-wrapper {
+    padding: 4px;
+  }
+
+  /* Header Section */
+  .role-selection-header {
+    margin-bottom: 24px;
+  }
+
+  .role-selection-title {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .role-selection-subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 0 4px;
+  }
+
+  /* Grid & Cards Setup */
+  .role-selection-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .role-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+    min-height: auto;
+  }
+
+  /* Scale Profiles / Avatars */
+  .role-avatar {
+    width: 85px;
+    height: 85px;
+    padding: 6px;
+    margin-bottom: 18px;
+  }
+
+  /* Card Typography */
+  .role-card-title {
+    font-size: 19px;
+    margin-bottom: 8px;
+  }
+
+  .role-description {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  /* Super Admin Card Custom Adjustments */
+  .role-card.super-admin {
+    padding: 22px 16px; /* Slightly tighter internal padding to balance weights */
+  }
+
+  /* Admin Text Links & Footers */
+  .admin-link-wrapper {
+    margin-top: 18px;
+    margin-bottom: 6px;
+  }
+
+  .admin-text-link {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .role-selection-footer {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+}

@@ -127,13 +127,35 @@ function DashboardAnimation({ role }) {
         minHeight: "100vh",
         background: `linear-gradient(135deg, ${config.color}20 0%, ${config.color}10 100%)`,
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+        padding: "20px 16px", /* Restricts content blowout on narrow viewports */
+        boxSizing: "border-box"
       }}
     >
+      {/* Dynamic CSS Injection to handle responsiveness for the hardcoded styles */}
+      <style>{`
+        .dash-avatar-outer { width: 140px; height: 140px; }
+        .dash-avatar-img { width: 140px; height: 140px; border-width: 5px; }
+        .dash-title { font-size: 32px; margin-bottom: 40px; }
+        .dash-msg-container { gap: 12px; margin-bottom: 40px; }
+        .dash-msg-card { padding: 12px 16px; font-size: 14px; }
+        .dash-launching-text { font-size: 24px; }
+
+        @media (max-width: 430px) {
+          .dash-avatar-outer { width: 100px; height: 100px; margin-bottom: 20px; }
+          .dash-avatar-img { width: 100px; height: 100px; border-width: 4px; }
+          .dash-title { font-size: 22px; margin-bottom: 24px; letter-spacing: -0.5px; }
+          .dash-msg-container { gap: 8px; margin-bottom: 24px; }
+          .dash-msg-card { padding: 10px 12px; font-size: 13px; border-width: 1px !important; }
+          .dash-launching-text { font-size: 18px; }
+        }
+      `}</style>
+
       <motion.div
         initial={{ scale: 0.6, opacity: 0, y: 40 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease: [0.19, 1, 0.22, 1] }}
-        style={{ position: "relative", marginBottom: "30px" }}
+        style={{ position: "relative" }}
+        className="dash-avatar-outer"
       >
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
@@ -167,12 +189,12 @@ function DashboardAnimation({ role }) {
         <img
           src={config.avatar}
           alt={config.title}
+          className="dash-avatar-img"
           style={{
-            width: "140px",
-            height: "140px",
             borderRadius: "50%",
             objectFit: "cover",
-            border: `5px solid ${config.color}`,
+            borderStyle: "solid",
+            borderColor: config.color,
             background: "white",
             boxShadow: `0 0 40px ${config.color}55`
           }}
@@ -183,11 +205,10 @@ function DashboardAnimation({ role }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
+        className="dash-title"
         style={{
-          fontSize: "32px",
           fontWeight: "700",
           color: "#1e293b",
-          marginBottom: "40px",
           textAlign: "center",
         }}
       >
@@ -195,14 +216,14 @@ function DashboardAnimation({ role }) {
       </motion.h1>
 
       <div
+        className="dash-msg-container"
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "12px",
           width: "100%",
           maxWidth: "400px",
-          marginBottom: "40px",
-          padding: "0 20px",
+          padding: "0",
+          boxSizing: "border-box"
         }}
       >
         {config.messages.map((msg, index) => (
@@ -211,12 +232,11 @@ function DashboardAnimation({ role }) {
             initial={{ opacity: 0, x: -20 }}
             animate={index <= messageIndex ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
             transition={{ duration: 0.5 }}
+            className="dash-msg-card"
             style={{
-              padding: "12px 16px",
               background: index < messageIndex ? "#e0f2fe" : "#f1f5f9",
               border: `2px solid ${index < messageIndex ? config.color : "#cbd5e1"}`,
               borderRadius: "8px",
-              fontSize: "14px",
               fontWeight: "500",
               color: index < messageIndex ? config.color : "#64748b",
             }}
@@ -231,7 +251,8 @@ function DashboardAnimation({ role }) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-          style={{ fontSize: "24px", fontWeight: "600", color: config.color }}
+          className="dash-launching-text"
+          style={{ fontWeight: "600", color: config.color }}
         >
           🎉 Launching...
         </motion.div>

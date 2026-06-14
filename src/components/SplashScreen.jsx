@@ -6,7 +6,7 @@ export default function SplashScreen({ onFinish }) {
   const audioRef = useRef(null);
 
   /* =========================
-     INTRO SOUND
+      INTRO SOUND
   ========================= */
   useEffect(() => {
     const revealSound = new Audio("/sounds/intro.wav");
@@ -24,7 +24,7 @@ export default function SplashScreen({ onFinish }) {
   }, []);
 
   /* =========================
-     SPLASH TIMER
+      SPLASH TIMER
   ========================= */
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,8 +61,27 @@ export default function SplashScreen({ onFinish }) {
             zIndex: 999999,
             overflow: "hidden",
             willChange: "opacity",
+            padding: "0 16px",
+            boxSizing: "border-box"
           }}
         >
+          {/* 📱 DYNAMIC MOBILE-RESPONSIVE STYLE INJECTOR */}
+          <style>{`
+            .splash-content-wrapper { transform: translateY(-10vh); }
+            .splash-logo { width: 520px; margin-bottom: 10px; }
+            .splash-headline { font-size: 62px; letter-spacing: 14px; }
+            .splash-subtitle { font-size: 12px; letter-spacing: 8px; margin-top: 10px; }
+            .splash-glow-core { width: 500px; height: 500px; }
+
+            @media (max-width: 430px) {
+              .splash-content-wrapper { transform: translateY(-4vh); } /* Lowered slightly on phones to prevent crowding top */
+              .splash-logo { width: 280px; margin-bottom: 4px; } /* Scales down the logo to sit clean on mobile viewports */
+              .splash-headline { font-size: 32px; letter-spacing: 6px; } /* Pulls in wide lettering to prevent edge-overflow */
+              .splash-subtitle { font-size: 9px; letter-spacing: 4px; margin-top: 8px; }
+              .splash-glow-core { width: 280px; height: 280px; } /* Keeps central background glow from blinding the edge ratios */
+            }
+          `}</style>
+
           {/* 🌌 CYBER MESH BACKGROUND GRID */}
           <div
             style={{
@@ -88,10 +107,9 @@ export default function SplashScreen({ onFinish }) {
               scale: [0.7, 1.3, 1.5],
             }}
             transition={{ duration: 3.5, ease: "easeOut" }}
+            className="splash-glow-core"
             style={{
               position: "absolute",
-              width: "500px",
-              height: "500px",
               borderRadius: "50%",
               background: "radial-gradient(circle, rgba(0, 198, 255, 0.2) 0%, rgba(0,0,0,0) 70%)",
               filter: "blur(50px)",
@@ -101,90 +119,86 @@ export default function SplashScreen({ onFinish }) {
           />
 
           {/* MAIN CONTENT WRAPPER */}
-<div
-  style={{
-    transform: "translateY(-10vh)", // Adjusted slightly for the larger logo
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    zIndex: 10,
-  }}
->
-  {/* 💎 THE RE-MASTERED LOGO */}
-  <motion.img
-    src="/logo2.png"
-    alt="SK Nexus"
-    initial={{ 
-      scale: 0.7, 
-      opacity: 0, 
-      rotate: -2 // Tiny rotation for a more dynamic "entrance"
-    }}
-    animate={{ 
-      scale: 1, 
-      opacity: 1,
-      rotate: 0 
-    }}
-    transition={{
-      duration: 2,
-      ease: [0.19, 1, 0.22, 1], // Classic high-end "slow-down" easing
-    }}
-    style={{
-      width: "520px", // 🚀 Large size is back!
-      maxWidth: "85vw",
-      marginBottom: "10px",
-      filter: "drop-shadow(0 0 50px rgba(0, 198, 255, 0.3))",
-      
-      /* 🛡️ THE ANTI-SHAKE FIXES */
-      willChange: "transform, opacity",
-      backfaceVisibility: "hidden",
-      WebkitFontSmoothing: "antialiased",
-      transformPerspective: 1000
-    }}
-  />
+          <div
+            className="splash-content-wrapper"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              zIndex: 10,
+              width: "100%",
+            }}
+          >
+            {/* 💎 THE RE-MASTERED LOGO */}
+            <motion.img
+              src="/logo2.png"
+              alt="SK Nexus"
+              initial={{ 
+                scale: 0.7, 
+                opacity: 0, 
+                rotate: -2 
+              }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1,
+                rotate: 0 
+              }}
+              transition={{
+                duration: 2,
+                ease: [0.19, 1, 0.22, 1], 
+              }}
+              className="splash-logo"
+              style={{
+                maxWidth: "85vw",
+                filter: "drop-shadow(0 0 50px rgba(0, 198, 255, 0.3))",
+                willChange: "transform, opacity",
+                backfaceVisibility: "hidden",
+                WebkitFontSmoothing: "antialiased",
+                transformPerspective: 1000
+              }}
+            />
 
-  {/* 🔥 SK NEXUS TITAN HEADLINE */}
-  <motion.h1
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{
-      delay: 0.8, // Wait for logo to settle
-      duration: 1.2,
-      ease: "easeOut",
-    }}
-    style={{
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "62px", // 🚀 Bold and clear
-      fontWeight: "900",
-      fontFamily: "system-ui, -apple-system, sans-serif",
-      textTransform: "uppercase",
-      textAlign: "center",
-      letterSpacing: "14px", // Wide tracking for that "Nexus" feel
-      textShadow: "0 0 30px rgba(0, 198, 255, 0.4)",
-    }}
-  >
-    SK NEXUS
-  </motion.h1>
+            {/* 🔥 SK NEXUS TITAN HEADLINE */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.8, 
+                duration: 1.2,
+                ease: "easeOut",
+              }}
+              className="splash-headline"
+              style={{
+                margin: 0,
+                color: "#ffffff",
+                fontWeight: "900",
+                fontFamily: "system-ui, -apple-system, sans-serif",
+                textTransform: "uppercase",
+                textAlign: "center",
+                textShadow: "0 0 30px rgba(0, 198, 255, 0.4)",
+              }}
+            >
+              SK NEXUS
+            </motion.h1>
 
-  {/* 🚀 SUBTITLE */}
-  <motion.p
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 0.6 }}
-    transition={{ delay: 1.8, duration: 1 }}
-    style={{
-      margin: 0,
-      marginTop: "10px",
-      color: "#8da2fb",
-      fontSize: "12px",
-      fontWeight: "500",
-      letterSpacing: "8px",
-      textTransform: "uppercase",
-      fontFamily: "monospace"
-    }}
-  >
-    Unified Business Ecosystem
-  </motion.p>
-</div>
+            {/* 🚀 SUBTITLE */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              transition={{ delay: 1.8, duration: 1 }}
+              className="splash-subtitle"
+              style={{
+                margin: 0,
+                color: "#8da2fb",
+                fontWeight: "500",
+                textTransform: "uppercase",
+                fontFamily: "monospace",
+                textAlign: "center"
+              }}
+            >
+              Unified Business Ecosystem
+            </motion.p>
+          </div>
 
           {/* ✈️ PREMIUM HORIZONTAL LIGHT SWEEP */}
           <motion.div
