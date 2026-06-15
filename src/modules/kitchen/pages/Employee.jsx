@@ -40,6 +40,7 @@ function KitchenEmployee() {
   // Helper: close sidebar (call this in every tab onClick)
   const closeSidebar = () => setSidebarOpen(false);
   const [employeeSidebarOpen, setEmployeeSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false); // New state for mobile detection
 
   // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState({
@@ -264,7 +265,6 @@ useEffect(() => {
   connectWebSocket();
 
   return () => {
-    <audio ref={soundRef} src="/sounds/for_acceptance.wav" preload="auto" />
     if (reconnectTimer) clearTimeout(reconnectTimer);
     if (pingInterval) clearInterval(pingInterval);
     if (
@@ -507,6 +507,18 @@ useEffect(() => {
     fetchUserProfile();
   }, []);
 
+  // Effect to detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 430);
+    };
+
+    checkMobile(); // Check on initial render
+    window.addEventListener("resize", checkMobile); // Add resize listener
+
+    return () => window.removeEventListener("resize", checkMobile); // Cleanup
+  }, []);
+
 return (
   <div className="employee-container employee-dashboard-layout">
 
@@ -526,9 +538,7 @@ return (
 
     {/* ── MOBILE TOP BAR ── */}
     <div 
-      className="mobile-topbar employee-topbar" 
-      style={{ display: "none" }} 
-      ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
+      className={`mobile-topbar employee-topbar ${isMobile ? 'is-mobile' : ''}`} // Conditionally add is-mobile class
     >
       {settings?.logo_url ? (
         <img src={settings.logo_url} alt="logo" className="mobile-logo" />
@@ -570,7 +580,7 @@ return (
           onClick={() => {
             setShowLowStock(false);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
+            if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">📝</span>
@@ -582,7 +592,7 @@ return (
           onClick={() => {
             setShowLowStock(true);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
+            if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">⚠️</span>

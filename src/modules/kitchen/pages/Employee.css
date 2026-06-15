@@ -1558,17 +1558,16 @@ body {
 /* =========================================================================
    🟢 GLOBAL BASE STYLES (Enforces Hidden Desktop State Everywhere)
    ========================================================================= */
-.employee-topbar {
+/* .employee-topbar {
   display: none !important;
-}
+} */ /* Removed this to allow JS to control display with `is-mobile` class */
 
 /* =========================================================================
    📱 MOBILE PHONE RESPONSIVE OVERRIDES (max-width: 430px)
    ========================================================================= */
 @media (max-width: 430px) {
-
   /* ── FORCE TOPBAR ENGINE DISPLAY ── */
-  div.mobile-topbar.employee-topbar {
+  .employee-topbar.is-mobile { /* Target with the new is-mobile class */
     display: flex !important;
     visibility: visible !important;
     position: fixed !important;
@@ -1578,11 +1577,16 @@ body {
     width: 100vw !important;
     height: 56px !important;
     background: #10b981 !important; /* Forces Solid Theme Green */
-    z-index: 999999 !important; /* Sits above any modal wrappers */
+    z-index: 999 !important; /* Adjusted z-index for better layering */
     padding: 10px 16px !important;
     box-sizing: border-box !important;
     align-items: center !important;
     justify-content: space-between !important;
+  }
+  
+  /* Make sure topbar is hidden if not mobile */
+  .employee-topbar:not(.is-mobile) {
+    display: none !important;
   }
 
   /* ── 🎯 BREAKS SIDEBAR OUT OF MODAL PARENTS ── */
@@ -1598,7 +1602,7 @@ body {
     max-width: 260px !important;
 
     padding: 24px 16px !important;
-    z-index: 1000000 !important; /* Highest layer prioritization */
+    z-index: 1000 !important; /* Highest layer prioritization */
     
     /* Smooth slider drawer action translation mechanics */
     transform: translateX(-100%) !important;
@@ -1628,7 +1632,7 @@ body {
     width: 100vw !important;
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 999999 !important; /* Layer directly behind drawer canvas */
+    z-index: 999 !important; /* Layer directly behind drawer canvas */
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
   }
@@ -1647,7 +1651,7 @@ body {
   }
 
   .employee-sidebar .sidebar-header h1 {
-    display: block !important;
+    display: block !important; /* Ensure H1 is visible */
     font-size: 15px !important;
     font-weight: 700 !important;
     margin: 0 !important;
@@ -1669,12 +1673,16 @@ body {
   }
 
   /* Forces text node text strings visible inside mobile frame rules */
-  .employee-sidebar .sidebar-link > span {
-    display: block !important;
+  .employee-sidebar .sidebar-link > span:not(.sidebar-icon) { /* Target only the text spans */
+    display: block !important; /* Force display */
     opacity: 1 !important;
     visibility: visible !important;
-    position: static !important;
+    position: static !important; /* Reset positioning */
     font-size: 14px !important;
+    width: auto !important; /* Allow width to be natural */
+    height: auto !important; /* Allow height to be natural */
+    overflow: visible !important; /* Ensure content is not hidden */
+    pointer-events: auto !important; /* Allow interaction */
   }
 
   /* Selected navigation menu dashboard rows active panel states */
@@ -1721,7 +1729,7 @@ body {
     width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 76px !important; /* Safely clears fixed header bounds */
+    padding-top: 66px !important; /* Safely clears fixed header bounds (56px topbar + 10px spacing) */
     box-sizing: border-box !important;
   }
 
