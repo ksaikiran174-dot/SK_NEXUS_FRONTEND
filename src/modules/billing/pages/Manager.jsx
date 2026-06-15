@@ -204,6 +204,7 @@ const [sidebarOpen, setSidebarOpen] = useState(false);
 // Helper: close sidebar (call this in every tab onClick)
 const closeSidebar = () => setSidebarOpen(false);
 
+const [menuSearchQuery, setMenuSearchQuery] = useState("");
 
   const [
   currentTime,
@@ -2214,218 +2215,279 @@ return (
       )}
 
 {/* ==========================================
-            ✏️ 3. MANAGE MENU PANEL
-        ========================================== */}
-        {showManageMenu && (
-          <div>
-            <div className="main-header">
-              <h1>✏️ Manage Menu Items</h1>
-            </div>
+      ✏️ 3. MANAGE MENU PANEL
+========================================== */}
+{showManageMenu && (
+  <div>
+    <div className="main-header" style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
+      <h1 style={{ margin: 0 }}>✏️ Manage Menu Items</h1>
+      
+      {/* 🔍 REAL-TIME SEARCH BAR INPUT FIELD */}
+      <div className="search-bar-wrapper" style={{ position: "relative", width: "100%", maxWidth: "400px" }}>
+        <input
+          type="text"
+          placeholder="🔍 Search items by name, category or description..."
+          value={menuSearchQuery || ""}
+          onChange={(e) => setMenuSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px 14px",
+            fontSize: "14px",
+            borderRadius: "10px",
+            border: "1px solid var(--border-color, #cbd5e1)",
+            background: "var(--card-bg, #ffffff)",
+            color: "var(--text-primary, #0f172a)",
+            outline: "none",
+            transition: "border-color 0.2s"
+          }}
+        />
+        {menuSearchQuery && (
+          <button 
+            onClick={() => setMenuSearchQuery("")}
+            style={{
+              position: "absolute",
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              color: "var(--text-secondary, #64748b)",
+              cursor: "pointer",
+              fontSize: "14px"
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    </div>
 
-            {/* Empty State Guard */}
-            {(!menu || menu.length === 0) ? (
-              <p style={{ color: "var(--text-secondary)" }}>
-                No items found in your menu ledger.
-              </p>
-            ) : (
-              /* Grouping logic executed inline cleanly via Object.entries */
-              Object.entries(
-                (menu || []).reduce((acc, item) => {
-                  let cat = item.category ? item.category.trim() : "";
-                  if (!cat) cat = "General Menu / Uncategorized";
-                  if (!acc[cat]) acc[cat] = [];
-                  acc[cat].push(item);
-                  return acc;
-                }, {})
-              ).map(([categoryName, itemsList]) => (
-                <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
+    {/* Empty State Guard */}
+    {(!menu || menu.length === 0) ? (
+      <p style={{ color: "var(--text-secondary)" }}>
+        No items found in your menu ledger.
+      </p>
+    ) : (
+      (() => {
+        /* Filter list matches values instantly using lowcase evaluation strings */
+        const filteredMenuItems = (menu || []).filter((item) => {
+          const query = (menuSearchQuery || "").toLowerCase().trim();
+          if (!query) return true; // Empty query returns all elements natively
+          
+          return (
+            (item.name || "").toLowerCase().includes(query) ||
+            (item.category || "").toLowerCase().includes(query) ||
+            (item.description || "").toLowerCase().includes(query)
+          );
+        });
+
+        if (filteredMenuItems.length === 0) {
+          return (
+            <p style={{ color: "var(--text-secondary)", fontStyle: "italic", marginTop: "20px" }}>
+              No menu items match your search query details.
+            </p>
+          );
+        }
+
+        /* Grouping logic executed cleanly over the filtered array results */
+        return Object.entries(
+          filteredMenuItems.reduce((acc, item) => {
+            let cat = item.category ? item.category.trim() : "";
+            if (!cat) cat = "General Menu / Uncategorized";
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(item);
+            return acc;
+          }, {})
+        ).map(([categoryName, itemsList]) => (
+          <div key={categoryName} className="category-block-section" style={{ marginBottom: "40px" }}>
+            
+            {/* Category Header Banner */}
+            <h2 style={{
+              fontSize: "22px",
+              fontWeight: "700",
+              color: "var(--text-primary, #1e293b)",
+              borderBottom: "2px solid var(--border-color, #e2e8f0)",
+              paddingBottom: "8px",
+              marginBottom: "20px",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px"
+            }}>
+              📁 {categoryName} 
+              <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
+                ({itemsList.length} items)
+              </span>
+            </h2> 
+
+            {/* Menu Items Grid */}
+            <div className="grid grid-3">
+              {itemsList.map((item) => (
+                <div key={item.id} className="menu-item">
+                  <img
+                    src={`${item.image}`}
+                    alt={item.name}
+                    className="menu-item-image"
+                    onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=No+Image"; }}
+                  />
                   
-                  {/* Category Header Banner */}
-                  <h2 style={{
-                    fontSize: "22px",
-                    fontWeight: "700",
-                    color: "var(--text-primary, #1e293b)",
-                    borderBottom: "2px solid var(--border-color, #e2e8f0)",
-                    paddingBottom: "8px",
-                    marginBottom: "20px",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px"
-                  }}>
-                    📁 {categoryName} 
-                    <span style={{ fontSize: "14px", color: "var(--text-secondary)", fontWeight: "normal", textTransform: "none" }}>
-                      ({itemsList.length} items)
+                  <div className="menu-item-content">
+                    <h3 className="menu-item-name">{item.name}</h3>
+                    <p className="menu-item-price">₹{item.price}</p>
+                    <p className="menu-item-description">{item.description}</p>
+                    
+                    <span style={{
+                      display: "inline-block",
+                      padding: "3px 8px",
+                      backgroundColor: "#f1f5f9",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: "#475569",
+                      marginBottom: "12px"
+                    }}>
+                      🏷️ {item.category || "Uncategorized"}
                     </span>
-                  </h2> 
 
-                  {/* Menu Items Grid */}
-                  <div className="grid grid-3">
-                    {itemsList.map((item) => (
-                      <div key={item.id} className="menu-item">
-                        <img
-                          src={`${item.image}`}
-                          alt={item.name}
-                          className="menu-item-image"
-                          onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=No+Image"; }}
-                        />
+                    {/* Standard View Actions */}
+                    {editingItem !== item.id && (
+                      <div className="menu-item-actions">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          disabled={isSaving !== null}
+                          onClick={() => {
+                            setEditingItem(item.id);
+                            setEditName(item.name);
+                            setEditPrice(item.price);
+                            setEditDescription(item.description);
+                            setEditImage(item.image);
+                            setEditCategory(item.category || "");
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => handleDeleteMenuItem(item.id, item.name)}>
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ========== EDIT INLINE CONTAINER BLOCK ========== */}
+                    {editingItem === item.id && (
+                      <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
+                        <div className="form-group" style={{ marginBottom: "10px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
+                          <input className="form-input" value={editName} disabled={isSaving === item.id} onChange={(e) => setEditName(e.target.value)} />
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: "10px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
+                          <input className="form-input" value={editPrice} disabled={isSaving === item.id} onChange={(e) => setEditPrice(e.target.value)} type="number" />
+                        </div>
                         
-                        <div className="menu-item-content">
-                          <h3 className="menu-item-name">{item.name}</h3>
-                          <p className="menu-item-price">₹{item.price}</p>
-                          <p className="menu-item-description">{item.description}</p>
-                          
-                          <span style={{
-                            display: "inline-block",
-                            padding: "3px 8px",
-                            backgroundColor: "#f1f5f9",
-                            borderRadius: "4px",
-                            fontSize: "11px",
-                            fontWeight: "600",
-                            color: "#475569",
-                            marginBottom: "12px"
-                          }}>
-                            🏷️ {item.category || "Uncategorized"}
-                          </span>
+                        <div className="form-group" style={{ marginBottom: "10px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
+                          <input className="form-input" style={{ borderColor: "#93c5fd" }} value={editCategory} disabled={isSaving === item.id} onChange={(e) => setEditCategory(e.target.value)} />
+                        </div>
 
-                          {/* Standard View Actions */}
-                          {editingItem !== item.id && (
-                            <div className="menu-item-actions">
-                              <button
-                                className="btn btn-primary btn-sm"
-                                disabled={isSaving !== null}
-                                onClick={() => {
-                                  setEditingItem(item.id);
-                                  setEditName(item.name);
-                                  setEditPrice(item.price);
-                                  setEditDescription(item.description);
-                                  setEditImage(item.image);
-                                  setEditCategory(item.category || "");
-                                }}
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button className="btn btn-danger btn-sm" disabled={isSaving !== null} onClick={() => handleDeleteMenuItem(item.id, item.name)}>
-                                🗑️ Delete
-                              </button>
-                            </div>
-                          )}
+                        <div className="form-group" style={{ marginBottom: "12px" }}>
+                          <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
+                          <input className="form-input" value={editDescription} disabled={isSaving === item.id} onChange={(e) => setEditDescription(e.target.value)} />
+                        </div>
 
-                          {/* ========== EDIT INLINE CONTAINER BLOCK ========== */}
-                          {editingItem === item.id && (
-                            <div className="menu-edit-form" style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", marginTop: "10px" }}>
-                              <div className="form-group" style={{ marginBottom: "10px" }}>
-                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Item Name</label>
-                                <input className="form-input" value={editName} disabled={isSaving === item.id} onChange={(e) => setEditName(e.target.value)} />
-                              </div>
+                        <div className="form-group" style={{ marginBottom: "12px" }}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: "none" }}
+                            id={`edit-image-${item.id}`}
+                            disabled={isSaving === item.id}
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              setEditSelectedFile(file);
+                              if (file) setEditPreviewImage(URL.createObjectURL(file));
+                            }}
+                          />
+                          <label htmlFor={`edit-image-${item.id}`} className="btn btn-secondary btn-sm" style={{ display: "inline-flex", width: "100%", gap: "6px" }}>
+                            🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
+                          </label>
+                        </div>
 
-                              <div className="form-group" style={{ marginBottom: "10px" }}>
-                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Price (₹)</label>
-                                <input className="form-input" value={editPrice} disabled={isSaving === item.id} onChange={(e) => setEditPrice(e.target.value)} type="number" />
-                              </div>
-                              
-                              <div className="form-group" style={{ marginBottom: "10px" }}>
-                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#2563eb", marginBottom: "4px", display: "block" }}>Category Section</label>
-                                <input className="form-input" style={{ borderColor: "#93c5fd" }} value={editCategory} disabled={isSaving === item.id} onChange={(e) => setEditCategory(e.target.value)} />
-                              </div>
+                        {editPreviewImage && (
+                          <div style={{ marginBottom: "12px" }}>
+                            <img src={editPreviewImage} alt="Preview" style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }} />
+                          </div>
+                        )}
 
-                              <div className="form-group" style={{ marginBottom: "12px" }}>
-                                <label style={{ fontSize: "12px", fontWeight: "600", color: "#475569", marginBottom: "4px", display: "block" }}>Description</label>
-                                <input className="form-input" value={editDescription} disabled={isSaving === item.id} onChange={(e) => setEditDescription(e.target.value)} />
-                              </div>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <button
+                            className="btn btn-success btn-sm"
+                            style={{ flex: 1 }}
+                            disabled={isSaving === item.id}
+                            onClick={async () => {
+                              let imagePath = item.image;
+                              setIsSaving(item.id);
 
-                              <div className="form-group" style={{ marginBottom: "12px" }}>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  style={{ display: "none" }}
-                                  id={`edit-image-${item.id}`}
-                                  disabled={isSaving === item.id}
-                                  onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    setEditSelectedFile(file);
-                                    if (file) setEditPreviewImage(URL.createObjectURL(file));
-                                  }}
-                                />
-                                <label htmlFor={`edit-image-${item.id}`} className="btn btn-secondary btn-sm" style={{ display: "inline-flex", width: "100%", gap: "6px" }}>
-                                  🖼️ {isSaving === item.id ? "Processing Media..." : "Change Item Image"}
-                                </label>
-                              </div>
+                              if (editSelectedFile) {
+                                try {
+                                  imagePath = await uploadDirectToCloudinary(editSelectedFile);
+                                } catch (error) {
+                                  addNotification("❌ Image upload failed.", "error");
+                                  setIsSaving(null);
+                                  return;
+                                }
+                              }
 
-                              {editPreviewImage && (
-                                <div style={{ marginBottom: "12px" }}>
-                                  <img src={editPreviewImage} alt="Preview" style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "6px" }} />
-                                </div>
-                              )}
+                              const updatedItem = {
+                                name: editName,
+                                price: Number(editPrice),
+                                description: editDescription,
+                                category: editCategory.trim(), 
+                                available: true,
+                                image: imagePath,
+                              };
 
-                              <div style={{ display: "flex", gap: "8px" }}>
-                                <button
-                                  className="btn btn-success btn-sm"
-                                  style={{ flex: 1 }}
-                                  disabled={isSaving === item.id}
-                                  onClick={async () => {
-                                    let imagePath = item.image;
-                                    setIsSaving(item.id);
+                              try {
+                                const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu/${item.id}`, {
+                                  method: "PUT",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify(updatedItem),
+                                }, "manager");
 
-                                    if (editSelectedFile) {
-                                      try {
-                                        imagePath = await uploadDirectToCloudinary(editSelectedFile);
-                                      } catch (error) {
-                                        addNotification("❌ Image upload failed.", "error");
-                                        setIsSaving(null);
-                                        return;
-                                      }
-                                    }
-
-                                    const updatedItem = {
-                                      name: editName,
-                                      price: Number(editPrice),
-                                      description: editDescription,
-                                      category: editCategory.trim(), 
-                                      available: true,
-                                      image: imagePath,
-                                    };
-
-                                    try {
-                                      const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu/${item.id}`, {
-                                        method: "PUT",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify(updatedItem),
-                                      }, "manager");
-
-                                      if (res.ok) {
-                                        setMenu((prev) => prev.map((m) => m.id === item.id ? { ...m, ...updatedItem, id: item.id } : m));
-                                        setEditingItem(null);
-                                        setEditSelectedFile(null);
-                                        setEditPreviewImage("");
-                                        addNotification("✨ Menu item updated successfully!");
-                                      }
-                                    } catch (error) {
-                                      console.error(error);
-                                    } finally {
-                                      setIsSaving(null);
-                                    }
-                                  }}
-                                >
-                                  {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
-                                </button>
-                                <button className="btn btn-secondary btn-sm" style={{ flex: 1 }} disabled={isSaving === item.id} onClick={() => { setEditingItem(null); setEditPreviewImage(""); }}>
-                                  ✕ Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                                if (res.ok) {
+                                  setMenu((prev) => prev.map((m) => m.id === item.id ? { ...m, ...updatedItem, id: item.id } : m));
+                                  setEditingItem(null);
+                                  setEditSelectedFile(null);
+                                  setEditPreviewImage("");
+                                  addNotification("✨ Menu item updated successfully!");
+                                }
+                              } catch (error) {
+                                console.error(error);
+                              } finally {
+                                setIsSaving(null);
+                              }
+                            }}
+                          >
+                            {isSaving === item.id ? "⏳ Syncing..." : "✅ Save"}
+                          </button>
+                          <button className="btn btn-secondary btn-sm" style={{ flex: 1 }} disabled={isSaving === item.id} onClick={() => { setEditingItem(null); setEditPreviewImage(""); }}>
+                            ✕ Cancel
+                          </button>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+
           </div>
-        )}
+        ));
+      })()
+    )}
+  </div>
+)}
 
 {/* ========== ANALYTICS PANEL ========== */}
 {showAnalyticsView && analytics && (
