@@ -279,99 +279,91 @@ useEffect(() => {
 
 
 
-// 5. Update order status
-const handleUpdate =
-  async (
-    id,
-    status
-  ) => {
+// 5. Update order status (INSTANT OPTIMISTIC UPDATE)
+const handleUpdate = async (id, status) => {
+  if (processingOrders.includes(id)) return;
 
-    if (
-      processingOrders.includes(id)
-    ) return;
+  // 1. Keep a backup of the original state in case the network fails
+  let previousOrders = [];
+  setOrders(prev => {
+    previousOrders = prev;
+    // Instantly map through and update the specific order's status in the UI
+    return prev.map(order => 
+      order.id === id ? { ...order, status: status } : order
+    );
+  });
 
-    setProcessingOrders(
-      (prev) => [
-        ...prev,
-        id
-      ]
+  // Set processing state to keep track of background sync
+  setProcessingOrders((prev) => [...prev, id]);
+
+  try {
+    const res = await apiFetch(
+      `${import.meta.env.VITE_API_URL}/orders/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ status: status })
+      },
+      "employee"
     );
 
-    try {
-
-      const res=
-      await apiFetch(
-        `${import.meta.env.VITE_API_URL}/orders/${id}`,
-        {
-          method: "PATCH",
-
-          body: JSON.stringify({
-            status: status
-          })
-        },
-        "employee"
-      );
-
-
-
-    } catch (err) {
-
-      console.error(err);
-      addNotification("❌ Failed to update order status");
-
-    } finally {
-
-      setProcessingOrders(
-        (prev) =>
-          prev.filter(
-            (oId) =>
-              oId !== id
-          )
-      );
+    if (!res.ok) {
+      throw new Error("Failed to update status on server");
     }
+
+    // Success! Optional: if backend returns updated order data, merge it silently here
+    // const data = await res.json();
+
+  } catch (err) {
+    console.error("Status update failed, rolling back UI:", err);
+    addNotification("❌ Failed to update order status. Please try again.", "error");
+    
+    // ── ROLLBACK ── Put the orders back to what they were before the click
+    setOrders(previousOrders);
+  } finally {
+    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
+  }
 };
 
 
-// 6. Complete order
+// 6. Complete order (INSTANT OPTIMISTIC REMOVAL)
+const handleComplete = async (id) => {
+  if (processingOrders.includes(id)) return;
 
-const handleComplete =
-  async (id) => {
+  // 1. Keep a backup of the original state in case the network fails
+  let previousOrders = [];
+  setOrders(prev => {
+    previousOrders = prev;
+    // Instantly filter out the completed order so it vanishes from the board immediately
+    return prev.filter(order => order.id !== id);
+  });
 
-    if (
-      processingOrders.includes(id)
-    ) return;
+  // Set processing state to keep track of background sync
+  setProcessingOrders((prev) => [...prev, id]);
 
-    setProcessingOrders(
-      (prev) => [
-        ...prev,
-        id
-      ]
+  try {
+    const res = await apiFetch(
+      `${import.meta.env.VITE_API_URL}/orders/${id}/complete`,
+      {
+        method: "PATCH"
+      },
+      "employee"
     );
 
-    try {
-
-      await apiFetch(
-        `${import.meta.env.VITE_API_URL}/orders/${id}/complete`,
-        {
-          method: "PATCH"
-        },
-        "employee"
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-    } finally {
-
-      setProcessingOrders(
-        (prev) =>
-          prev.filter(
-            (oId) =>
-              oId !== id
-          )
-      );
+    if (!res.ok) {
+      throw new Error("Failed to mark order as completed on server");
     }
+
+    addNotification("✅ Order completed!", "success");
+
+  } catch (err) {
+    console.error("Completion failed, rolling back UI:", err);
+    addNotification("❌ Failed to complete order. Please try again.", "error");
+    
+    // ── ROLLBACK ── Put the completed order back on the board if the API crashed
+    setOrders(previousOrders);
+  } finally {
+    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
+  }
 };
 
 
