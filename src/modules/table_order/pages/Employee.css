@@ -1652,24 +1652,29 @@ body {
 
   .employee-sidebar .sidebar-header h1 {
     display: block !important; /* Ensure H1 is visible */
-    font-size: 15px !important;
+    font-size: 18px !important; /* Increased font size */
     font-weight: 700 !important;
     margin: 0 !important;
-    color: #065f46 !important; /* Clean deep green font tone */
+    color: #d1fae5 !important; /* Light green color for contrast */
     white-space: nowrap !important;
   }
 
   .employee-sidebar .sidebar-link {
     width: 100% !important;
     height: auto !important;
-    padding: 12px 14px !important;
+    padding: 12px !important; /* Adjusted padding for spacing */
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-start !important;
+    justify-content: flex-start !important; /* Align to start */
     border-radius: 8px !important;
-    gap: 10px !important;
-    color: #4b5563 !important;
+    gap: 12px !important; /* Increased gap between icon and text */
+    color: #e2e8f0 !important; /* Light gray text for better contrast */
     box-sizing: border-box !important;
+    font-weight: 500 !important; /* Ensure font weight is applied */
+  }
+  
+  .employee-sidebar .sidebar-link.logout-link {
+    color: #fecaca !important; /* Soft red for logout */
   }
 
   /* Forces text node text strings visible inside mobile frame rules */
@@ -1678,17 +1683,21 @@ body {
     opacity: 1 !important;
     visibility: visible !important;
     position: static !important; /* Reset positioning */
-    font-size: 14px !important;
+    font-size: 15px !important; /* Adjusted font size for readability */
     width: auto !important; /* Allow width to be natural */
     height: auto !important; /* Allow height to be natural */
     overflow: visible !important; /* Ensure content is not hidden */
     pointer-events: auto !important; /* Allow interaction */
   }
+  
+  .employee-sidebar .sidebar-link .sidebar-icon {
+    font-size: 20px !important; /* Icon size consistent */
+  }
 
   /* Selected navigation menu dashboard rows active panel states */
   .employee-sidebar .sidebar-link.active {
-    background-color: #10b981 !important;
-    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.2) !important; /* Lighter active background */
+    color: #ffffff !important; /* White text for active link */
   }
 
   .employee-sidebar .sidebar-nav,
@@ -1754,5 +1763,80 @@ body {
   [data-theme="dark"] .employee-sidebar .sidebar-link.active {
     background-color: #10b981 !important;
     color: #ffffff !important;
+  }
+
+  /* --- Email Profile Card Specifics for Mobile --- */
+  .employee-profile-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px; /* Space below the card */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px; /* Space between label and email */
+    width: fit-content; /* Adjust width to content */
+    max-width: calc(100% - 32px); /* Prevent overflow */
+    margin-left: auto; /* Align to the right, under topbar elements */
+    margin-right: 0;
+    position: absolute; /* Position relative to its parent (orders-page) */
+    top: 16px; /* Space from top of main content */
+    right: 16px; /* Space from right of main content */
+    z-index: 10; /* Ensure it's above other content but below topbar/sidebar */
+  }
+
+  .employee-profile-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .employee-profile-email {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap; /* Prevent email from wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Truncate if too long */
+  }
+
+  .main-header {
+    margin-top: 70px; /* Push main header down to clear email card */
+  }
+  
+  /* --- Adjustments for main content elements' font sizes --- */
+  .main-header h1 {
+    font-size: 22px !important;
+  }
+  .card p {
+    font-size: 15px !important;
+  }
+  .order-token {
+    font-size: 20px !important;
+  }
+  .order-items-title {
+    font-size: 11px !important;
+  }
+  .order-items-list {
+    font-size: 13px !important;
+  }
+  .order-detail-row {
+    font-size: 13px !important;
+  }
+  .stock-header.modern h2 {
+    font-size: 20px !important;
+  }
+  .stock-header.modern p {
+    font-size: 13px !important;
+  }
+  .stock-name {
+    font-size: 16px !important;
+  }
+  .stock-btn {
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+    min-width: 100px;
   }
 }
