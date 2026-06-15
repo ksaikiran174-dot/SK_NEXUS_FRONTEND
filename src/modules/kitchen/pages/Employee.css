@@ -1579,7 +1579,6 @@ body {
 /* =========================================================================
    📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
    ========================================================================= */
-
 @media (max-width: 430px) {
 
   .employee-topbar {
@@ -1591,35 +1590,44 @@ body {
     --employee-sidebar-width: 0px !important;
   }
 
-  /* ── SLIDING SIDEBAR ENGINE ── */
+  /* ── 🎯 FIXING THE DRAWERS CANVAS WIDTH ── */
   .employee-sidebar {
     position: fixed !important;
-    top: 0;
-    left: 0;
+    top: 0 !important;
+    left: 0 !important;
     height: 100vh !important;
+    
+    /* These three lines break the squished vertical line bug instantly */
     width: 60% !important; 
-    min-width: 240px !important; 
+    min-width: 250px !important; 
+    max-width: 60% !important;
+
     padding: 20px 14px !important; 
     z-index: 99999 !important;
-    transform: translateX(-100%) !important; /* Slide completely off-canvas */
+    
+    /* Slide handling mechanics */
+    transform: translateX(-100%) !important; 
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow-y: auto;
+    
+    overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    pointer-events: all !important;
+    box-sizing: border-box !important;
     border-radius: 0px 12px 12px 0px !important;
-    background-color: #ffffff !important; /* Clean white drawer base */
-    border-right: 3px solid #10b981 !important;
-    box-shadow: 8px 0 32px rgba(16, 185, 129, 0.18) !important;
+    
+    /* Theme Colors: Pure White Sidebar Canvas with a Green Border Line */
+    background-color: #ffffff !important; 
+    border-right: 4px solid #10b981 !important;
+    box-shadow: 10px 0 32px rgba(0, 0, 0, 0.25) !important;
   }
 
-  /* Triggers toggle animation */
+  /* 🎯 Triggers layout visibility on state shift */
   .employee-sidebar.sidebar-open {
     transform: translateX(0) !important;
   }
 
-  /* ── OVERLAY BACKDROP ── */
+  /* ── BACKDROP BLUR OVERLAY ── */
   .sidebar-overlay {
     display: none;
     position: fixed;
@@ -1627,7 +1635,7 @@ body {
     width: 100vw !important;
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.4) !important;
-    z-index: 99998 !important; /* One layer below sidebar drawer */
+    z-index: 99998 !important;
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
   }
@@ -1636,44 +1644,47 @@ body {
     display: block !important;
   }
 
-  /* ── INNER TEXT NODES AND NAV LINKS ── */
+  /* ── INTERNAL DRAWER COMPONENTS ── */
   .employee-sidebar .sidebar-header {
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 20px !important;
   }
 
   .employee-sidebar .sidebar-header h1 {
     display: block !important;
-    font-size: 16px !important; 
+    font-size: 15px !important; 
+    font-weight: 700 !important;
     margin: 0 !important;
-    color: #065f46 !important;
+    color: #065f46 !important; /* Dark text matching green header lines */
+    white-space: nowrap !important;
   }
 
-  /* Fixes text visibility rules inside drawer layout */
   .employee-sidebar .sidebar-link {
     width: 100% !important;
     height: auto !important;
-    padding: 10px 12px !important;
+    padding: 12px 14px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: flex-start !important;
     border-radius: 8px !important;
-    gap: 8px !important;
+    gap: 10px !important;
     color: #4b5563 !important;
+    box-sizing: border-box !important;
   }
 
-  .employee-sidebar .sidebar-link > span:not(.sidebar-icon) {
+  /* Fix to keep icon and layout typography cleanly visible inside mobile drawer */
+  .employee-sidebar .sidebar-link > span {
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
     position: static !important;
-    font-size: 13px !important;
+    font-size: 14px !important;
   }
 
-  /* Green Theme Active Navigation Highlights */
+  /* Clean Green Background for Active Dashboard Selection Row */
   .employee-sidebar .sidebar-link.active {
     background-color: #10b981 !important;
     color: #ffffff !important;
@@ -1681,20 +1692,22 @@ body {
 
   .employee-sidebar .sidebar-nav,
   .employee-sidebar .sidebar-footer {
-    width: 100%;
-    align-items: flex-start;
-    gap: 4px !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
   }
 
-  /* ── CONTENT AREA GAP CLEARANCE ── */
+  /* ── MAIN CONTENT VIEWPORT SHIFT ── */
   .employee-main {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 80px !important; /* Pushes everything under header bar cleanly */
-    box-sizing: border-box;
+    padding-top: 84px !important; /* Pushes cards lower down so user email text isn't cropped */
+    box-sizing: border-box !important;
   }
 
   .employee-topbar .mobile-restaurant-name {
