@@ -555,8 +555,8 @@ return (
         <span className="hamburger-line" />
         <span className="hamburger-line" />
       </button>
-    </div>
-
+    </div> 
+{/* comment */}
     {/* ========== SIDEBAR: Now dynamically accepts the toggle state ========== */}
     <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
       <div className="sidebar-header">
