@@ -35,6 +35,10 @@ function KitchenEmployee() {
   setCurrentTime
 ] = useState(Date.now());
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Helper: close sidebar (call this in every tab onClick)
+  const closeSidebar = () => setSidebarOpen(false);
+
   // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
@@ -521,8 +525,36 @@ return (
       style={{ display: 'none' }} 
     />
 
+      {/* ── MOBILE OVERLAY ── */}
+    <div
+      className={`sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
+      onClick={closeSidebar}
+    />
+
+    {/* ── MOBILE TOP BAR ── */}
+    <div className="mobile-topbar" style={{ display: "none" }} 
+         ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}>
+      {settings?.logo_url ? (
+        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+      ) : (
+        <span className="mobile-logo-placeholder">🍽️</span>
+      )}
+      <span className="mobile-restaurant-name">
+        {settings?.restaurant_name || "Restaurant"}
+      </span>
+      <button
+        className={`hamburger-btn ${sidebarOpen ? "is-open" : ""}`}
+        onClick={() => setSidebarOpen(prev => !prev)}
+        aria-label="Toggle menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+    </div>
+
       {/* ========== SIDEBAR ========== */}
-      <aside className="employee-sidebar">
+      <aside className={`employee-sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
 <div className="sidebar-header">
   {/* 🚀 DYNAMIC LOGO CHECK: Shows the restaurant logo if it exists, otherwise falls back to the chef icon */}
   {settings?.logo_url ? (
@@ -540,9 +572,11 @@ return (
         <nav className="sidebar-nav">
           <div
             className={`sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowLowStock(false);
               setShowRestore(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">📝</span>
@@ -551,9 +585,11 @@ return (
 
           <div
             className={`sidebar-link ${showLowStock ? 'active' : ''}`}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setShowLowStock(true);
               setShowRestore(false);
+              closeSidebar();
             }}
           >
             <span className="sidebar-icon">⚠️</span>
