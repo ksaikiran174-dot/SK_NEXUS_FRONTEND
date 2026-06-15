@@ -1556,57 +1556,52 @@ body {
 
 
 /* =========================================================================
-   🟢 EMPLOYEE BASE STYLES (Outside Media Query - Hidden on Desktop)
+   🟢 GLOBAL BASE STYLES (Enforces Hidden Desktop State Everywhere)
    ========================================================================= */
 .employee-topbar {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100% !important;
-  z-index: 1500;
-  background: #10b981;
-  padding: 10px 16px;
-  height: 56px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  box-sizing: border-box;
+  display: none !important;
 }
 
 /* =========================================================================
-   📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
+   📱 MOBILE PHONE RESPONSIVE OVERRIDES (max-width: 430px)
    ========================================================================= */
 @media (max-width: 430px) {
 
-  .employee-topbar {
+  /* ── FORCE TOPBAR ENGINE DISPLAY ── */
+  div.mobile-topbar.employee-topbar {
     display: flex !important;
-    background: #10b981 !important;
+    visibility: visible !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 56px !important;
+    background: #10b981 !important; /* Forces Solid Theme Green */
+    z-index: 999999 !important; /* Sits above any modal wrappers */
+    padding: 10px 16px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: space-between !important;
   }
 
-  .employee-container {
-    --employee-sidebar-width: 0px !important;
-  }
-
-  /* ── 🎯 FIXING THE DRAWERS CANVAS WIDTH ── */
-  .employee-sidebar {
+  /* ── 🎯 BREAKS SIDEBAR OUT OF MODAL PARENTS ── */
+  aside.employee-sidebar {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     height: 100vh !important;
     
-    /* These three lines break the squished vertical line bug instantly */
-    width: 60% !important; 
-    min-width: 250px !important; 
-    max-width: 60% !important;
+    /* Forces correct width sizing regardless of parent containers */
+    width: 260px !important; 
+    min-width: 260px !important;
+    max-width: 260px !important;
 
-    padding: 20px 14px !important; 
-    z-index: 99999 !important;
+    padding: 24px 16px !important;
+    z-index: 1000000 !important; /* Highest layer prioritization */
     
-    /* Slide handling mechanics */
-    transform: translateX(-100%) !important; 
+    /* Smooth slider drawer action translation mechanics */
+    transform: translateX(-100%) !important;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     
     overflow-y: auto !important;
@@ -1614,28 +1609,26 @@ body {
     flex-direction: column !important;
     align-items: flex-start !important;
     box-sizing: border-box !important;
-    border-radius: 0px 12px 12px 0px !important;
-    
-    /* Theme Colors: Pure White Sidebar Canvas with a Green Border Line */
-    background-color: #ffffff !important; 
+    border-radius: 0px 16px 16px 0px !important;
+    background-color: #ffffff !important; /* High contrast white drawer background */
     border-right: 4px solid #10b981 !important;
-    box-shadow: 10px 0 32px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.3) !important;
   }
 
-  /* 🎯 Triggers layout visibility on state shift */
-  .employee-sidebar.sidebar-open {
+  /* Triggers the open sliding transition drawer canvas state */
+  aside.employee-sidebar.sidebar-open {
     transform: translateX(0) !important;
   }
 
-  /* ── BACKDROP BLUR OVERLAY ── */
+  /* ── OVERLAY BACKDROP LAYER ── */
   .sidebar-overlay {
     display: none;
-    position: fixed;
-    inset: 0;
+    position: fixed !important;
+    inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: rgba(0, 0, 0, 0.4) !important;
-    z-index: 99998 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 999999 !important; /* Layer directly behind drawer canvas */
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
   }
@@ -1644,21 +1637,21 @@ body {
     display: block !important;
   }
 
-  /* ── INTERNAL DRAWER COMPONENTS ── */
+  /* ── SIDEBAR INTERIOR COMPONENTS ── */
   .employee-sidebar .sidebar-header {
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 24px !important;
   }
 
   .employee-sidebar .sidebar-header h1 {
     display: block !important;
-    font-size: 15px !important; 
+    font-size: 15px !important;
     font-weight: 700 !important;
     margin: 0 !important;
-    color: #065f46 !important; /* Dark text matching green header lines */
+    color: #065f46 !important; /* Clean deep green font tone */
     white-space: nowrap !important;
   }
 
@@ -1675,7 +1668,7 @@ body {
     box-sizing: border-box !important;
   }
 
-  /* Fix to keep icon and layout typography cleanly visible inside mobile drawer */
+  /* Forces text node text strings visible inside mobile frame rules */
   .employee-sidebar .sidebar-link > span {
     display: block !important;
     opacity: 1 !important;
@@ -1684,7 +1677,7 @@ body {
     font-size: 14px !important;
   }
 
-  /* Clean Green Background for Active Dashboard Selection Row */
+  /* Selected navigation menu dashboard rows active panel states */
   .employee-sidebar .sidebar-link.active {
     background-color: #10b981 !important;
     color: #ffffff !important;
@@ -1699,47 +1692,57 @@ body {
     gap: 6px !important;
   }
 
-  /* ── MAIN CONTENT VIEWPORT SHIFT ── */
+  /* ── HAMBURGER BUTTON COMPONENT STYLING ── */
+  .employee-topbar .hamburger-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-around !important;
+    width: 32px !important;
+    height: 24px !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .employee-topbar .hamburger-line {
+    width: 100% !important;
+    height: 3px !important;
+    background-color: #ffffff !important; /* Pure white hamburger lines */
+    border-radius: 2px !important;
+    transition: all 0.3s linear !important;
+  }
+
+  /* ── MAIN CONTENT VIEWPORT RE-ALIGNMENT ── */
   .employee-main {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 84px !important; /* Pushes cards lower down so user email text isn't cropped */
+    padding-top: 76px !important; /* Safely clears fixed header bounds */
     box-sizing: border-box !important;
   }
 
   .employee-topbar .mobile-restaurant-name {
     color: #ffffff !important;
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 16px !important;
+    font-weight: 700 !important;
   }
 
-  /* Hamburger lines styling inside the green header bar */
-  .employee-topbar .hamburger-btn {
-    background: rgba(255, 255, 255, 0.15) !important;
-  }
-  
-  .employee-topbar .hamburger-btn:hover {
-    background: rgba(255, 255, 255, 0.25) !important;
-  }
-
-  /* ── DARK THEME OVERRIDES FOR EMPLOYEE MOBILE ── */
+  /* Dark theme drawer container variants */
   [data-theme="dark"] .employee-sidebar {
-    background-color: #111827 !important; /* Dark charcoal card background */
+    background-color: #111827 !important;
     border-right-color: #10b981 !important;
-    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.6) !important;
   }
-
   [data-theme="dark"] .employee-sidebar .sidebar-header h1 {
-    color: #34d399 !important; /* Light mint green text */
+    color: #34d399 !important;
   }
-
   [data-theme="dark"] .employee-sidebar .sidebar-link {
     color: #9ca3af !important;
   }
-
   [data-theme="dark"] .employee-sidebar .sidebar-link.active {
     background-color: #10b981 !important;
     color: #ffffff !important;
