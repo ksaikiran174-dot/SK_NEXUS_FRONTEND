@@ -125,87 +125,27 @@ body {
   padding: 40px;
   overflow: visible;
   min-height: 100vh;
-  box-sizing: border-box; /* 🎯 Prevents padding layout blowout */
 }
 
-.orders-page .main-header {
-  
+.main-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 2px solid var(--border-color);
-  margin-top: 90px;
-  border-top: 1px solid var(--border-color); /* 🎯 Swapped hardcoded hex for dynamic theme line */
-  padding-top: 20px;
-  position: relative;
-  gap: 20px;
-  flex-wrap: wrap; /* 🎯 Allows items to drop down smoothly instead of crushing text */
 }
 
 .main-header h1 {
-  margin: 0;
   font-size: 32px;
   font-weight: 700;
   color: var(--text-primary);
-  min-width: fit-content;
+  
 }
 
 .header-actions {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* ============================================
-   EMPLOYEE PROFILE CARD (Darkmode & Responsive Approved)
-   ============================================ */
-
-.employee-profile-card {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  box-shadow: var(--shadow-md);
-
-  width: fit-content;
-  max-width: 300px;
-  z-index: 100;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-}
-
-.employee-profile-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-
-.employee-profile-email {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  word-break: break-all; /* 🎯 Prevents extra long user emails from overflowing container limits */
-}
-
-.employee-profile-label::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #22c55e;
-  border-radius: 50%;
-  margin-right: 6px;
 }
 
 /* ============================================
@@ -219,7 +159,6 @@ body {
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
   transition: all 0.3s ease;
-  box-sizing: border-box;
 }
 
 .card:hover {
@@ -266,7 +205,6 @@ body {
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  box-sizing: border-box;
 }
 
 .btn-primary {
@@ -341,13 +279,12 @@ body {
   margin-bottom: 24px;
 }
 
-/* 🎯 Upgraded grid configuration to guarantee responsiveness on fluid resizing triggers */
 .grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
 /* ============================================
@@ -358,14 +295,10 @@ body {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .order-card:hover {
@@ -387,16 +320,14 @@ body {
 .order-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
-  gap: 10px;
 }
 
 .order-token {
   font-size: 28px;
   font-weight: 700;
   color: var(--primary-color);
-  line-height: 1;
 }
 
 .order-status-badge {
@@ -407,7 +338,6 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap; /* 🎯 Prevents emoji badges wrapping internally */
 }
 
 .order-status-badge.pending {
@@ -442,7 +372,6 @@ body {
   align-items: center;
   margin-bottom: 8px;
   font-size: 14px;
-  gap: 10px;
 }
 
 .order-detail-label {
@@ -453,7 +382,6 @@ body {
 .order-detail-value {
   color: var(--text-primary);
   font-weight: 500;
-  text-align: right;
 }
 
 .order-items {
@@ -482,7 +410,6 @@ body {
 .order-item {
   display: flex;
   justify-content: space-between;
-  gap: 15px;
 }
 
 .order-item-name {
@@ -492,57 +419,18 @@ body {
 .order-item-qty {
   color: var(--text-secondary);
   font-size: 13px;
-  white-space: nowrap;
 }
 
 .order-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: auto; /* 🎯 Pushes action deck flush to bottom edge */
 }
 
 .order-actions .btn {
   flex: 1;
   min-width: 100px;
 }
-
-/* ============================================
-   LOCATION BADGE AREA (Merged & Optimized)
-   ============================================ */
-
-.location-row {
-  margin-top: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.location-badge {
-  font-weight: 600;
-  font-size: 13px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.location-badge.is-table {
-  color: var(--primary-color);
-  background-color: var(--bg-color);
-}
-
-.location-badge.is-counter {
-  color: var(--text-secondary);
-  background-color: var(--bg-color);
-  opacity: 0.8;
-}
-
-[data-theme="dark"] .location-badge {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
 
 /* ============================================
    STOCK MANAGEMENT SECTION
@@ -709,7 +597,7 @@ body {
 }
 
 /* ============================================
-   RESPONSIVE LAYOUT RESPONSES
+   RESPONSIVE
    ============================================ */
 
 @media (max-width: 1024px) {
@@ -726,9 +614,8 @@ body {
     min-height: auto;
   }
 
-  /* 🎯 Fixed grid calculation breakdowns on tablets */
-  .grid-3 {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  .stock-section {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -859,7 +746,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  /* 🎯 SAFELY REDUCE MAIN SECTION ASSIGNMENTS */
   .employee-main {
     margin-left: var(--employee-sidebar-width);
     width: calc(100% - var(--employee-sidebar-width));
@@ -869,70 +755,47 @@ body {
     box-sizing: border-box;
   }
 
-/* 🎯 1. FORCE HEADER CONTENT TO THE DEAD CENTER */
-  .orders-page .main-header {
-    margin-top: 60px; /* Gives top-clearance so title doesn't hit top bar on phones */
-    display: flex;
-    justify-content: center; /* Centers items horizontally */
-    align-items: center;     /* Centers items vertically */
-    text-align: center;
-    width: 100%;
-    box-sizing: border-box;
+  .main-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
   }
 
   .main-header h1 {
     font-size: 26px;
-    width: 100%;
-    text-align: center;
   }
 
-  /* 🎯 2. FORCE EMAIL CARD TO STAY LOCKED ON TOP RIGHT */
-  .employee-profile-card {
-    position: absolute !important; /* Overrides any previous static stacking resets */
-    top: 20px !important;
-    right: 20px !important;
-    left: auto !important;
-    width: auto !important;
-    max-width: 180px; /* Keeps it perfectly compact on tight screen space */
-    padding: 8px 12px;
-    border-radius: 8px;
-    box-shadow: var(--shadow-sm);
-  }
-
-  /* Compact spacing optimizations for mobile card view */
-  .employee-profile-label {
-    font-size: 9px;
-    margin-bottom: 2px;
-  }
-
-  .employee-profile-email {
-    font-size: 15px;
-  }
-
-  /* 🎯 FORCE SINGLE COLUMN FOR CARDS SO THE CONTENT NESTING STAYS CRISP */
-  .grid-2, .grid-3 {
+  .grid-2 {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
 
-  .card, .order-card {
+  .card {
+    padding: 16px;
+  }
+
+  .order-card {
     padding: 16px;
   }
 
   .order-token {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .order-actions {
     flex-direction: column;
-    gap: 10px;
   }
 
   .order-actions .btn {
     width: 100%;
   }
 
-  .stock-item, .stock-restore-item {
+  .stock-section {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-item,
+  .stock-restore-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
@@ -947,7 +810,7 @@ body {
 
 @media (max-width: 480px) {
   .employee-container {
-    --employee-sidebar-width: 70px; /* Slimmed down sidebar slightly for maximum screen estate */
+    --employee-sidebar-width: 80px;
   }
 
   .employee-sidebar {
@@ -959,12 +822,18 @@ body {
 
   .employee-sidebar .sidebar-nav .sidebar-link,
   .employee-sidebar .sidebar-footer .sidebar-link {
-    width: 48px !important;
-    height: 48px !important;
-    min-width: 48px !important;
-    max-width: 48px !important;
-    flex: 0 0 48px !important;
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    max-width: 52px !important;
+    flex: 0 0 52px !important;
     border-radius: 12px;
+  }
+
+  .employee-sidebar .sidebar-link > span:not(.sidebar-icon) {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   .employee-sidebar .sidebar-icon {
@@ -976,6 +845,8 @@ body {
     width: calc(100% - var(--employee-sidebar-width)) !important;
     max-width: calc(100% - var(--employee-sidebar-width)) !important;
     padding: 12px;
+    min-height: auto;
+    box-sizing: border-box;
   }
 
   .card {
@@ -988,31 +859,48 @@ body {
   }
 
   .order-header {
-    flex-direction: row; /* Keep text alignment unified across cards */
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .order-card {
-    padding: 14px;
+    padding: 12px;
   }
 
   .order-token {
-    font-size: 22px;
+    font-size: 18px;
+  }
+
+  .order-actions {
+    flex-direction: column;
+    gap: 8px;
   }
 
   .order-actions .btn {
+    width: 100%;
     padding: 10px;
     font-size: 13px;
   }
 
+  .stock-section {
+    grid-template-columns: 1fr;
+  }
+
   .stock-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .stock-restore-item {
     padding: 12px;
   }
 
   .notification {
-    max-width: 92%;
-    margin-left: 4%;
-    font-size: 15px;
+    max-width: 90%;
+    margin-left: 5%;
+    font-size: 12px;
   }
 }
 
@@ -1662,5 +1550,209 @@ body {
     flex: 0 0 auto !important;
     width: 56px !important;
     max-width: 56px !important;
+  }
+}
+
+
+
+/* =========================================================================
+   🟢 GLOBAL BASE STYLES (Enforces Hidden Desktop State Everywhere)
+   ========================================================================= */
+/* .employee-topbar {
+  display: none !important;
+} */ /* Removed this to allow JS to control display with `is-mobile` class */
+
+/* =========================================================================
+   📱 MOBILE PHONE RESPONSIVE OVERRIDES (max-width: 430px)
+   ========================================================================= */
+@media (max-width: 430px) {
+  /* ── FORCE TOPBAR ENGINE DISPLAY ── */
+  .employee-topbar.is-mobile { /* Target with the new is-mobile class */
+    display: flex !important;
+    visibility: visible !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 56px !important;
+    background: #10b981 !important; /* Forces Solid Theme Green */
+    z-index: 999 !important; /* Adjusted z-index for better layering */
+    padding: 10px 16px !important;
+    box-sizing: border-box !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  
+  /* Make sure topbar is hidden if not mobile */
+  .employee-topbar:not(.is-mobile) {
+    display: none !important;
+  }
+
+  /* ── 🎯 BREAKS SIDEBAR OUT OF MODAL PARENTS ── */
+  aside.employee-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    
+    /* Forces correct width sizing regardless of parent containers */
+    width: 260px !important; 
+    min-width: 260px !important;
+    max-width: 260px !important;
+
+    padding: 24px 16px !important;
+    z-index: 1000 !important; /* Highest layer prioritization */
+    
+    /* Smooth slider drawer action translation mechanics */
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    box-sizing: border-box !important;
+    border-radius: 0px 16px 16px 0px !important;
+    background-color: #ffffff !important; /* High contrast white drawer background */
+    border-right: 4px solid #10b981 !important;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* Triggers the open sliding transition drawer canvas state */
+  aside.employee-sidebar.sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  /* ── OVERLAY BACKDROP LAYER ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 999 !important; /* Layer directly behind drawer canvas */
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  .sidebar-overlay.overlay-visible {
+    display: block !important;
+  }
+
+  /* ── SIDEBAR INTERIOR COMPONENTS ── */
+  .employee-sidebar .sidebar-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-bottom: 24px !important;
+  }
+
+  .employee-sidebar .sidebar-header h1 {
+    display: block !important; /* Ensure H1 is visible */
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    color: #065f46 !important; /* Clean deep green font tone */
+    white-space: nowrap !important;
+  }
+
+  .employee-sidebar .sidebar-link {
+    width: 100% !important;
+    height: auto !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    border-radius: 8px !important;
+    gap: 10px !important;
+    color: #4b5563 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Forces text node text strings visible inside mobile frame rules */
+  .employee-sidebar .sidebar-link > span:not(.sidebar-icon) { /* Target only the text spans */
+    display: block !important; /* Force display */
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: static !important; /* Reset positioning */
+    font-size: 14px !important;
+    width: auto !important; /* Allow width to be natural */
+    height: auto !important; /* Allow height to be natural */
+    overflow: visible !important; /* Ensure content is not hidden */
+    pointer-events: auto !important; /* Allow interaction */
+  }
+
+  /* Selected navigation menu dashboard rows active panel states */
+  .employee-sidebar .sidebar-link.active {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+  }
+
+  .employee-sidebar .sidebar-nav,
+  .employee-sidebar .sidebar-footer {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  /* ── HAMBURGER BUTTON COMPONENT STYLING ── */
+  .employee-topbar .hamburger-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-around !important;
+    width: 32px !important;
+    height: 24px !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .employee-topbar .hamburger-line {
+    width: 100% !important;
+    height: 3px !important;
+    background-color: #ffffff !important; /* Pure white hamburger lines */
+    border-radius: 2px !important;
+    transition: all 0.3s linear !important;
+  }
+
+  /* ── MAIN CONTENT VIEWPORT RE-ALIGNMENT ── */
+  .employee-main {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+    padding-top: 66px !important; /* Safely clears fixed header bounds (56px topbar + 10px spacing) */
+    box-sizing: border-box !important;
+  }
+
+  .employee-topbar .mobile-restaurant-name {
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Dark theme drawer container variants */
+  [data-theme="dark"] .employee-sidebar {
+    background-color: #111827 !important;
+    border-right-color: #10b981 !important;
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.6) !important;
+  }
+  [data-theme="dark"] .employee-sidebar .sidebar-header h1 {
+    color: #34d399 !important;
+  }
+  [data-theme="dark"] .employee-sidebar .sidebar-link {
+    color: #9ca3af !important;
+  }
+  [data-theme="dark"] .employee-sidebar .sidebar-link.active {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
   }
 }
