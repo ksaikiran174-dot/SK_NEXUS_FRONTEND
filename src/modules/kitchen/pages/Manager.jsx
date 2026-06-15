@@ -1721,6 +1721,14 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 return (
     <div className="manager-container manager-dashboard-layout">
 
+      {/* ── LOADING OVERLAY ── */}
+    {isLoading && (
+      <div className="loading-overlay">
+        <div className="loading-spinner" />
+        <span className="loading-text">Loading dashboard...</span>
+      </div>
+    )}
+    
       {/* ── MOBILE OVERLAY ── */}
     <div
       className={`sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
