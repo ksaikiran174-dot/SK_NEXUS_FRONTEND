@@ -25,6 +25,7 @@ function TableEmployee() {
   const [currentUser, setCurrentUser] = useState(null);
   const [processingOrders, setProcessingOrders] = useState([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [processingAlerts, setProcessingAlerts] = useState([]);
 
   // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState({
@@ -135,13 +136,13 @@ const addNotification = (text, type) => {
             setOrders((prev) =>
               prev.map((o) => String(o.id) === String(msg.data.id) ? { ...o, status: msg.data.status } : o)
             );
-            addNotification(`Order ${msg.data.token_id} ${msg.data.status} `);
+            
           }
         }
 
         if (msg.type === "order_completed") {
           setOrders((prev) => prev.filter((o) => String(o.id) !== String(msg.data.id)));
-          addNotification(`Order ${msg.data.token_id} completed `);
+          
         }
 
         if (msg.type === "low_stock") {
@@ -366,144 +367,157 @@ return (
 <main className="employee-main">
 
   {/* ========== ORDERS VIEW ========== */}
-  {!showLowStock && !showRestore && (
-    <div className="orders-page">
+        {!showLowStock && !showRestore && (
+          <div className="orders-page">
 
-          {/* ✉️ TOP RIGHT EMPLOYEE EMAIL CARD */}
-      {currentUser?.email && (
-  <div className="employee-profile-card">
-    <span className="employee-profile-label">
-      Logged In
-    </span>
+            {/* ✉️ TOP RIGHT EMPLOYEE EMAIL CARD */}
+            {currentUser?.email && (
+              <div className="employee-profile-card">
+                <span className="employee-profile-label">
+                  Logged In
+                </span>
 
-    <span className="employee-profile-email">
-      {currentUser.email}
-    </span>
-  </div>
-)}
-
-      <div className="main-header" style={{ borderTop: 'none' }}>
-        <h1>📝 Incoming Orders</h1>
-      </div>
-
-
-
-      {orders.length === 0 ? (
-        <div className="card" style={{ textAlign: "center", padding: "60px 20px" }}>
-          <p style={{ fontSize: "18px", color: "var(--text-secondary)", textAlign: "left" }}>
-            No orders at the moment. Please wait...
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-3">
-          {orders.map((order) => (
-            <motion.div
-              key={order.id}
-              className={`order-card ${order.status}`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              
-              <div className="order-header">
-                <div className="order-token">{settings?.token_prefix}-{order.token_id}</div>
-                <span className={`order-status-badge ${order.status}`}>
-                  {order.status === "pending" ? "⏳ Pending" : "✅ Accepted"}
+                <span className="employee-profile-email">
+                  {currentUser.email}
                 </span>
               </div>
+            )}
 
-              {order.items && order.items.length > 0 && (
-                <div className="order-items">
-                  <div className="order-items-title">Items to Prepare:</div>
-                  <div className="order-items-list">
-                    {order.items.map((item, idx) => (
-                      <div key={idx} className="order-item">
-                        <span className="order-item-name">{item.name}</span>
-                        <span className="order-item-qty">x{item.quantity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="main-header" style={{ borderTop: 'none' }}>
+              <h1>📝 Incoming Orders</h1>
+            </div>
 
-              <div className="order-details">
-                <div className="order-detail-row">
-                  <span className="order-detail-label">Payment:</span>
-                  <span className="order-detail-value">
-                    {order.payment_mode === "cash" ? "💵 Cash" : "💳 Online"}
-                  </span>
-                </div>
-                
-                <div className="order-detail-row">
-                  <span className="order-detail-label">Total:</span>
-                  <span className="order-detail-value" style={{ color: "var(--primary-color)", fontWeight: "700" }}>
-                    ₹{Number(order.total_price || 0).toFixed(2)}
-                  </span>
-                </div>
-
-{/* 🎯 INJECTED TABLE NUMBER ROW (Theme-Ready) */}
-<div className="order-detail-row location-row">
-  <span className="order-detail-label">Location:</span>
-  <span className={`location-badge ${order.table_number ? 'is-table' : 'is-counter'}`}>
-    {order.table_number ? `🍽️ Table ${order.table_number}` : "🛍️ Counter Sale"}
-  </span>
-</div></div>
-
-              <div className="order-actions">
-                {order.status === "pending" && (
-                  <>
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => handleUpdate(order.id, "accepted")}
-                      disabled={processingOrders.includes(order.id)}
-                    >
-                      {processingOrders.includes(order.id) ? "Processing..." : "✅ Accept"}
-                    </button>
-                    
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => {
-                        setConfirmationModal({
-                          isOpen: true,
-                          title: "Reject Order",
-                          message: `Are you sure you want to reject order #${order.token_id}? This action cannot be undone.`,
-                          isDangerous: true,
-                          confirmText: "Reject",
-                          onConfirm: async () => {
-                            setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
-                            await handleUpdate(order.id, "rejected");
-                          },
-                        });
-                      }}
-                      disabled={processingOrders.includes(order.id)}
-                    >
-                      {processingOrders.includes(order.id) ? "Processing..." : "❌ Reject"}
-                    </button>
-
-                    <p style={{ marginTop: "8px", fontSize: "13px", fontWeight: "600", color: "#dc2626" }}>
-                      🕒 Waiting: {getWaitingTime(order.created_at)}
-                    </p>
-                  </>
-                )}
-
-                {order.status === "accepted" && (
-                  <button
-                    className="btn btn-success btn-block"
-                    onClick={() => handleComplete(order.id)}
-                    disabled={processingOrders.includes(order.id)}
-                  >
-                    {processingOrders.includes(order.id) ? "Processing..." : "✅ Mark as Completed"}
-                  </button>
-                )}
+            {orders.length === 0 ? (
+              <div className="card" style={{ textAlign: "center", padding: "60px 20px" }}>
+                <p style={{ fontSize: "18px", color: "var(--text-secondary)", textAlign: "left" }}>
+                  No orders at the moment. Please wait...
+                </p>
               </div>
+            ) : (
+              <div className="grid grid-3">
+                {/* 🎯 1. WRAP THE LOOP IN ANIMATE PRESENCE */}
+                <AnimatePresence mode="popLayout">
+                  {orders.map((order) => (
+                    <motion.div
+                      key={order.id}
+                      className={`order-card ${order.status}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      
+                      /* 🎯 2. SMOOTH SLIDE/SHRINK ON REMOVAL (300ms) */
+                      exit={{ 
+                        opacity: 0, 
+                        scale: 0.85, 
+                        y: -15,
+                        transition: { duration: 0.3 } 
+                      }}
+                      transition={{ duration: 0.3 }}
+                      
+                      /* 🎯 3. AUTO-ALIGN GRID SHUFFLES */
+                      layout 
+                    >
+                      
+                      <div className="order-header">
+                        <div className="order-token">{settings?.token_prefix}-{order.token_id}</div>
+                        <span className={`order-status-badge ${order.status}`}>
+                          {order.status === "pending" ? "⏳ Pending" : "✅ Accepted"}
+                        </span>
+                      </div>
 
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  )}
+                      {order.items && order.items.length > 0 && (
+                        <div className="order-items">
+                          <div className="order-items-title">Items to Prepare:</div>
+                          <div className="order-items-list">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="order-item">
+                                <span className="order-item-name">{item.name}</span>
+                                <span className="order-item-qty">x{item.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
+                      <div className="order-details">
+                        <div className="order-detail-row">
+                          <span className="order-detail-label">Payment:</span>
+                          <span className="order-detail-value">
+                            {order.payment_mode === "cash" ? "💵 Cash" : "💳 Online"}
+                          </span>
+                        </div>
+                        
+                        <div className="order-detail-row">
+                          <span className="order-detail-label">Total:</span>
+                          <span className="order-detail-value" style={{ color: "var(--primary-color)", fontWeight: "700" }}>
+                            ₹{Number(order.total_price || 0).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {/* 🎯 INJECTED TABLE NUMBER ROW (Theme-Ready) */}
+                        <div className="order-detail-row location-row">
+                          <span className="order-detail-label">Location:</span>
+                          <span className={`location-badge ${order.table_number ? 'is-table' : 'is-counter'}`}>
+                            {order.table_number ? `🍽️ Table ${order.table_number}` : "🛍️ Counter Sale"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="order-actions">
+                        {order.status === "pending" && (
+                          <>
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => handleUpdate(order.id, "accepted")}
+                              disabled={processingOrders.includes(order.id)}
+                            >
+                              {processingOrders.includes(order.id) ? "Processing..." : "✅ Accept"}
+                            </button>
+                            
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => {
+                                setConfirmationModal({
+                                  isOpen: true,
+                                  title: "Reject Order",
+                                  message: `Are you sure you want to reject order #${order.token_id}? This action cannot be undone.`,
+                                  isDangerous: true,
+                                  confirmText: "Reject",
+                                  onConfirm: async () => {
+                                    setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
+                                    await handleUpdate(order.id, "rejected");
+                                  },
+                                });
+                              }}
+                              disabled={processingOrders.includes(order.id)}
+                            >
+                              {processingOrders.includes(order.id) ? "Processing..." : "❌ Reject"}
+                            </button>
+
+                            <p style={{ marginTop: "8px", fontSize: "13px", fontWeight: "600", color: "#dc2626" }}>
+                              🕒 Waiting: {getWaitingTime(order.created_at)}
+                            </p>
+                          </>
+                        )}
+
+                        {order.status === "accepted" && (
+                          /* 🎯 4. INTEGRATED COMPLETED LOADER CAPABILITIES */
+                          <button
+                            className="btn btn-success btn-block"
+                            onClick={() => handleComplete(order.id)}
+                            disabled={processingOrders.includes(order.id) || order.isCompleting}
+                          >
+                            {order.isCompleting ? "⏳ Completing..." : "✅ Mark as Completed"}
+                          </button>
+                        )}
+                      </div>
+
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        )}
 
 
 
@@ -581,25 +595,38 @@ return (
             </div>
 
             <button
-              className="btn btn-warning stock-btn"
+  className="btn btn-warning stock-btn"
+  disabled={processingAlerts.includes(item.name)}
+  onClick={async () => {
+    if (processingAlerts.includes(item.name)) return;
 
-              onClick={async () => {
-  try {
-    const response = await apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {
-      method: "POST",
-      body: JSON.stringify({ name: item.name }),
-    }, "employee");
+    // 1. Instantly lock the button by adding it to processing states
+    setProcessingAlerts((prev) => [...prev, item.name]);
 
-    if (response.ok) {
-      console.error("failed to send alert")
+    try {
+      const response = await apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {
+        method: "POST",
+        body: JSON.stringify({ name: item.name }),
+      }, "employee");
+
+      if (response.ok) {
+        addNotification(`⚠️ Low stock alert sent for ${item.name}`, "warning");
+      } else {
+        // 🎯 FIX: Log error only when response is NOT ok
+        console.error("Failed to send alert response status rejected");
+        addNotification("❌ Failed to send alert. Try again.", "error");
+      }
+    } catch (err) {
+      console.error("Failed to send alert:", err);
+      addNotification("❌ Network error sending alert.", "error");
+    } finally {
+      // 2. Remove from processing states to unlock the button
+      setProcessingAlerts((prev) => prev.filter((name) => name !== item.name));
     }
-  } catch (err) {
-    console.error("Failed to send alert:", err);
-  }
-}}
-            >
-              ⚠ Send Alert
-            </button>
+  }}
+>
+  {processingAlerts.includes(item.name) ? "⏳ Sending..." : "⚠ Send Alert"}
+</button>
 
           </div>
 
@@ -666,20 +693,38 @@ return (
 
               <button
   className="btn btn-success stock-btn"
+  disabled={processingAlerts.includes(itemData.item_name)}
   onClick={async () => {
-  try {
-    const response = await apiFetch(
-      `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
-      { method: "DELETE" },
-      "employee"
-    );
+    if (processingAlerts.includes(itemData.item_name)) return;
 
-  } catch (err) {
-    console.error("Failed to restore item:", err);
-  }
-}}
+    // 1. Instantly lock the button by adding it to processing states
+    setProcessingAlerts((prev) => [...prev, itemData.item_name]);
+
+    try {
+      const response = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
+        { method: "DELETE" },
+        "employee"
+      );
+
+      if (response.ok) {
+        addNotification(`♻️ ${itemData.item_name} restored successfully!`, "success");
+        
+        // Optional: If you want an optimistic layout cleanup here, you could remove it 
+        // from your local low-stock view state right away if needed!
+      } else {
+        addNotification("❌ Failed to restore item.", "error");
+      }
+    } catch (err) {
+      console.error("Failed to restore item:", err);
+      addNotification("❌ Network error restoring item.", "error");
+    } finally {
+      // 2. Remove from processing states to unlock the button
+      setProcessingAlerts((prev) => prev.filter((name) => name !== itemData.item_name));
+    }
+  }}
 >
-  ♻ Restore
+  {processingAlerts.includes(itemData.item_name) ? "⏳ Restoring..." : "♻ Restore"}
 </button>
 
             </div>
