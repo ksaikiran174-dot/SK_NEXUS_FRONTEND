@@ -801,28 +801,7 @@
 
   content: "";
 
-  position: absolute;
-
-  top: -120px;
-
-  right: -120px;
-
-  width: 240px;
-
-  height: 240px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(37,99,235,0.12),
-      transparent 70%
-    );
-
-  filter: blur(20px);
-
-  pointer-events: none;
+  position: none;
 }
 
 /* HEADER */
@@ -1926,6 +1905,23 @@
 
 [data-theme="dark"] .cost-badge-value {
   color: #3b82f6; /* Higher glow ratio contrast value for visibility */
+}
+
+[data-theme="dark"] .summary-panel::before {
+  display: block; /* ✅ Visible on dark mode */
+  position: absolute;
+  top: -120px;
+  right: -120px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.15), /* Brighter neon blue for dark theme */
+    transparent 75%
+  );
+  filter: blur(20px);
+  pointer-events: none;
 }
 
 /* ========================================================

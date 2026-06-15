@@ -1776,10 +1776,10 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     {isLoading && (
       <div className="loading-overlay">
         <div className="loading-spinner" />
-        <span className="loading-text">Loading dashboard...</span>
+        <span className="loading-text">Loading your dashboard...</span>
       </div>
     )}
-    
+
       {/* ── MOBILE OVERLAY ── */}
     <div
       className={`sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
