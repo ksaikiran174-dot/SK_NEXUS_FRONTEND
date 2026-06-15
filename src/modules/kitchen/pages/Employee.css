@@ -1567,114 +1567,116 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  width: 100% !important; /* 🎯 Forces full horizontal coverage edge-to-edge */
+  width: 100% !important;
   z-index: 1500;
-  background: #10b981; /* Solid Theme Green Base */
+  background: #10b981;
   padding: 10px 16px;
   height: 56px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  box-sizing: border-box; /* Prevents padding from breaking width bounds */
+  box-sizing: border-box;
 }
-
 
 /* =========================================================================
    📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
-   Employee Green & White Mobile Overrides
    ========================================================================= */
 
 @media (max-width: 430px) {
 
-  /* ── FORCE TOPBAR DISPLAY ── */
   .employee-topbar {
-    display: flex !important; /* Ensures display activates on mobile devices */
-    background: #10b981 !important; /* Striking Green Header */
+    display: flex !important;
+    background: #10b981 !important;
   }
 
-  /* ── SIDEBAR: Hidden off-screen, handles custom 60% horizontal canvas ── */
   .employee-container {
     --employee-sidebar-width: 0px !important;
   }
 
+  /* ── SLIDING SIDEBAR ENGINE ── */
   .employee-sidebar {
     position: fixed !important;
     top: 0;
     left: 0;
     height: 100vh !important;
-    width: 60% !important; /* 🎯 Occupies exactly 60% horizontal width */
-    min-width: 230px !important; /* Safeguard minimum space to keep link text clean */
-    padding: 20px 14px !important; /* Tighter padding for small screens */
+    width: 60% !important; 
+    min-width: 240px !important; 
+    padding: 20px 14px !important; 
     z-index: 99999 !important;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-100%) !important; /* Slide completely off-canvas */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow-y: auto;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     pointer-events: all !important;
-    border-radius: 12px !important;
-    
-    /* Green & White Visual Contrast Specs */
-    background-color: #ffffff !important; /* Pure white drawer background */
-    border-right: 3px solid #10b981 !important; /* Green indicator strip */
+    border-radius: 0px 12px 12px 0px !important;
+    background-color: #ffffff !important; /* Clean white drawer base */
+    border-right: 3px solid #10b981 !important;
     box-shadow: 8px 0 32px rgba(16, 185, 129, 0.18) !important;
   }
 
-  /* 🎯 This class opens the sidebar drawer when state changes to true */
+  /* Triggers toggle animation */
   .employee-sidebar.sidebar-open {
     transform: translateX(0) !important;
   }
 
-  /* ── 🎯 SIDEBAR HEADER GAP FIX ── */
+  /* ── OVERLAY BACKDROP ── */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    z-index: 99998 !important; /* One layer below sidebar drawer */
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+
+  .sidebar-overlay.overlay-visible {
+    display: block !important;
+  }
+
+  /* ── INNER TEXT NODES AND NAV LINKS ── */
   .employee-sidebar .sidebar-header {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important; /* Spacing between logo image/placeholder and h1 title text */
+    gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 16px !important; /* Keeps structural margin consistent */
+    margin-bottom: 16px !important;
   }
 
-  /* Scale down interior font and icon sizes for smaller layouts */
-  .employee-sidebar.sidebar-open .sidebar-header h1 {
+  .employee-sidebar .sidebar-header h1 {
     display: block !important;
     font-size: 16px !important; 
-    margin: 0 !important; /* Prevents default heading margins from breaking alignment */
-    color: #065f46 !important; /* Dark forest green text */
+    margin: 0 !important;
+    color: #065f46 !important;
   }
 
-  .employee-sidebar.sidebar-open .sidebar-link {
+  /* Fixes text visibility rules inside drawer layout */
+  .employee-sidebar .sidebar-link {
     width: 100% !important;
     height: auto !important;
-    min-width: unset !important;
-    max-width: unset !important;
-    padding: 10px 12px !important; /* Thinner padding footprint */
+    padding: 10px 12px !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: flex-start !important;
     border-radius: 8px !important;
-    gap: 8px !important; /* Tighter gap layout */
-    color: #4b5563 !important; /* Charcoal font gray */
+    gap: 8px !important;
+    color: #4b5563 !important;
   }
 
-  /* Active text and background links inside the White Drawer */
-  .employee-sidebar.sidebar-open .sidebar-link.active {
-    background-color: #10b981 !important; /* Solid Green background on Active */
-    color: #ffffff !important;            /* White text for active state */
-  }
-
-  .employee-sidebar.sidebar-open .sidebar-link > span:not(.sidebar-icon) {
+  .employee-sidebar .sidebar-link > span:not(.sidebar-icon) {
     display: block !important;
-    width: auto !important;
-    height: auto !important;
     opacity: 1 !important;
     visibility: visible !important;
     position: static !important;
-    font-size: 13px !important; /* Smaller text scale */
-    overflow: visible !important;
-    pointer-events: auto !important;
+    font-size: 13px !important;
   }
 
-  .employee-sidebar.sidebar-open .sidebar-icon {
-    font-size: 16px !important; /* Scaled down sidebar icons */
-    width: auto !important;
-    height: auto !important;
+  /* Green Theme Active Navigation Highlights */
+  .employee-sidebar .sidebar-link.active {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
   }
 
   .employee-sidebar .sidebar-nav,
@@ -1684,14 +1686,14 @@ body {
     gap: 4px !important;
   }
 
-  /* ── MAIN CONTENT AREA: Fills out 100% layout space and drops under topbar ── */
+  /* ── CONTENT AREA GAP CLEARANCE ── */
   .employee-main {
     margin-left: 0 !important;
     margin-right: 0 !important;
-    width: 100% !important; /* 🎯 Reclaims the sidebar's blank space area */
+    width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 80px !important; /* 🎯 Pushes content down safely so email stays visible! */
+    padding-top: 80px !important; /* Pushes everything under header bar cleanly */
     box-sizing: border-box;
   }
 

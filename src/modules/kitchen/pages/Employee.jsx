@@ -526,53 +526,40 @@ return (
       style={{ display: 'none' }} 
     />
 
-    {/* ── LOADING OVERLAY (Optional setup safeguard) ── */}
-    {typeof isLoading !== "undefined" && isLoading && (
-      <div className="loading-overlay">
-        <div className="loading-spinner" />
-        <span className="loading-text">Loading your dashboard...</span>
-      </div>
-    )}
-
-    {/* ── MOBILE OVERLAY: Targets backdrop blurring layout layers natively ── */}
+    {/* ── MOBILE BACKDROP OVERLAY: Clicking this shuts the sidebar ── */}
     <div
       className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
       onClick={() => setEmployeeSidebarOpen(false)}
     />
 
-{/* ── MOBILE TOP BAR ── */}
-<div 
-  className="mobile-topbar employee-topbar" 
-  style={{ display: "none" }} 
-  ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
->
-  {settings?.logo_url ? (
-    <img src={settings.logo_url} alt="logo" className="mobile-logo" />
-  ) : (
-    <span className="mobile-logo-placeholder">👨‍🍳</span>
-  )}
-  <span className="mobile-restaurant-name">
-    {settings?.restaurant_name || "Restaurant"}
-  </span>
-  
-  {/* 🎯 Extra wrapper layer prevents text clipping on the right hand side */}
-  <div className="topbar-right-actions">
-    <button
-      className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
-      onClick={() => setEmployeeSidebarOpen(prev => !prev)}
-      aria-label="Toggle menu"
+    {/* ── MOBILE TOP BAR ── */}
+    <div 
+      className="mobile-topbar employee-topbar" 
+      style={{ display: "none" }} 
+      ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
     >
-      <span className="hamburger-line" />
-      <span className="hamburger-line" />
-      <span className="hamburger-line" />
-    </button>
-  </div>
-</div>
+      {settings?.logo_url ? (
+        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+      ) : (
+        <span className="mobile-logo-placeholder">🍽️</span>
+      )}
+      <span className="mobile-restaurant-name">
+        {settings?.restaurant_name || "Restaurant"}
+      </span>
+      <button
+        className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
+        onClick={() => setEmployeeSidebarOpen(prev => !prev)}
+        aria-label="Toggle menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+    </div>
 
-    {/* ========== SIDEBAR ========== */}
+    {/* ========== SIDEBAR: Now dynamically accepts the toggle state ========== */}
     <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
       <div className="sidebar-header">
-        {/* 🚀 DYNAMIC LOGO CHECK */}
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
@@ -591,7 +578,7 @@ return (
           onClick={() => {
             setShowLowStock(false);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); /* Closes drawer cleanly on selection */
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">📝</span>
@@ -603,7 +590,7 @@ return (
           onClick={() => {
             setShowLowStock(true);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); /* Closes drawer cleanly on selection */
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">⚠️</span>
