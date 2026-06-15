@@ -201,7 +201,6 @@ useEffect(() => {
                 : o
             )
           );
-          addNotification(`Order ${msg.data.token_id} ${msg.data.status} `);
         }
       }
 
