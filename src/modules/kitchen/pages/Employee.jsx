@@ -38,6 +38,7 @@ function KitchenEmployee() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Helper: close sidebar (call this in every tab onClick)
   const closeSidebar = () => setSidebarOpen(false);
+  const [employeeSidebarOpen, setEmployeeSidebarOpen] = useState(false);
 
   // Confirmation Modal State
   const [confirmationModal, setConfirmationModal] = useState({
@@ -619,7 +620,7 @@ return (
       </div>
     </aside>
 
-    
+
       {/* ========== MAIN CONTENT ========== */}
       <main className="employee-main">
         
