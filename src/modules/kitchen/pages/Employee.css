@@ -1557,132 +1557,152 @@ body {
 
 /* =========================================================================
    📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
-   Employee Hamburger drawer sidebar — 60% Width & Blur Redesign
+   Employee Green Theme - Fixed Drawer Width & Overlap Fix
    ========================================================================= */
 
 @media (max-width: 430px) {
 
-  /* ── EMPLOYEE SIDEBAR: Hidden off-screen, handles custom 60% horizontal canvas ── */
+  /* ── 🟢 MOBILE TOPBAR: Solid Green Theme with clean text boundaries ── */
+  .mobile-topbar.employee-topbar {
+    display: flex !important;
+    background-color: #10b981 !important; /* Vibrant Emerald Green Header background */
+    border-bottom: 2px solid #059669 !important;
+    padding: 0 16px !important;
+    height: 60px !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999 !important;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .employee-topbar .mobile-restaurant-name {
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  .employee-topbar .topbar-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* ── 🗂️ EMPLOYEE SIDEBAR: Fixed horizontal layout width ── */
   .employee-container {
     --employee-sidebar-width: 0px !important;
   }
 
   .employee-sidebar {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
-    height: 100vh;
-    width: 60% !important; /* 🎯 Occupies exactly 60% horizontal width */
-    min-width: 230px;      /* Safeguard minimum space to keep link text clean */
-    padding: 20px 14px !important; /* Tighter padding for small screens */
-    z-index: 99999 !important;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100vh !important;
+    width: 60% !important;        /* 🎯 Keeps canvas perfectly scaled at 60% */
+    min-width: 240px !important;  /* Safeguards text nodes from collapsing */
+    padding: 24px 16px !important;
+    z-index: 99999 !important;     /* Forces stack index to sit ahead of layouts */
+    transform: translateX(-100%) !important; /* Slide completely off-canvas by default */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    pointer-events: all !important;
-    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    box-sizing: border-box !important;
+    border-radius: 0px 16px 16px 0px !important; /* Clean rounded right edge */
     
-    /* 🎨 Soft light blue background setup matching manager drawer */
-    background-color: #f4f7fe !important; 
-    border-right: 1px solid #e2eaf8 !important; 
-    box-shadow: 4px 0 24px rgba(37, 99, 235, 0.15) !important; 
+    /* Green & White Visual Contrast Specs */
+    background-color: #ffffff !important; /* Pure clean canvas body background */
+    border-right: 3px solid #10b981 !important; /* Green signature indicator strip */
+    box-shadow: 8px 0 32px rgba(16, 185, 129, 0.18) !important;
   }
 
+  /* Triggers state via state variable toggles */
   .employee-sidebar.sidebar-open {
-    transform: translateX(0) !important;
+    transform: translateX(0) !important; /* Pulls sidebar out cleanly */
   }
 
-  /* ── 🎯 EMPLOYEE SIDEBAR HEADER GAP FIX ── */
+  /* ── SIDEBAR INTERIOR ITEMS ── */
   .employee-sidebar .sidebar-header {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important; /* Spacing between logo and title text */
+    gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 24px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid #f0fdf4 !important;
   }
 
-  /* Scale down interior text and navigation layouts for employees */
-  .employee-sidebar.sidebar-open .sidebar-header h1 {
-    display: block !important;
-    font-size: 16px !important; 
-    margin: 0 !important; 
-    color: #1e3a8a !important; /* Deep navy theme text color */
+  .employee-sidebar .sidebar-header h1 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #065f46 !important; /* Dark forest green text */
+    margin: 0 !important;
   }
 
-  .employee-sidebar.sidebar-open .sidebar-link {
+  .employee-sidebar .sidebar-link {
     width: 100% !important;
-    height: auto !important;
-    min-width: unset !important;
-    max-width: unset !important;
-    padding: 10px 12px !important;
-    justify-content: flex-start !important;
-    border-radius: 8px !important;
-    gap: 8px !important;
-    color: #475569 !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border-radius: 10px !important;
+    color: #4b5563 !important; /* Charcoal font gray */
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    margin-bottom: 4px;
   }
 
-  /* Active navigation badge states */
-  .employee-sidebar.sidebar-open .sidebar-link.active {
-    background-color: #2563eb !important; /* Vibrant primary blue selection */
-    color: #ffffff !important;
+  /* Active states inside the White Navigation Drawer */
+  .employee-sidebar .sidebar-link.active {
+    background-color: #10b981 !important; /* Bold Emerald Green Selection background */
+    color: #ffffff !important;            /* White active text labels */
   }
 
-  .employee-sidebar.sidebar-open .sidebar-link > span:not(.sidebar-icon) {
-    display: block !important;
-    width: auto !important;
-    height: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    position: static !important;
-    font-size: 13px !important;
-    overflow: visible !important;
-    pointer-events: auto !important;
+  .employee-sidebar .sidebar-link.active .sidebar-icon {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
   }
 
-  .employee-sidebar.sidebar-open .sidebar-icon {
-    font-size: 16px !important;
-    width: auto !important;
-    height: auto !important;
-  }
-
-  .employee-sidebar .sidebar-nav,
-  .employee-sidebar .sidebar-footer {
-    width: 100%;
-    align-items: flex-start;
-    gap: 4px !important;
-  }
-
-  /* ── EMPLOYEE MAIN CONTENT AREA RECLAIM ── */
+  /* ── 🛠️ FIX OVERLAP: Drops the main view panel below the top bar's height ── */
   .employee-main {
     margin-left: 0 !important;
     margin-right: 0 !important;
-    width: 100% !important; /* 🎯 Reclaims the sidebar's blank desktop footprint space */
+    width: 100% !important;
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 72px !important; /* Clean clearance space below fixed mobile top bar */
-    box-sizing: border-box;
+    padding-top: 80px !important; /* 🎯 Pushes content down so email stays visible! */
+    box-sizing: border-box !important;
   }
 
-  /* ── 🌗 DARK MODE ENHANCEMENTS FOR EMPLOYEE MOBILE SIDEBAR ── */
+  /* Hamburger button colors inside green header */
+  .employee-topbar .hamburger-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .employee-topbar .hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  /* ── DARK THEME OVERRIDES FOR GREEN SETUP ── */
   [data-theme="dark"] .employee-sidebar {
-    background-color: #1e293b !important; /* Sleek dark slate on theme switch */
-    border-right-color: #334155 !important;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4) !important;
+    background-color: #111827 !important; /* Deep charcoal backdrop */
+    border-right-color: #10b981 !important;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5) !important;
   }
 
-  [data-theme="dark"] .employee-sidebar.sidebar-open .sidebar-header h1 {
-    color: var(--text-primary, #f8fafc) !important;
+  [data-theme="dark"] .employee-sidebar .sidebar-header h1 {
+    color: #34d399 !important; /* Light mint green accent text */
   }
 
-  [data-theme="dark"] .employee-sidebar.sidebar-open .sidebar-link {
-    color: var(--text-secondary, #94a3b8) !important;
+  [data-theme="dark"] .employee-sidebar .sidebar-link {
+    color: #9ca3af !important;
   }
 
-  [data-theme="dark"] .employee-sidebar.sidebar-open .sidebar-link.active {
-    background-color: #2563eb !important;
+  [data-theme="dark"] .employee-sidebar .sidebar-link.active {
+    background-color: #10b981 !important;
     color: #ffffff !important;
   }
 }

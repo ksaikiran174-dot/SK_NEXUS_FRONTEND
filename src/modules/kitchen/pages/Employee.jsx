@@ -540,30 +540,34 @@ return (
       onClick={() => setEmployeeSidebarOpen(false)}
     />
 
-    {/* ── MOBILE TOP BAR ── */}
-    <div 
-      className="mobile-topbar" 
-      style={{ display: "none" }} 
-      ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
+{/* ── MOBILE TOP BAR ── */}
+<div 
+  className="mobile-topbar employee-topbar" 
+  style={{ display: "none" }} 
+  ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
+>
+  {settings?.logo_url ? (
+    <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+  ) : (
+    <span className="mobile-logo-placeholder">👨‍🍳</span>
+  )}
+  <span className="mobile-restaurant-name">
+    {settings?.restaurant_name || "Restaurant"}
+  </span>
+  
+  {/* 🎯 Extra wrapper layer prevents text clipping on the right hand side */}
+  <div className="topbar-right-actions">
+    <button
+      className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
+      onClick={() => setEmployeeSidebarOpen(prev => !prev)}
+      aria-label="Toggle menu"
     >
-      {settings?.logo_url ? (
-        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
-      ) : (
-        <span className="mobile-logo-placeholder">🍽️</span>
-      )}
-      <span className="mobile-restaurant-name">
-        {settings?.restaurant_name || "Restaurant"}
-      </span>
-      <button
-        className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
-        onClick={() => setEmployeeSidebarOpen(prev => !prev)}
-        aria-label="Toggle menu"
-      >
-        <span className="hamburger-line" />
-        <span className="hamburger-line" />
-        <span className="hamburger-line" />
-      </button>
-    </div>
+      <span className="hamburger-line" />
+      <span className="hamburger-line" />
+      <span className="hamburger-line" />
+    </button>
+  </div>
+</div>
 
     {/* ========== SIDEBAR ========== */}
     <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
