@@ -1162,7 +1162,7 @@ const fetchAnalytics =
 
 
 /* =========================================
-   CREATE ORDER (KITCHEN MANAGER - OFFLINE READY)
+   CREATE ORDER (KITCHEN MANAGER - INSTANT RESPONSE)
 ========================================= */
 const handleCreateOrder = async () => {
   if (cart.length === 0 || creatingOrder) return;
@@ -1177,29 +1177,33 @@ const handleCreateOrder = async () => {
 
   setCreatingOrder(true);
 
-  // Generate a completely unique tracking ID tag for the offline sync sequence
   const offlineUuid = `off_uuid_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
-  // Construct base data dictionary matching backend expectations
   const orderPayload = {
     items: cart,
     payment_mode: paymentMode,
     offline_uuid: offlineUuid
   };
 
-  // 🚨 NETWORK BOUNDARY CHECK: If the local browser flags are dark
+  // Keep a local reference to the cart items and UI states to clear the screen instantly
+  const localCartBackup = [...cart];
+  const localPaymentModeBackup = paymentMode;
+
+  // ── 1. INSTANTLY CLEAR CHECKOUT UI (Takes < 10ms) ──
+  setCart([]);
+  setPaymentMode("cash");
+  setCreatingOrder(false); // Free up the button state so they can order again immediately
+
+  // 🚨 NETWORK BOUNDARY CHECK: If the local browser flags are offline
   if (!navigator.onLine) {
     try {
-      // 1. Save it securely to your browser's local IndexedDB ledger store
       await saveOfflineOrder(orderPayload);
 
-      // 🔊 SOUND ONLY: Play audio confirmation for successful offline cache save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
       }
 
-      // 2. 🚀 OPTIMISTIC UPDATE: Push it directly to your UI active orders list layout
       setOrders((prev) => [
         ...prev,
         {
@@ -1210,78 +1214,64 @@ const handleCreateOrder = async () => {
         }
       ]);
 
-      addNotification("⚠️ Running Offline! Order queued and displayed on local kitchen boards.", "warning");
-
-      // 3. Clear checkout UI state controls for the next ticket input
-      setCart([]);
-      setPaymentMode("cash");
-
+      addNotification("⚠️ Running Offline! Order queued on local kitchen boards.", "warning");
     } catch (dbErr) {
       console.error("Kitchen offline database save failure:", dbErr);
       addNotification("❌ Failed to cache kitchen order locally.", "error");
-    } finally {
-      setCreatingOrder(false);
+      
+      // Rollback UI only if local caching fails completely
+      setCart(localCartBackup);
+      setPaymentMode(localPaymentModeBackup);
     }
     return; 
   }
 
-  // 🟢 ONLINE ROUTE: Standard network execution path
+  // 🟢 ONLINE ROUTE: Fire and forget network tasks into the background background thread
   try {
     const res = await apiFetch(
       `${import.meta.env.VITE_API_URL}/orders`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderPayload)
       },
       "manager"
     );
 
     if (!res.ok) {
-      addNotification("❌ Failed to process checkout.", "error");
-      return;
+      throw new Error("Network response was not ok");
     }
 
     const data = await res.json();
 
-    // ✅ Add newly created verified order from backend to the active list instantly
+    // ✅ Add real backend data to state in the background
     setOrders((prev) => [
       ...prev,
-      {
-        ...data,
-        items: data.items || []
-      }
+      { ...data, items: data.items || [] }
     ]);
 
+    // 🔊 Play audio confirmation immediately when network confirms success
+    if (settings?.enable_sound && acceptSoundRef?.current) {
+      acceptSoundRef.current.currentTime = 0;
+      acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+    }
+    addNotification("🎉 Kitchen Order Placed Successfully!", "success");
 
-
+    // 🖨️ BACKGROUND PRINTING & REFRESHES (Non-blocking)
     printToken(data, () => {
-
-      // 🔊 SOUND ONLY: Trigger success audio cue right when the print callback runs
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
-
-      addNotification("🎉 Kitchen Order Placed Successfully!", "success");
-      setCart([]);
-      setPaymentMode("cash");
-      refreshTransactions(); // ✅ already implied
-      refreshSummary();      // ✅ ADD THIS — updates summary page instantly
+      // Let data refresh calls run asynchronously without blocking next entry cycles
+      refreshTransactions(); 
+      refreshSummary();      
       refreshAnalytics();
-      
     });
 
   } catch (err) {
-    console.error("Online creation failed. Dropping back to offline cache layer...", err);
+    console.error("Online creation failed or dropped mid-flight. Falling back to offline local storage...", err);
     
-    // 📡 FALLBACK: If connection drops mid-flight right after clicking submit
+    // 📡 SILENT FALLBACK: Secure it locally so the cashier has no disruption
     try {
       await saveOfflineOrder(orderPayload);
       
-      // 🔊 SOUND ONLY: Play audio confirmation for successful fallback save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
@@ -1296,16 +1286,15 @@ const handleCreateOrder = async () => {
           created_at: new Date().toISOString()
         }
       ]);
-
-      addNotification("📡 Connection dropped! Order safely secured offline.", "warning");
-      setCart([]);
-      setPaymentMode("cash");
+      addNotification("📡 Network dropped! Order safely secured offline.", "warning");
     } catch (innerDbErr) {
       console.error("Critical storage failure:", innerDbErr);
-      addNotification("❌ Connection dropped and local storage failed.", "error");
+      addNotification("❌ Connection dropped and local storage failed. Please check cart backup.", "error");
+      
+      // Only force an intrusive card reset if everything goes completely wrong
+      setCart(localCartBackup);
+      setPaymentMode(localPaymentModeBackup);
     }
-  } finally {
-    setCreatingOrder(false);
   }
 };
 
