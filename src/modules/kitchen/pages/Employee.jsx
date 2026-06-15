@@ -515,9 +515,9 @@ useEffect(() => {
   }, []);
 
 return (
-    <div className="employee-container">
+  <div className="employee-container employee-dashboard-layout">
 
-      {/* HIDDEN AUDIO TAG - Place it here! */}
+    {/* HIDDEN AUDIO TAG */}
     <audio 
       ref={soundRef} 
       src="/sounds/for_acceptance.wav" 
@@ -525,15 +525,26 @@ return (
       style={{ display: 'none' }} 
     />
 
-      {/* ── MOBILE OVERLAY ── */}
+    {/* ── LOADING OVERLAY (Optional setup safeguard) ── */}
+    {typeof isLoading !== "undefined" && isLoading && (
+      <div className="loading-overlay">
+        <div className="loading-spinner" />
+        <span className="loading-text">Loading your dashboard...</span>
+      </div>
+    )}
+
+    {/* ── MOBILE OVERLAY: Targets backdrop blurring layout layers natively ── */}
     <div
-      className={`sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
-      onClick={closeSidebar}
+      className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
+      onClick={() => setEmployeeSidebarOpen(false)}
     />
 
     {/* ── MOBILE TOP BAR ── */}
-    <div className="mobile-topbar" style={{ display: "none" }} 
-         ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}>
+    <div 
+      className="mobile-topbar" 
+      style={{ display: "none" }} 
+      ref={(el) => { if (el) el.style.display = window.innerWidth <= 430 ? "flex" : "none"; }}
+    >
       {settings?.logo_url ? (
         <img src={settings.logo_url} alt="logo" className="mobile-logo" />
       ) : (
@@ -543,8 +554,8 @@ return (
         {settings?.restaurant_name || "Restaurant"}
       </span>
       <button
-        className={`hamburger-btn ${sidebarOpen ? "is-open" : ""}`}
-        onClick={() => setSidebarOpen(prev => !prev)}
+        className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
+        onClick={() => setEmployeeSidebarOpen(prev => !prev)}
         aria-label="Toggle menu"
       >
         <span className="hamburger-line" />
@@ -553,63 +564,62 @@ return (
       </button>
     </div>
 
-      {/* ========== SIDEBAR ========== */}
-      <aside className={`employee-sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
-<div className="sidebar-header">
-  {/* 🚀 DYNAMIC LOGO CHECK: Shows the restaurant logo if it exists, otherwise falls back to the chef icon */}
-  {settings?.logo_url ? (
-    <img
-      src={settings.logo_url}
-      alt="logo"
-      className="sidebar-logo"
-    />
-  ) : (
-    <span className="sidebar-icon">👨‍🍳</span>
-  )}
-  <h1>{settings?.restaurant_name || "Restaurant"} Employee</h1>
-</div>
+    {/* ========== SIDEBAR ========== */}
+    <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
+      <div className="sidebar-header">
+        {/* 🚀 DYNAMIC LOGO CHECK */}
+        {settings?.logo_url ? (
+          <img
+            src={settings.logo_url}
+            alt="logo"
+            className="sidebar-logo"
+          />
+        ) : (
+          <span className="sidebar-icon">👨‍🍳</span>
+        )}
+        <h1>{settings?.restaurant_name || "Restaurant"} Employee</h1>
+      </div>
 
-        <nav className="sidebar-nav">
-          <div
-            className={`sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLowStock(false);
-              setShowRestore(false);
-              closeSidebar();
-            }}
-          >
-            <span className="sidebar-icon">📝</span>
-            <span>Orders</span>
-          </div>
-
-          <div
-            className={`sidebar-link ${showLowStock ? 'active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLowStock(true);
-              setShowRestore(false);
-              closeSidebar();
-            }}
-          >
-            <span className="sidebar-icon">⚠️</span>
-            <span>Low Stock Alert</span>
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="sidebar-link" onClick={toggleDarkMode}>
-            <span className="sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
-            <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-          </div>
-
-          <div className="sidebar-link logout-link" onClick={handleLogout}>
-            <span className="sidebar-icon">🚪</span>
-            <span>Logout</span>
-          </div>
+      <nav className="sidebar-nav">
+        <div
+          className={`sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
+          onClick={() => {
+            setShowLowStock(false);
+            setShowRestore(false);
+            setEmployeeSidebarOpen(false); /* Closes drawer cleanly on selection */
+          }}
+        >
+          <span className="sidebar-icon">📝</span>
+          <span>Orders</span>
         </div>
-      </aside>
 
+        <div
+          className={`sidebar-link ${showLowStock ? 'active' : ''}`}
+          onClick={() => {
+            setShowLowStock(true);
+            setShowRestore(false);
+            setEmployeeSidebarOpen(false); /* Closes drawer cleanly on selection */
+          }}
+        >
+          <span className="sidebar-icon">⚠️</span>
+          <span>Low Stock Alert</span>
+        </div>
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-link" onClick={toggleDarkMode}>
+          <span className="sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
+          <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+        </div>
+
+        <div className="sidebar-link logout-link" onClick={handleLogout}>
+          <span className="sidebar-icon">🚪</span>
+          <span>Logout</span>
+        </div>
+      </div>
+    </aside>
+
+    
       {/* ========== MAIN CONTENT ========== */}
       <main className="employee-main">
         
