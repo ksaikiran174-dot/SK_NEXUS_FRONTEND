@@ -577,7 +577,8 @@ return (
       <nav className="sidebar-nav">
         <div
           className={`sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setShowLowStock(false);
             setShowRestore(false);
             if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
@@ -589,7 +590,8 @@ return (
 
         <div
           className={`sidebar-link ${showLowStock ? 'active' : ''}`}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             setShowLowStock(true);
             setShowRestore(false);
             if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
