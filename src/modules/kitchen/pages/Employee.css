@@ -1556,42 +1556,41 @@ body {
 
 
 /* =========================================================================
+   🟢 EMPLOYEE BASE STYLES (Outside Media Query - Hidden on Desktop)
+   ========================================================================= */
+.employee-topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100% !important; /* 🎯 Forces full horizontal coverage edge-to-edge */
+  z-index: 1500;
+  background: #10b981; /* Solid Theme Green Base */
+  padding: 10px 16px;
+  height: 56px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-sizing: border-box; /* Prevents padding from breaking width bounds */
+}
+
+
+/* =========================================================================
    📱 MOBILE PHONE RESPONSIVE (max-width: 430px)
-   Employee Green Theme - Fixed Drawer Width & Overlap Fix
+   Employee Green & White Mobile Overrides
    ========================================================================= */
 
 @media (max-width: 430px) {
 
-  /* ── 🟢 MOBILE TOPBAR: Solid Green Theme with clean text boundaries ── */
-  .mobile-topbar.employee-topbar {
-    display: flex !important;
-    background-color: #10b981 !important; /* Vibrant Emerald Green Header background */
-    border-bottom: 2px solid #059669 !important;
-    padding: 0 16px !important;
-    height: 60px !important;
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999 !important;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: space-between;
+  /* ── FORCE TOPBAR DISPLAY ── */
+  .employee-topbar {
+    display: flex !important; /* Ensures display activates on mobile devices */
+    background: #10b981 !important; /* Striking Green Header */
   }
 
-  .employee-topbar .mobile-restaurant-name {
-    color: #ffffff !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-  }
-
-  .employee-topbar .topbar-right-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  /* ── 🗂️ EMPLOYEE SIDEBAR: Fixed horizontal layout width ── */
+  /* ── SIDEBAR: Hidden off-screen, handles custom 60% horizontal canvas ── */
   .employee-container {
     --employee-sidebar-width: 0px !important;
   }
@@ -1601,100 +1600,125 @@ body {
     top: 0;
     left: 0;
     height: 100vh !important;
-    width: 60% !important;        /* 🎯 Keeps canvas perfectly scaled at 60% */
-    min-width: 240px !important;  /* Safeguards text nodes from collapsing */
-    padding: 24px 16px !important;
-    z-index: 99999 !important;     /* Forces stack index to sit ahead of layouts */
-    transform: translateX(-100%) !important; /* Slide completely off-canvas by default */
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 60% !important; /* 🎯 Occupies exactly 60% horizontal width */
+    min-width: 230px !important; /* Safeguard minimum space to keep link text clean */
+    padding: 20px 14px !important; /* Tighter padding for small screens */
+    z-index: 99999 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    box-sizing: border-box !important;
-    border-radius: 0px 16px 16px 0px !important; /* Clean rounded right edge */
+    pointer-events: all !important;
+    border-radius: 12px !important;
     
     /* Green & White Visual Contrast Specs */
-    background-color: #ffffff !important; /* Pure clean canvas body background */
-    border-right: 3px solid #10b981 !important; /* Green signature indicator strip */
+    background-color: #ffffff !important; /* Pure white drawer background */
+    border-right: 3px solid #10b981 !important; /* Green indicator strip */
     box-shadow: 8px 0 32px rgba(16, 185, 129, 0.18) !important;
   }
 
-  /* Triggers state via state variable toggles */
+  /* 🎯 This class opens the sidebar drawer when state changes to true */
   .employee-sidebar.sidebar-open {
-    transform: translateX(0) !important; /* Pulls sidebar out cleanly */
+    transform: translateX(0) !important;
   }
 
-  /* ── SIDEBAR INTERIOR ITEMS ── */
+  /* ── 🎯 SIDEBAR HEADER GAP FIX ── */
   .employee-sidebar .sidebar-header {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important;
+    gap: 12px !important; /* Spacing between logo image/placeholder and h1 title text */
     width: 100% !important;
-    margin-bottom: 24px !important;
-    padding-bottom: 12px !important;
-    border-bottom: 1px solid #f0fdf4 !important;
+    margin-bottom: 16px !important; /* Keeps structural margin consistent */
   }
 
-  .employee-sidebar .sidebar-header h1 {
-    font-size: 15px !important;
-    font-weight: 700 !important;
+  /* Scale down interior font and icon sizes for smaller layouts */
+  .employee-sidebar.sidebar-open .sidebar-header h1 {
+    display: block !important;
+    font-size: 16px !important; 
+    margin: 0 !important; /* Prevents default heading margins from breaking alignment */
     color: #065f46 !important; /* Dark forest green text */
-    margin: 0 !important;
   }
 
-  .employee-sidebar .sidebar-link {
+  .employee-sidebar.sidebar-open .sidebar-link {
     width: 100% !important;
-    padding: 12px 14px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    border-radius: 10px !important;
+    height: auto !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    padding: 10px 12px !important; /* Thinner padding footprint */
+    justify-content: flex-start !important;
+    border-radius: 8px !important;
+    gap: 8px !important; /* Tighter gap layout */
     color: #4b5563 !important; /* Charcoal font gray */
-    transition: all 0.2s ease !important;
-    box-sizing: border-box !important;
-    margin-bottom: 4px;
   }
 
-  /* Active states inside the White Navigation Drawer */
-  .employee-sidebar .sidebar-link.active {
-    background-color: #10b981 !important; /* Bold Emerald Green Selection background */
-    color: #ffffff !important;            /* White active text labels */
+  /* Active text and background links inside the White Drawer */
+  .employee-sidebar.sidebar-open .sidebar-link.active {
+    background-color: #10b981 !important; /* Solid Green background on Active */
+    color: #ffffff !important;            /* White text for active state */
   }
 
-  .employee-sidebar .sidebar-link.active .sidebar-icon {
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  .employee-sidebar.sidebar-open .sidebar-link > span:not(.sidebar-icon) {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: static !important;
+    font-size: 13px !important; /* Smaller text scale */
+    overflow: visible !important;
+    pointer-events: auto !important;
   }
 
-  /* ── 🛠️ FIX OVERLAP: Drops the main view panel below the top bar's height ── */
+  .employee-sidebar.sidebar-open .sidebar-icon {
+    font-size: 16px !important; /* Scaled down sidebar icons */
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .employee-sidebar .sidebar-nav,
+  .employee-sidebar .sidebar-footer {
+    width: 100%;
+    align-items: flex-start;
+    gap: 4px !important;
+  }
+
+  /* ── MAIN CONTENT AREA: Fills out 100% layout space and drops under topbar ── */
   .employee-main {
     margin-left: 0 !important;
     margin-right: 0 !important;
-    width: 100% !important;
+    width: 100% !important; /* 🎯 Reclaims the sidebar's blank space area */
     max-width: 100% !important;
     padding: 16px !important;
-    padding-top: 80px !important; /* 🎯 Pushes content down so email stays visible! */
-    box-sizing: border-box !important;
+    padding-top: 80px !important; /* 🎯 Pushes content down safely so email stays visible! */
+    box-sizing: border-box;
   }
 
-  /* Hamburger button colors inside green header */
+  .employee-topbar .mobile-restaurant-name {
+    color: #ffffff !important;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* Hamburger lines styling inside the green header bar */
   .employee-topbar .hamburger-btn {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
   }
   
   .employee-topbar .hamburger-btn:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
   }
 
-  /* ── DARK THEME OVERRIDES FOR GREEN SETUP ── */
+  /* ── DARK THEME OVERRIDES FOR EMPLOYEE MOBILE ── */
   [data-theme="dark"] .employee-sidebar {
-    background-color: #111827 !important; /* Deep charcoal backdrop */
+    background-color: #111827 !important; /* Dark charcoal card background */
     border-right-color: #10b981 !important;
     box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5) !important;
   }
 
   [data-theme="dark"] .employee-sidebar .sidebar-header h1 {
-    color: #34d399 !important; /* Light mint green accent text */
+    color: #34d399 !important; /* Light mint green text */
   }
 
   [data-theme="dark"] .employee-sidebar .sidebar-link {
