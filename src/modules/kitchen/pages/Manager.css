@@ -2689,7 +2689,7 @@
     flex-direction: column;
     align-items: flex-start;
     pointer-events: all !important;
-    border-radius: 7px !important;
+    border-radius: 12px !important;
   }
 
   .manager-sidebar.sidebar-open {
