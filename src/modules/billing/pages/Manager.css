@@ -3569,6 +3569,7 @@
     z-index: 99998 !important; /* Behind the drawer sidebar layout */
     backdrop-filter: blur(4px) !important; /* 🎯 Blurs out main underlying content */
     -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 7px !important
   }
 
   .sidebar-overlay.overlay-visible {

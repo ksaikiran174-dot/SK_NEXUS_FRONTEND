@@ -2695,6 +2695,19 @@
     transform: translateX(0) !important;
   }
 
+  .sidebar-container {
+    background-color: #f4f7fe; /* 💎 Perfect soft, premium light blue */
+    border-right: 1px solid #e2eaf8; /* Slightly darker blue-tinted border */
+    color: #1e3a8a; /* Deep navy text for crisp readability */
+    box-shadow: 4px 0 24px rgba(37, 99, 235, 0.15); /* Soft blue shadow over the blurred backdrop */
+  }
+
+  /* Make the active navigation links match beautifully */
+  .sidebar-link.active {
+    background-color: #2563eb; /* Your primary solid blue for active items */
+    color: #ffffff; /* White text on the active blue badge */
+  }
+
   /* ── 🎯 SIDEBAR HEADER GAP FIX ── */
   .manager-sidebar .sidebar-header {
     display: flex !important;
@@ -2803,6 +2816,7 @@
     z-index: 99998 !important; /* Behind the drawer sidebar layout */
     backdrop-filter: blur(4px) !important; /* 🎯 Blurs out main underlying content */
     -webkit-backdrop-filter: blur(4px) !important;
+    border-radius: 7px !important;
   }
 
   .sidebar-overlay.overlay-visible {
