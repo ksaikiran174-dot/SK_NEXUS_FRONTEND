@@ -2669,7 +2669,7 @@
 @media (max-width: 430px) {
 
   /* ── SIDEBAR: Hidden off-screen, handles custom 60% horizontal canvas ── */
-  .manager-container {
+.manager-container {
     --manager-sidebar-width: 0px !important;
   }
 
@@ -2689,11 +2689,7 @@
     flex-direction: column;
     align-items: flex-start;
     pointer-events: all !important;
-    
-    /* 🎨 Added light blue styles here bro */
-    background-color: #f4f7fe !important; /* Premium soft light blue background */
-    border-right: 1px solid #e2eaf8 !important; /* Matching light blue-tinted border */
-    box-shadow: 4px 0 24px rgba(37, 99, 235, 0.15) !important; /* Soft blue elevation shadow */
+    border-radius: 7px !important;
   }
 
   .manager-sidebar.sidebar-open {
@@ -2714,7 +2710,6 @@
     display: block !important;
     font-size: 16px !important; 
     margin: 0 !important; /* Prevents default heading margins from breaking vertical alignment */
-    color: #1e3a8a !important; /* Deep navy title text */
   }
 
   .manager-sidebar.sidebar-open .sidebar-link {
@@ -2726,13 +2721,6 @@
     justify-content: flex-start !important;
     border-radius: 8px !important;
     gap: 8px !important; /* Tighter gap layout */
-    color: #475569 !important; /* Slate color for unselected links */
-  }
-  
-  /* Style for active links inside the mobile drawer */
-  .manager-sidebar.sidebar-open .sidebar-link.active {
-    background-color: #2563eb !important; /* Vibrant primary blue when selected */
-    color: #ffffff !important; /* Pure white text on selection */
   }
 
   .manager-sidebar.sidebar-open .sidebar-link > span:not(.sidebar-icon) {
@@ -2759,27 +2747,6 @@
     align-items: flex-start;
     gap: 4px !important;
   }
-
-  /* ── 🌗 DARK MODE OVERRIDES FOR MOBILE DRAWER ── */
-  [data-theme="dark"] .manager-sidebar {
-    background-color: #1e293b !important; /* Sleek dark slate on dark theme toggle */
-    border-right-color: #334155 !important;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4) !important;
-  }
-
-  [data-theme="dark"] .manager-sidebar.sidebar-open .sidebar-header h1 {
-    color: var(--text-primary) !important; /* Reverts text color to default dark mode theme variable */
-  }
-
-  [data-theme="dark"] .manager-sidebar.sidebar-open .sidebar-link {
-    color: var(--text-secondary) !important;
-  }
-
-  [data-theme="dark"] .manager-sidebar.sidebar-open .sidebar-link.active {
-    background-color: #2563eb !important; /* Keeps your crisp selection accent blue */
-    color: #ffffff !important;
-  }
-
 
   /* ── SUBSCRIPTION RESPONSIVE PHONE PATCH ── */
   .subscription-panel-wrapper {
