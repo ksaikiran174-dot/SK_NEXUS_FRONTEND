@@ -284,7 +284,7 @@ const [showSettings, setShowSettings] =
   const closeSidebar = () => setSidebarOpen(false);
 
   const [isSaving, setIsSaving] = useState(null); // Track the ID of the row being saved
-  
+  const [menuSearchQuery, setMenuSearchQuery] = useState("");
 
   // Confirmation Modal States
   const [confirmationModal, setConfirmationModal] = useState({
