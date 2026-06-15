@@ -353,7 +353,7 @@ const handleComplete = async (id) => {
       throw new Error("Failed to mark order as completed on server");
     }
 
-    addNotification("✅ Order completed!", "success");
+    
 
   } catch (err) {
     console.error("Completion failed, rolling back UI:", err);

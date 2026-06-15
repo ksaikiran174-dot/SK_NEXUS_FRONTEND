@@ -178,33 +178,71 @@ const addNotification = (text, type) => {
     };
   }, []);
 
-  const handleUpdate = async (id, status) => {
-    if (processingOrders.includes(id)) return;
-    setProcessingOrders((prev) => [...prev, id]);
-    try {
-      await apiFetch(`${import.meta.env.VITE_API_URL}/orders/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: status })
-      }, "employee");
-    } catch (err) {
-      console.error(err);
-      addNotification("❌ Failed to update order status");
-    } finally {
-      setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
-    }
-  };
+/* =========================================
+   STATUS UPDATES (INSTANT OPTIMISTIC CONTEXT)
+========================================= */
+const handleUpdate = async (id, status) => {
+  if (processingOrders.includes(id)) return;
 
-  const handleComplete = async (id) => {
-    if (processingOrders.includes(id)) return;
-    setProcessingOrders((prev) => [...prev, id]);
-    try {
-      await apiFetch(`${import.meta.env.VITE_API_URL}/orders/${id}/complete`, { method: "PATCH" }, "employee");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
-    }
-  };
+  let previousOrders = [];
+  setOrders(prev => {
+    previousOrders = prev;
+    // Update the specific order's status visually within milliseconds
+    return prev.map(order => 
+      order.id === id ? { ...order, status: status } : order
+    );
+  });
+
+  setProcessingOrders((prev) => [...prev, id]);
+
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: status })
+    }, "employee");
+
+    if (!res.ok) throw new Error("Status patch failed");
+
+  } catch (err) {
+    console.error("Status update error, resetting state layout array:", err);
+    addNotification("❌ Failed to update order status", "error");
+    setOrders(previousOrders); // Rollback
+  } finally {
+    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
+  }
+};
+
+
+/* =========================================
+   ORDER COMPLETION (INSTANT REMOVAL)
+========================================= */
+const handleComplete = async (id) => {
+  if (processingOrders.includes(id)) return;
+
+  let previousOrders = [];
+  setOrders(prev => {
+    previousOrders = prev;
+    // Wipe the component element from screen arrays instantly
+    return prev.filter(order => order.id !== id);
+  });
+
+  setProcessingOrders((prev) => [...prev, id]);
+
+  try {
+    const res = await apiFetch(`${import.meta.env.VITE_API_URL}/orders/${id}/complete`, { 
+      method: "PATCH" 
+    }, "employee");
+
+    if (!res.ok) throw new Error("Complete status payload rejected");
+
+  } catch (err) {
+    console.error("Completion endpoint processing error, rolling order back onto display scope:", err);
+    addNotification("❌ Failed to complete order. Please try again.", "error");
+    setOrders(previousOrders); // Rollback
+  } finally {
+    setProcessingOrders((prev) => prev.filter((oId) => oId !== id));
+  }
+};
 
   useEffect(() => {
     const token = localStorage.getItem("employeeAccessToken");

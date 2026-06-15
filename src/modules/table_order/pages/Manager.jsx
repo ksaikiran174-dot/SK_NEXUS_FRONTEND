@@ -1179,10 +1179,9 @@ const fetchAnalytics =
 
 
 /* =========================================
-   CREATE ORDER (TABLE MANAGEMENT - FIXED)
+   CREATE ORDER (TABLE MANAGEMENT - INSTANT RESPONSE)
 ========================================= */
 const handleCreateOrder = async () => {
-
   if (cart.length === 0 || creatingOrder) return;
 
   if (!businessDay) {
@@ -1190,7 +1189,6 @@ const handleCreateOrder = async () => {
     return;
   }
 
-  // 🎯 FIX: Changed 'selectedTable' to 'selectedTableNumber' to match your state
   if (!selectedTableNumber) {
     addNotification("⚠️ Please select a table number before placing the order.", "warning");
     return;
@@ -1204,9 +1202,20 @@ const handleCreateOrder = async () => {
     items: cart,
     payment_mode: paymentMode, 
     status: "pending",
-    table_number: selectedTableNumber, // 🎯 FIX: Matches your state
+    table_number: selectedTableNumber,
     offline_uuid: offlineUuid
   };
+
+  // Back up the current state arrays for zero-loss safety rollbacks
+  const localCartBackup = [...cart];
+  const localTableBackup = selectedTableNumber;
+  const localPaymentModeBackup = paymentMode;
+
+  // ── 1. INSTANTLY CLEAR CHECKOUT UI (Takes < 10ms) ──
+  setCart([]);
+  setSelectedTableNumber("");
+  setPaymentMode("cash");
+  setCreatingOrder(false); // Instantly unlock the checkout UI for the next bill input
 
   // 🚨 NETWORK BOUNDARY CHECK
   if (!navigator.onLine) {
@@ -1223,22 +1232,21 @@ const handleCreateOrder = async () => {
         }
       ]);
 
-      // 🔊 SOUND ONLY: Local offline storage verification audio chime
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
       }
 
-      addNotification(`⚠️ Running Offline! Order queued locally for Table ${selectedTableNumber}.`, "warning");
-
-      setCart([]);
-      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
+      addNotification(`⚠️ Running Offline! Order queued locally for Table ${localTableBackup}.`, "warning");
 
     } catch (dbErr) {
       console.error("Table floor local DB write error:", dbErr);
       addNotification("❌ Failed to save table order locally.", "error");
-    } finally {
-      setCreatingOrder(false);
+      
+      // Roll back view UI state only if database cache fails hard
+      setCart(localCartBackup);
+      setSelectedTableNumber(localTableBackup);
+      setPaymentMode(localPaymentModeBackup);
     }
     return;
   }
@@ -1255,32 +1263,36 @@ const handleCreateOrder = async () => {
       "manager"
     );
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      throw new Error("Network request rejected by server");
+    }
+    
     const data = await res.json();
 
+    // Silently inject real production payload data into layout context array
     setOrders((prev) => [...prev, { ...data, items: data.items || [] }]);
 
-    printToken(data, () => {
-      // 🔊 SOUND ONLY: Trigger success audio cue right when the print callback runs
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
+    // Play the audio cue right when the response returns successfully
+    if (settings?.enable_sound && acceptSoundRef?.current) {
+      acceptSoundRef.current.currentTime = 0;
+      acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+    }
 
-      addNotification(`🎉 Order sent to Kitchen for Table ${selectedTableNumber}!`, "success");
-      setCart([]);
-      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
-      refreshTransactions(); // ✅ ADD
-      refreshSummary();      // ✅ ADD
+    addNotification(`🎉 Order sent to Kitchen for Table ${localTableBackup}!`, "success");
+
+    // 🖨️ FIRE-AND-FORGET PRINTING & METRICS SYNC
+    printToken(data, () => {
+      refreshTransactions(); 
+      refreshSummary();      
       refreshAnalytics();
     });
+
   } catch (err) {
     console.error("Online table submit failed. Dropping back to local cache...", err);
     
     try {
       await saveOfflineOrder(orderPayload);
 
-      // 🔊 SOUND ONLY: Play audio confirmation for successful fallback save
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
         acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
@@ -1296,15 +1308,16 @@ const handleCreateOrder = async () => {
         }
       ]);
 
-      addNotification(`📡 Connection lost! Order securely saved offline for Table ${selectedTableNumber}.`, "warning");
-      setCart([]);
-      setSelectedTableNumber(""); // 🎯 FIX: Matches your state
+      addNotification(`📡 Connection lost! Order securely saved offline for Table ${localTableBackup}.`, "warning");
     } catch (innerDbErr) {
       console.error("Critical storage failure:", innerDbErr);
       addNotification("❌ Connection dropped and local storage failed.", "error");
+      
+      // Restore state arrays back into current memory bounds
+      setCart(localCartBackup);
+      setSelectedTableNumber(localTableBackup);
+      setPaymentMode(localPaymentModeBackup);
     }
-  } finally {
-    setCreatingOrder(false);
   }
 };
 
