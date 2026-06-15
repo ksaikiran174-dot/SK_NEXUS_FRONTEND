@@ -203,7 +203,7 @@ const handlePasswordInputChange = (e) => {
   setPasswordPayload(prev => ({ ...prev, [name]: value }));
 };
 
-const [menuSearchQuery, setMenuSearchQuery] = useState("");
+
 
   // State tracking for editing an item's category inline
   const [editCategory, setEditCategory] = useState("");
@@ -282,6 +282,9 @@ const [showSettings, setShowSettings] =
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Helper: close sidebar (call this in every tab onClick)
   const closeSidebar = () => setSidebarOpen(false);
+
+  const [isSaving, setIsSaving] = useState(null); // Track the ID of the row being saved
+  
 
   // Confirmation Modal States
   const [confirmationModal, setConfirmationModal] = useState({
@@ -2667,7 +2670,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     )}
   </div>
 )}
-
 
         {/* ========== CREATE MENU PANEL ========== */}
         {showCreateMenu && (
