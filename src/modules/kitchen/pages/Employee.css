@@ -225,7 +225,7 @@ body {
   max-width: 220px;
   min-width: 0;
   flex-shrink: 1;
-  align-items: end;
+  align-items: center;
 }
 
 .employee-profile-email {
