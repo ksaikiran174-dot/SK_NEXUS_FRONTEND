@@ -226,6 +226,7 @@ body {
   min-width: 0;
   flex-shrink: 1;
   align-items: center;
+  margin-left: auto;
 }
 
 .employee-profile-email {
