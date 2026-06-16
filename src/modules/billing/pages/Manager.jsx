@@ -2582,48 +2582,52 @@ return (
             {/* Charts Row 2 */}
             <div className="grid grid-2">
               
-              {/* 🎯 TOP SELLING ITEMS - LIMITED TO TOP 5 */}
-              <div className="chart-container">
-                <h3 className="chart-title">Top Selling Items</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart 
-                    /* Sorts descending by 'sold' and grabs the top 5 */
-                    data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} 
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={110} stroke="#64748b" fontSize={12} />
-                    <Tooltip />
-                    <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {/* 🎯 TOP SELLING ITEMS */}
+<div className="chart-container">
+  <h3 className="chart-title">Top Selling Items</h3>
+  <ResponsiveContainer width="100%" height={300}>
+    <BarChart 
+      data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} 
+      layout="vertical"
+      margin={{ top: 10, right: 10, left: -20, bottom: 0 }} /* 🚀 Negative left margin removes the hidden Y-axis spacing */
+    >
+      <XAxis type="number" />
+      <YAxis 
+        dataKey="name" 
+        type="category" 
+        width={90} /* 🚀 Slightly reduced width for phone screens */
+        stroke="#64748b" 
+        fontSize={12} 
+      />
+      <Tooltip />
+      <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
-              {/* 🎯 RUSH HOUR ANALYTICS - LIMITED TO TOP 5 BUSIEST HOURS */}
-              <div className="chart-container">
-                <h3 className="chart-title">Rush Hour Analytics</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart 
-                    /* Sorts descending by 'orders' to show the top 5 peak hours */
-                    data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="hour" 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={60} 
-                      interval={0} 
-                      stroke="#64748b"
-                      fontSize={12}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+{/* 🎯 RUSH HOUR ANALYTICS */}
+<div className="chart-container">
+  <h3 className="chart-title">Rush Hour Analytics</h3>
+  <ResponsiveContainer width="100%" height={300}>
+    <BarChart 
+      data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)}
+      margin={{ top: 10, right: 0, left: -30, bottom: 0 }} /* 🚀 Zeroed out margins + tucked left axis */
+    >
+      <XAxis 
+        dataKey="hour" 
+        angle={-45} 
+        textAnchor="end" 
+        height={60} 
+        interval={0} 
+        stroke="#64748b"
+        fontSize={12}
+      />
+      <YAxis stroke="#64748b" fontSize={12} />
+      <Tooltip />
+      <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
             </div>
           </div>
