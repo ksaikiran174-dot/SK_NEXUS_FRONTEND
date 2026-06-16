@@ -3137,16 +3137,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       <select
         value={selectedTableNumber}
         onChange={(e) => setSelectedTableNumber(e.target.value)}
-        style={{ 
-          padding: "10px", 
-          borderRadius: "8px", 
-          border: "1px solid var(--border-color, #cbd5e1)", 
-          fontSize: "14px", 
-          backgroundColor: "var(--card-background, #ffffff)", /* 👈 Inherits background color on dark/light switch */
-          color: "var(--text-primary, #334155)", /* 👈 Dynamically matches text palette */
-          outline: "none",
-          cursor: "pointer"
-        }}
+        className="table-select"
       >
         <option value="">Select Table...</option>
         {Array.isArray(tablesList) && tablesList.map((tableNum) => (

@@ -1,4 +1,4 @@
- /* /* ============================================
+ /* ============================================
    MANAGER PAGE PROFESSIONAL STYLING
    ============================================ */
 
@@ -2645,3 +2645,56 @@
 
 
 
+
+
+/* In your CSS, locate or create this section: */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea {
+  background: #2d3748; /* Darker background for inputs */
+  border-color: #4a5568; /* Slightly lighter border for contrast */
+  color: #e2e8f0; /* Light text color */
+}
+
+/* Add styles for focus state in dark mode if you want a different glow */
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus {
+  border-color: #63b3ed; /* A blue that stands out in dark mode */
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2); /* A softer glow */
+}
+
+[data-theme="dark"] .form-input::placeholder {
+  color: #a0aec0; /* Lighter placeholder text */
+}
+
+
+/* Add this to your main CSS (outside of any data-theme selector first) */
+.table-assignment-group .table-select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  background-color: var(--card-bg); /* Use your CSS variables */
+  color: var(--text-primary); /* Use your CSS variables */
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Add transition for smoothness */
+}
+
+.table-assignment-group .table-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Inside your [data-theme="dark"] selector: */
+[data-theme="dark"] .table-assignment-group .table-select {
+  background: #2d3748; /* Darker background for the select */
+  border-color: #4a5568; /* Lighter border */
+  color: #e2e8f0; /* Light text */
+}
+
+[data-theme="dark"] .table-assignment-group .table-select:focus {
+  border-color: #63b3ed;
+  box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2);
+}
