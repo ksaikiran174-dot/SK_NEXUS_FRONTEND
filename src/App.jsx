@@ -98,7 +98,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       // 🎉 Hold on final success state for 250ms to seamlessly hit exactly 5.0 seconds
       const transitionTimer = setTimeout(() => {
         if (onAnimationComplete) onAnimationComplete();
-      }, 1000);
+      }, 1200);
       return () => clearTimeout(transitionTimer);
     }
   }, [messageIndex, config.messages.length, onAnimationComplete]);
