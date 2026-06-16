@@ -520,7 +520,7 @@ useEffect(() => {
   }, []);
 
 return (
-  <div className={`employee-container employee-dashboard-layout ${employeeSidebarOpen ? "sidebar-is-open" : ""}`}>
+  <div className="employee-container employee-dashboard-layout">
 
     {/* HIDDEN AUDIO TAG */}
     <audio 
@@ -530,26 +530,24 @@ return (
       style={{ display: 'none' }} 
     />
 
-    {/* ── MOBILE BACKDROP OVERLAY ── */}
+    {/* ── MOBILE BACKDROP OVERLAY: Clicking this shuts the sidebar ── */}
     <div
       className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
       onClick={() => setEmployeeSidebarOpen(false)}
     />
 
-    {/* ── MOBILE TOP BAR (Keep this outside or structurally separate) ── */}
-    <div className={`mobile-topbar employee-topbar ${isMobile ? 'is-mobile' : ''}`}>
-      <div className="mobile-topbar-left">
-        {settings?.logo_url ? (
-          <img src={settings.logo_url} alt="logo" className="mobile-logo" />
-        ) : (
-          <span className="mobile-logo-placeholder">🍽️</span>
-        )}
-        <span className="mobile-restaurant-name">
-          {settings?.restaurant_name || "Restaurant"}
-        </span>
-      </div>
-      
-      {/* 🎯 Toggle Button changes to X icon automatically when open using CSS transition classes */}
+    {/* ── MOBILE TOP BAR ── */}
+    <div 
+      className={`mobile-topbar employee-topbar ${isMobile ? 'is-mobile' : ''}`} // Conditionally add is-mobile class
+    >
+      {settings?.logo_url ? (
+        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+      ) : (
+        <span className="mobile-logo-placeholder">🍽️</span>
+      )}
+      <span className="mobile-restaurant-name">
+        {settings?.restaurant_name || "Restaurant"}
+      </span>
       <button
         className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
         onClick={() => setEmployeeSidebarOpen(prev => !prev)}
@@ -561,27 +559,19 @@ return (
       </button>
     </div> 
 
-    {/* ========== SIDEBAR CONTAINER ========== */}
+    {/* ========== SIDEBAR: Now dynamically accepts the toggle state ========== */}
     <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
-      {/* 🎯 Header Close Control Actions for Mobile Views */}
       <div className="emp-sidebar-header">
-        <div className="emp-sidebar-brand">
-          {settings?.logo_url ? (
-            <img src={settings.logo_url} alt="logo" className="sidebar-logo" />
-          ) : (
-            <span className="emp-sidebar-icon">👨‍🍳</span>
-          )}
-          <h1>{settings?.restaurant_name || "Restaurant"}</h1>
-        </div>
-        
-        {/* 🎯 Close "X" Button directly inside sidebar header tracking bounds */}
-        <button 
-          className="sidebar-close-btn" 
-          onClick={() => setEmployeeSidebarOpen(false)}
-          aria-label="Close sidebar"
-        >
-          ✕
-        </button>
+        {settings?.logo_url ? (
+          <img
+            src={settings.logo_url}
+            alt="logo"
+            className="sidebar-logo"
+          />
+        ) : (
+          <span className="emp-sidebar-icon">👨‍🍳</span>
+        )}
+        <h1>{settings?.restaurant_name || "Restaurant"} Employee</h1>
       </div>
 
       <nav className="sidebar-nav">
@@ -591,7 +581,7 @@ return (
             e.stopPropagation();
             setShowLowStock(false);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); // Closes drawer view container smoothly
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="emp-sidebar-icon">📝</span>
@@ -604,7 +594,7 @@ return (
             e.stopPropagation();
             setShowLowStock(true);
             setShowRestore(false);
-            setEmployeeSidebarOpen(false); // Closes drawer view container smoothly
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="emp-sidebar-icon">⚠️</span>
