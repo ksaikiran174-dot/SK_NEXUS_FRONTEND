@@ -223,7 +223,7 @@ useEffect(() => {
           }
 
           // Only notify if it's actually new to this client
-          addNotification(`⚠️ Low Stock Alert: ${msg.data.name}`);
+          
 
           return [
             ...prev,
@@ -239,9 +239,7 @@ useEffect(() => {
       if (msg.type === "stock_restored") {
         setLowStockItems((prev) => {
           const exists = prev.some((item) => item.item_name === msg.data.name);
-          if (exists) {
-            addNotification(`✅ Stock Restored: ${msg.data.name}`);
-          }
+          if (exists) 
           return prev.filter((item) => item.item_name !== msg.data.name);
         });
       }

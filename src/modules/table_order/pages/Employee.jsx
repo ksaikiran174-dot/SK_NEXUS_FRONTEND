@@ -149,7 +149,7 @@ function TableEmployee() {
         if (msg.type === "low_stock") {
           setLowStockItems((prev) => {
             if (prev.some((item) => item.item_name === msg.data.name)) return prev;
-            addNotification(`⚠️ Low Stock Alert: ${msg.data.name}`);
+            
             return [...prev, { item_name: msg.data.name, id: msg.data.id || Date.now() }];
           });
         }
@@ -157,7 +157,7 @@ function TableEmployee() {
         if (msg.type === "stock_restored") {
           setLowStockItems((prev) => {
             const exists = prev.some((item) => item.item_name === msg.data.name);
-            if (exists) addNotification(`✅ Stock Restored: ${msg.data.name}`);
+            
             return prev.filter((item) => item.item_name !== msg.data.name);
           });
         }
