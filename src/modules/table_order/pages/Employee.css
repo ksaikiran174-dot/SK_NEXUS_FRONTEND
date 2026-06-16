@@ -1030,7 +1030,7 @@ body {
     box-shadow: none !important;
     border-radius: 0 !important;
     pointer-events: none !important;
-    border-radius: 12px; 
+    border-radius: 12px !important; 
   }
 
   aside.employee-sidebar.emp-sidebar-open { /* Use the new unique class name */

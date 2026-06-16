@@ -404,6 +404,7 @@ function TableEmployee() {
         {/* ========== ORDERS VIEW ========== */}
         {!showLowStock && !showRestore && (
           <div className="orders-page">
+            <div className="main-header" style={{ borderTop: 'none' }}>
 
             {/* ✉️ TOP RIGHT EMPLOYEE EMAIL CARD */}
             {currentUser?.email && (
@@ -413,7 +414,6 @@ function TableEmployee() {
               </div>
             )}
 
-            <div className="main-header" style={{ borderTop: 'none' }}>
               <h1>📝 Incoming Orders</h1>
             </div>
 
