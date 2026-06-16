@@ -92,13 +92,13 @@ function DashboardAnimation({ role, onAnimationComplete }) {
     if (messageIndex < config.messages.length - 1) {
       const timer = setTimeout(() => {
         setMessageIndex((prev) => prev + 1);
-      }, 950); 
+      }, 3000); 
       return () => clearTimeout(timer);
     } else {
       // 🎉 Hold on final success state for 250ms to seamlessly hit exactly 5.0 seconds
       const transitionTimer = setTimeout(() => {
         if (onAnimationComplete) onAnimationComplete();
-      }, 250);
+      }, 3000);
       return () => clearTimeout(transitionTimer);
     }
   }, [messageIndex, config.messages.length, onAnimationComplete]);
