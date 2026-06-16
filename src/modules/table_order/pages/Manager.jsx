@@ -2112,15 +2112,17 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
             {/* Charts Row 2 */}
             <div className="grid grid-2">
               
-              {/* 🎯 TOP SELLING ITEMS - CHANGED TO HORIZONTAL LAYOUT */}
+              {/* 🎯 TOP SELLING ITEMS - LIMITED TO TOP 5 */}
               <div className="chart-container">
                 <h3 className="chart-title">Top Selling Items</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData} layout="vertical">
+                  <BarChart 
+                    /* Sorts descending by 'sold' and grabs the top 5 */
+                    data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} 
+                    layout="vertical"
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    {/* Numerical value goes on X-Axis for Horizontal Charts */}
                     <XAxis type="number" />
-                    {/* Text field goes on Y-Axis. Width ensures space for names */}
                     <YAxis dataKey="name" type="category" width={110} stroke="#64748b" fontSize={12} />
                     <Tooltip />
                     <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
@@ -2128,13 +2130,15 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                 </ResponsiveContainer>
               </div>
 
-              {/* 🎯 RUSH HOUR ANALYTICS - ADDED 45-DEGREE ROTATED LABELS */}
+              {/* 🎯 RUSH HOUR ANALYTICS - LIMITED TO TOP 5 BUSIEST HOURS */}
               <div className="chart-container">
                 <h3 className="chart-title">Rush Hour Analytics</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analytics.rush_hours}>
+                  <BarChart 
+                    /* Sorts descending by 'orders' to show the top 5 peak hours */
+                    data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    {/* Rotated labels with an anchor so strings don't overlap layout edges */}
                     <XAxis 
                       dataKey="hour" 
                       angle={-45} 
