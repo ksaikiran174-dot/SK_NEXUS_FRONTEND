@@ -581,7 +581,7 @@ return (
             e.stopPropagation();
             setShowLowStock(false);
             setShowRestore(false);
-            if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">📝</span>
@@ -594,7 +594,7 @@ return (
             e.stopPropagation();
             setShowLowStock(true);
             setShowRestore(false);
-            if (isMobile) setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
+            setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
           <span className="sidebar-icon">⚠️</span>
@@ -622,21 +622,15 @@ return (
 {/* ========== ORDERS VIEW ========== */}
         {!showLowStock && !showRestore && (
           <div className="orders-page">
-            {/* ✉️ TOP RIGHT EMPLOYEE EMAIL CARD */}
-            {currentUser?.email && (
-              <div className="employee-profile-card">
-                <span className="employee-profile-label">
-                  Logged In
-                </span>
-                <span className="employee-profile-email">
-                  {currentUser.email}
-                </span>
-              </div>
-            )}
-            
-            <div className="main-header" style={{ borderTop: 'none' }}>
-              <h1>📝 Incoming Orders</h1>
-            </div>
+  <div className="main-header" style={{ borderTop: 'none' }}>
+    <h1>📝 Incoming Orders</h1>
+    {currentUser?.email && (
+      <div className="employee-profile-card">
+        <span className="employee-profile-label">Logged In</span>
+        <span className="employee-profile-email">{currentUser.email}</span>
+      </div>
+    )}
+  </div>
 
             {orders.length === 0 ? (
               <div className="card" style={{ textAlign: "center", padding: "60px 20px" }}>
