@@ -11,9 +11,9 @@ import SuperAdmin from "./pages/SuperAdmin";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
 import { getPendingOrders, deleteOfflineOrder } from "./utils/db";
 import { DarkModeProvider } from './context/DarkModeContext';
-import pendingApproval from "./pages/pendingApproval"; 
+import PendingApproval from "./pages/pendingApproval"; 
 /* ==========================================================
-   DYNAMIC EXTENSION SWITCHES
+    DYNAMIC EXTENSION SWITCHES
 ========================================================== */
 import BillingManager from "./modules/billing/pages/Manager";
 
@@ -28,15 +28,14 @@ const getModeFromPlan = (plan) => {
   if (plan === "basic") return "billing";
   if (plan === "pro") return "kitchen";
   if (plan === "enterprise") return "table";
-  return "billing"; // Default fallback tier safety
+  return "billing"; 
 };
 
-// Dashboard Animation Component
-function DashboardAnimation({ role }) {
+// 🎯 DASHBOARD ANIMATION COMPONENT - UPDATED WITH ONCOMPLETION PROP TRIGGER
+function DashboardAnimation({ role, onAnimationComplete }) {
   const [messageIndex, setMessageIndex] = useState(0);
   const audioRef = useRef(null);
 
-  // 🛠️ Read dynamic mode instead of VITE_EXTENSION_MODE
   const currentPlan = localStorage.getItem("plan") || "basic";
   const dynamicMode = getModeFromPlan(currentPlan);
 
@@ -90,10 +89,16 @@ function DashboardAnimation({ role }) {
     if (messageIndex < config.messages.length - 1) {
       const timer = setTimeout(() => {
         setMessageIndex((prev) => prev + 1);
-      }, 800);
+      }, 700); // ⚡ Slightly optimized tick speed
       return () => clearTimeout(timer);
+    } else {
+      // 🚀 We reached the last message! Let it rest for a blink then clear out
+      const transitionTimer = setTimeout(() => {
+        if (onAnimationComplete) onAnimationComplete();
+      }, 600);
+      return () => clearTimeout(transitionTimer);
     }
-  }, [messageIndex, config.messages.length]);
+  }, [messageIndex, config.messages.length, onAnimationComplete]);
 
   useEffect(() => {
     const introAudio = new Audio("/sounds/intro.wav");
@@ -103,7 +108,7 @@ function DashboardAnimation({ role }) {
     const playPromise = introAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
-        console.log("Audio play request handled/safely managed:", error.message);
+        console.log("Audio handled safely:", error.message);
       });
     }
 
@@ -127,11 +132,10 @@ function DashboardAnimation({ role }) {
         minHeight: "100vh",
         background: `linear-gradient(135deg, ${config.color}20 0%, ${config.color}10 100%)`,
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
-        padding: "20px 16px", /* Restricts content blowout on narrow viewports */
+        padding: "20px 16px",
         boxSizing: "border-box"
       }}
     >
-      {/* Dynamic CSS Injection to handle responsiveness for the hardcoded styles */}
       <style>{`
         .dash-avatar-outer { width: 140px; height: 140px; }
         .dash-avatar-img { width: 140px; height: 140px; border-width: 5px; }
@@ -262,9 +266,8 @@ function DashboardAnimation({ role }) {
 }
 
 
-
 /* ===================================
-   APP CORE
+    APP CORE
 =================================== */
 function App() {
   const [authState, setAuthState] = useState("loading");
@@ -272,7 +275,6 @@ function App() {
   const [plan, setPlan] = useState("basic");
   const [isConnected, setIsConnected] = useState(false);
   
-  // 🎯 NEW STATE: Tracks the restaurant approval status state matrix ("pending", "approved", etc.)
   const [restaurantStatus, setRestaurantStatus] = useState(() => {
     return localStorage.getItem("restaurantStatus") || "approved"; 
   });
@@ -282,10 +284,15 @@ function App() {
     return !hasRole; 
   });
 
+  /* ==========================================================
+     🎯 PERFORMANCE TUNER: RENDER REALS HIDDEN IN BACKGROUND TO FETCH DATA
+  ========================================================== */
+  const [forcePreloadDashboards, setForcePreloadDashboards] = useState(false);
+
   const clearManagerData = () => { 
     localStorage.removeItem("managerAccessToken");
     localStorage.removeItem("managerRefreshToken");
-    localStorage.removeItem("restaurantStatus"); // Clean up status on logout
+    localStorage.removeItem("restaurantStatus");
   };
 
   const clearEmployeeData = () => {
@@ -353,7 +360,7 @@ function App() {
 
 
   /* ===================================
-     INITIAL APP MOUNT AUTH CHECKER (LOOP-PROOF)
+      INITIAL APP MOUNT AUTH CHECKER
   =================================== */
   useEffect(() => {
     if (authState !== "loading") return;
@@ -386,19 +393,19 @@ function App() {
     const savedStatus = localStorage.getItem("restaurantStatus") || "approved";
     setRestaurantStatus(savedStatus);
     
+    // 🚀 If auto-logging in, bypass animation screens to go direct
     setAuthState("authenticated"); 
     console.log("🎯 Auto-authenticated active session successfully!");
   }, []); 
 
 
   /* =========================
-     APP.JSX WEBSOCKET (LOOP-SAFE & CLEANED)
+      APP.JSX WEBSOCKET
   ========================= */
   useEffect(() => {
     const token = localStorage.getItem("managerAccessToken") || localStorage.getItem("employeeAccessToken");
     const savedRole = localStorage.getItem("role");
 
-    // 🎯 WORKSPACE GUARD: If the manager status is pending, completely stall websocket initialization 
     if (!token || !savedRole || (savedRole === "manager" && restaurantStatus === "pending")) return;
 
     let socket = null;
@@ -460,49 +467,36 @@ function App() {
         }
       }
     };
-  }, [restaurantStatus]); // 🎯 Re-run if status gets changed out dynamically
+  }, [restaurantStatus]); 
 
 
   /* =========================
-     AUTHENTICATION ANIMATION & UNLOCK
+      AUTHENTICATION ANIMATION MONITOR
   ========================= */
   useEffect(() => {
     if (authState === "authenticating") {
-      
-      // If manager is pending approval, bypass the websocket checks and unlock straight into the pending dashboard view context
+      // 🚀 THE MAGIC: The instant we enter the animation state, turn on the background preloader flag!
+      setForcePreloadDashboards(true);
+
       if (role === "manager" && restaurantStatus === "pending") {
         setAuthState("authenticated");
         return;
       }
 
+      // If websocket connects instantly, we can unlock early
       if (isConnected) {
         setAuthState("authenticated");
         return;
       }
-
-      const timer = setTimeout(() => {
-        setAuthState("authenticated");
-      }, 4800); 
-      
-      return () => clearTimeout(timer);
     }
   }, [authState, isConnected, role, restaurantStatus]);
-
-  /* =========================
-     PLAN MODE RESOLVER
-  ========================= */
-  const getModeFromPlan = (planName) => {
-    if (planName === "enterprise") return "table";
-    if (planName === "pro") return "kitchen";
-    return "billing"; 
-  };
 
   const activeSessionToken = 
     localStorage.getItem("managerAccessToken") || 
     localStorage.getItem("employeeAccessToken") || 
     localStorage.getItem("superAdminAccessToken");
 
-  const currentUserProfile = (authState === "authenticated" && role && activeSessionToken) 
+  const currentUserProfile = (authState === "authenticated" || forcePreloadDashboards) && role && activeSessionToken
     ? { id: activeSessionToken.slice(-15), plan: plan }
     : null;
 
@@ -516,11 +510,42 @@ function App() {
     );
   }
 
+  // Helper template renderer to keep code clean
+  const getSubDashboardComponent = () => {
+    if (role === "super_admin") return <SuperAdmin />;
+    
+    if (role === "manager" && restaurantStatus === "pending") {
+      return (
+        <PendingApproval 
+          restaurantData={{ payment_reference: localStorage.getItem("managerUTR") }} 
+          onLogout={() => {
+            clearAllRoleData();
+            setRole(null);
+            setAuthState("role-selection");
+          }}
+        />
+      );
+    }
+
+    const mode = getModeFromPlan(plan); 
+    switch (mode) {
+      case "billing":
+        return role === "manager" ? <BillingManager /> : (
+          <div style={{ padding: "20px", textAlign: "center", color: "#ef4444", fontWeight: "bold" }}>
+            Error: Billing mode does not have an employee dashboard. Please login as a manager.
+          </div>
+        );
+      case "kitchen":
+        return role === "manager" ? <KitchenManager /> : <KitchenEmployee />;
+      case "table":
+        return role === "manager" ? <TableManager /> : <TableEmployee />;
+      default:
+        return <div style={{ padding: "20px", textAlign: "center" }}>Unknown subscription extension configuration.</div>;
+    }
+  };
+
   // 🎯 MAIN ROUTING FUNCTION FOR APP COMPONENT RENDERING
   const renderAppView = () => {
-    /* =========================
-        ROLE SELECTION
-    ========================= */
     if (authState === "role-selection") {
       const handleRoleSelect = (selectedRole) => {
         if (selectedRole === "manager") clearEmployeeData();
@@ -536,20 +561,13 @@ function App() {
       return <RoleSelection onSelectRole={handleRoleSelect} />;
     }
 
-    /* =========================
-        EMPLOYEE SECTIONS
-    ========================= */
     if (authState === "employee-login") {
       return (
         <EmployeeLogin
           onLoginSuccess={(data) => {
             localStorage.setItem("role", "employee");
-            if (data?.accessToken) {
-              localStorage.setItem("employeeAccessToken", data.accessToken);
-            }
-            if (data?.refreshToken) {
-              localStorage.setItem("employeeRefreshToken", data.refreshToken);
-            }
+            if (data?.accessToken) localStorage.setItem("employeeAccessToken", data.accessToken);
+            if (data?.refreshToken) localStorage.setItem("employeeRefreshToken", data.refreshToken);
 
             setRole("employee");
             const targetPlan = data?.plan || "basic";
@@ -573,9 +591,7 @@ function App() {
         <EmployeeRegister
           onRegisterSuccess={(data) => {
             localStorage.setItem("role", "employee");
-            if (data?.accessToken) {
-              localStorage.setItem("employeeAccessToken", data.accessToken);
-            }
+            if (data?.accessToken) localStorage.setItem("employeeAccessToken", data.accessToken);
             setRole("employee");
             setAuthState("authenticating");
           }}
@@ -585,17 +601,12 @@ function App() {
       );
     }
 
-    /* =========================
-        SUPER_ADMIN
-    ========================= */
     if (authState === "super-admin-login") {
       return (
         <SuperAdminLogin
           onLoginSuccess={(data) => {
             localStorage.setItem("role", "super_admin");
-            if (data?.accessToken) {
-              localStorage.setItem("superAdminAccessToken", data.accessToken);
-            }
+            if (data?.accessToken) localStorage.setItem("superAdminAccessToken", data.accessToken);
             setRole("super_admin");
             setAuthState("authenticating");
           }}
@@ -609,22 +620,14 @@ function App() {
       );
     }
 
-    /* =========================
-        MANAGER SECTIONS (LOGIN / REGISTER)
-    ========================= */
     if (authState === "login") {
       return (
         <Login
           onLoginSuccess={(data) => {
             localStorage.setItem("role", "manager");
-            if (data?.accessToken) {
-              localStorage.setItem("managerAccessToken", data.accessToken);
-            }
-            if (data?.refreshToken) {
-              localStorage.setItem("managerRefreshToken", data.refreshToken);
-            }
+            if (data?.accessToken) localStorage.setItem("managerAccessToken", data.accessToken);
+            if (data?.refreshToken) localStorage.setItem("managerRefreshToken", data.refreshToken);
 
-            // 🎯 CAPTURE PENDING STATUS ON LOGIN
             const status = data?.restaurant_status || "approved"; 
             setRestaurantStatus(status);
             localStorage.setItem("restaurantStatus", status);
@@ -651,11 +654,8 @@ function App() {
         <Register
           onRegisterSuccess={(data) => {
             localStorage.setItem("role", "manager");
-            if (data?.accessToken) {
-              localStorage.setItem("managerAccessToken", data.accessToken);
-            }
+            if (data?.accessToken) localStorage.setItem("managerAccessToken", data.accessToken);
 
-            // 🎯 CAPTURE PENDING STATUS IMMEDIATELY ON REGISTRATION / WORKSPACE CREATION
             const status = data?.restaurant_status || "pending";
             setRestaurantStatus(status);
             localStorage.setItem("restaurantStatus", status);
@@ -669,73 +669,25 @@ function App() {
       );
     }
 
-    /* =========================
-        DASHBOARD TRANSITION LOADING
-    ========================= */
+    /* ==============================================================================
+        🎯 BOTH STATES PARALLELED (AUTHENTICATING & AUTHENTICATED)
+    ============================================================================== */
     if (authState === "authenticating" && role) {
-      return <DashboardAnimation role={role} />;
+      return (
+        <>
+          {/* 1. Visible entry ticker sequence animation interface */}
+          <DashboardAnimation role={role} onAnimationComplete={() => setAuthState("authenticated")} />
+          
+          {/* 2. Background DOM Injection Mount: Completely invisible, but executes its useEffect hooks instantly! */}
+          <div style={{ display: "none", visibility: "hidden" }} aria-hidden="true">
+            {getSubDashboardComponent()}
+          </div>
+        </>
+      );
     }
 
-    /* =========================
-        MAIN AUTHENTICATED REAL DASHBOARDS
-    ========================= */
     if (authState === "authenticated" && role) {
-      if (role === "super_admin") return <SuperAdmin />;
-
-      // 🎯 THE GATEKEEPER INTERCEPTOR: 
-      // If the user role is 'manager' and their workspace setup state is flagged 'pending',
-      // prevent rendering the dashboard sub-modules and mount the info page instead!
-      if (role === "manager" && restaurantStatus === "pending") {
-        return (
-          <PendingApproval 
-            restaurantData={{ payment_reference: localStorage.getItem("managerUTR") }} 
-            onLogout={() => {
-              clearAllRoleData();
-              setRole(null);
-              setAuthState("role-selection");
-            }}
-          />
-        );
-      }
-
-      const mode = getModeFromPlan(plan); 
-
-      switch (mode) {
-        case "billing":
-          return (
-            <div>
-              {role === "manager" && <BillingManager />}
-              {role === "employee" && (
-                <div style={{ padding: "20px", textAlign: "center", color: "#ef4444", fontWeight: "bold" }}>
-                  Error: Billing mode does not have an employee dashboard. Please login as a manager.
-                </div>
-              )}
-            </div>
-          );
-
-        case "kitchen":
-          return (
-            <div>
-              {role === "manager" && <KitchenManager />}
-              {role === "employee" && <KitchenEmployee />}
-            </div>
-          );
-
-        case "table":
-          return (
-            <div>
-              {role === "manager" && <TableManager />}
-              {role === "employee" && <TableEmployee />}
-            </div>
-          );
-
-        default:
-          return (
-            <div style={{ padding: "20px", textAlign: "center" }}>
-              Unknown subscription extension configuration.
-            </div>
-          );
-      }
+      return getSubDashboardComponent();
     }
 
     return (
