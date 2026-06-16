@@ -520,24 +520,25 @@ useEffect(() => {
   }, []);
 
 return (
-    <div className="employee-container employee-dashboard-layout">
+  <div className={`employee-container employee-dashboard-layout ${employeeSidebarOpen ? "sidebar-is-open" : ""}`}>
 
-      {/* HIDDEN AUDIO TAG */}
-      <audio 
-        ref={soundRef} 
-        src="/sounds/for_acceptance.wav" 
-        preload="auto" 
-        style={{ display: 'none' }} 
-      />
+    {/* HIDDEN AUDIO TAG */}
+    <audio 
+      ref={soundRef} 
+      src="/sounds/for_acceptance.wav" 
+      preload="auto" 
+      style={{ display: 'none' }} 
+    />
 
-      {/* ── MOBILE BACKDROP OVERLAY ── */}
-      <div
-        className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
-        onClick={() => setEmployeeSidebarOpen(false)}
-      />
+    {/* ── MOBILE BACKDROP OVERLAY ── */}
+    <div
+      className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
+      onClick={() => setEmployeeSidebarOpen(false)}
+    />
 
-      {/* ── MOBILE TOP BAR ── */}
-      <div className={`mobile-topbar is-mobile`}>
+    {/* ── MOBILE TOP BAR (Keep this outside or structurally separate) ── */}
+    <div className={`mobile-topbar employee-topbar ${isMobile ? 'is-mobile' : ''}`}>
+      <div className="mobile-topbar-left">
         {settings?.logo_url ? (
           <img src={settings.logo_url} alt="logo" className="mobile-logo" />
         ) : (
@@ -546,84 +547,100 @@ return (
         <span className="mobile-restaurant-name">
           {settings?.restaurant_name || "Restaurant"}
         </span>
-        <button
-          className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
-          onClick={() => setEmployeeSidebarOpen(prev => !prev)}
-          aria-label="Toggle menu"
-        >
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-          <span className="hamburger-line" />
-        </button>
-      </div> 
+      </div>
+      
+      {/* 🎯 Toggle Button changes to X icon automatically when open using CSS transition classes */}
+      <button
+        className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
+        onClick={() => setEmployeeSidebarOpen(prev => !prev)}
+        aria-label="Toggle menu"
+      >
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+        <span className="hamburger-line" />
+      </button>
+    </div> 
 
-      {/* ========== SIDEBAR NAVIGATION ========== */}
-      <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
-        <div className="emp-sidebar-header">
+    {/* ========== SIDEBAR CONTAINER ========== */}
+    <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
+      {/* 🎯 Header Close Control Actions for Mobile Views */}
+      <div className="emp-sidebar-header">
+        <div className="emp-sidebar-brand">
           {settings?.logo_url ? (
             <img src={settings.logo_url} alt="logo" className="sidebar-logo" />
           ) : (
             <span className="emp-sidebar-icon">👨‍🍳</span>
           )}
-          <h1>{settings?.restaurant_name || "Restaurant"} Employee</h1>
+          <h1>{settings?.restaurant_name || "Restaurant"}</h1>
+        </div>
+        
+        {/* 🎯 Close "X" Button directly inside sidebar header tracking bounds */}
+        <button 
+          className="sidebar-close-btn" 
+          onClick={() => setEmployeeSidebarOpen(false)}
+          aria-label="Close sidebar"
+        >
+          ✕
+        </button>
+      </div>
+
+      <nav className="sidebar-nav">
+        <div
+          className={`emp-sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowLowStock(false);
+            setShowRestore(false);
+            setEmployeeSidebarOpen(false); // Closes drawer view container smoothly
+          }}
+        >
+          <span className="emp-sidebar-icon">📝</span>
+          <span>Orders</span>
         </div>
 
-        <nav className="sidebar-nav">
-          <div
-            className={`emp-sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLowStock(false);
-              setShowRestore(false);
-              setEmployeeSidebarOpen(false);
-            }}
-          >
-            <span className="emp-sidebar-icon">📝</span>
-            <span>Orders</span>
-          </div>
-
-          <div
-            className={`emp-sidebar-link ${showLowStock ? 'active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLowStock(true);
-              setShowRestore(false);
-              setEmployeeSidebarOpen(false);
-            }}
-          >
-            <span className="emp-sidebar-icon">⚠️</span>
-            <span>Low Stock Alert</span>
-          </div>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="emp-sidebar-link" onClick={toggleDarkMode}>
-            <span className="emp-sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
-            <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-          </div>
-
-          <div className="emp-sidebar-link logout-link" onClick={handleLogout}>
-            <span className="emp-sidebar-icon">🚪</span>
-            <span>Logout</span>
-          </div>
+        <div
+          className={`emp-sidebar-link ${showLowStock ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowLowStock(true);
+            setShowRestore(false);
+            setEmployeeSidebarOpen(false); // Closes drawer view container smoothly
+          }}
+        >
+          <span className="emp-sidebar-icon">⚠️</span>
+          <span>Low Stock Alert</span>
         </div>
-      </aside>        
+      </nav>
 
-      {/* ========== MAIN CONTENT CONTAINER ========== */}
+      <div className="sidebar-footer">
+        <div className="emp-sidebar-link" onClick={toggleDarkMode}>
+          <span className="emp-sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
+          <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
+        </div>
+
+        <div className="emp-sidebar-link logout-link" onClick={handleLogout}>
+          <span className="emp-sidebar-icon">🚪</span>
+          <span>Logout</span>
+        </div>
+      </div>
+    </aside>
+
+
+      {/* ========== MAIN CONTENT ========== */}
       <main className="employee-main">
         
-        {/* ========== ORDERS VIEW ========== */}
+{/* ========== ORDERS VIEW ========== */}
         {!showLowStock && !showRestore && (
           <div className="orders-page">
-            <div className="main-header" style={{ borderTop: 'none' }}>
-              <h1>📝 Incoming Orders</h1>
-              {currentUser?.email && (
-                <div className="employee-profile-card">
-                  <span className="employee-profile-label">Logged In</span>
-                  <span className="employee-profile-email">{currentUser.email}</span>
-                </div>
-              )}
-            </div>
+  <div className="main-header" style={{ borderTop: 'none' }}>
+    <h1>📝 Incoming Orders</h1>
+    {currentUser?.email && (
+      <div className="employee-profile-card">
+        <span className="employee-profile-label">Logged In</span>
+        <span className="employee-profile-email">{currentUser.email}</span>
+      </div>
+    )}
+  </div>
 
             {orders.length === 0 ? (
               <div className="card" style={{ textAlign: "center", padding: "60px 20px" }}>
@@ -633,6 +650,7 @@ return (
               </div>
             ) : (
               <div className="grid grid-3">
+                {/* 🎯 1. WRAP THE GRID GENERATOR IN ANIMATE PRESENCE */}
                 <AnimatePresence mode="popLayout">
                   {orders.map((order) => (
                     <motion.div
@@ -640,6 +658,8 @@ return (
                       className={`order-card ${order.status}`}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
+                      
+                      /* 🎯 2. ADD TRANSITION EXIT DESIGN PROPERTIES */
                       exit={{ 
                         opacity: 0, 
                         scale: 0.85, 
@@ -647,8 +667,11 @@ return (
                         transition: { duration: 0.3 } 
                       }}
                       transition={{ duration: 0.3 }}
+                      
+                      /* 🎯 3. ADD LAYOUT TO MOVE REMAINING CARDS SMOOTHLY */
                       layout 
                     >
+                      
                       <div className="order-header">
                         <div className="order-token">{settings?.token_prefix}-{order.token_id}</div>
                         <span className={`order-status-badge ${order.status}`}>
@@ -714,13 +737,21 @@ return (
                             >
                               {processingOrders.includes(order.id) ? "Processing..." : "❌ Reject"}
                             </button>
-                            <p style={{ marginTop: "8px", fontSize: "13px", fontWeight: "600", color: "#dc2626" }}>
+                            <p
+                              style={{
+                                marginTop: "8px",
+                                fontSize: "13px",
+                                fontWeight: "600",
+                                color: "#dc2626"
+                              }}
+                            >
                               🕒 Waiting: {getWaitingTime(order.created_at)}
                             </p>
                           </>
                         )}
 
                         {order.status === "accepted" && (
+                          /* 🎯 4. DISABLED COOLDOWN ACTION UPDATE FOR CLEAN CLICKS */
                           <button
                             className="btn btn-success btn-block"
                             onClick={() => handleComplete(order.id)}
@@ -738,138 +769,235 @@ return (
           </div>
         )}
 
-        {/* ========== LOW STOCK ALERT VIEW ========== */}
-        {showLowStock && (
-          <>
-            <div className="main-header">
-              <h1>⚠️ Send Low Stock Alert</h1>
+{/* ========== LOW STOCK ALERT VIEW ========== */}
+
+{showLowStock && (
+  <>
+    <div className="main-header">
+      <h1>⚠️ Send Low Stock Alert</h1>
+    </div>
+
+    <div className="stock-section">
+
+      
+
+      {/* AVAILABLE ITEMS */}
+<div className="stock-card alert">
+
+  <div className="stock-header modern">
+
+    <div className="stock-header-left">
+      <h2>📦 Available Items</h2>
+      <p>Items ready for orders</p>
+    </div>
+
+    <div className="stock-count-badge">
+      {
+        menu.filter(
+          (item) =>
+            !lowStockItems.some(
+              (low) =>
+                low.item_name === item.name
+            )
+        ).length
+      }
+    </div>
+
+  </div>
+
+  <div className="stock-item-list">
+
+    {menu
+      .filter(
+        (item) =>
+          !lowStockItems.some(
+            (low) =>
+              low.item_name === item.name
+          )
+      )
+      .map((item, index) => (
+
+        <motion.div
+          key={index}
+          className="stock-item"
+          initial={{
+            opacity: 0,
+            y: 15
+          }}
+          animate={{
+            opacity: 1,
+            y: 0
+          }}
+          transition={{
+            duration: 0.3,
+            delay: index * 0.05
+          }}
+        >
+
+          <div className="stock-row">
+
+            <div className="stock-info">
+              <div className="stock-name">
+                {item.name}
+              </div>
             </div>
 
-            <div className="stock-section">
-              {/* AVAILABLE ITEMS */}
-              <div className="stock-card alert">
-                <div className="stock-header modern">
-                  <div className="stock-header-left">
-                    <h2>📦 Available Items</h2>
-                    <p>Items ready for orders</p>
-                  </div>
-                  <div className="stock-count-badge">
-                    {menu.filter(item => !lowStockItems.some(low => low.item_name === item.name)).length}
-                  </div>
-                </div>
+            <button
+  className="btn btn-warning stock-btn"
+  disabled={processingAlerts.includes(item.name)}
+  onClick={async () => {
+    if (processingAlerts.includes(item.name)) return;
 
-                <div className="stock-item-list">
-                  {menu
-                    .filter(item => !lowStockItems.some(low => low.item_name === item.name))
-                    .map((item, index) => (
-                      <motion.div
-                        key={index}
-                        className="stock-item"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                      >
-                        <div className="stock-row">
-                          <div className="stock-info">
-                            <div className="stock-name">{item.name}</div>
-                          </div>
-                          <button
-                            className="btn btn-warning stock-btn"
-                            disabled={processingAlerts.includes(item.name)}
-                            onClick={async () => {
-                              if (processingAlerts.includes(item.name)) return;
-                              setProcessingAlerts((prev) => [...prev, item.name]);
-                              try {
-                                const response = await apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {
-                                  method: "POST",
-                                  body: JSON.stringify({ name: item.name }),
-                                }, "employee");
+    // 1. Instantly lock the button by adding it to processing states
+    setProcessingAlerts((prev) => [...prev, item.name]);
 
-                                if (response.ok) {
-                                  addNotification(`⚠️ Low stock alert sent for ${item.name}`, "warning");
-                                } else {
-                                  console.error("Failed to send alert response status rejected");
-                                  addNotification("❌ Failed to send alert. Try again.", "error");
-                                }
-                              } catch (err) {
-                                console.error("Failed to send alert:", err);
-                                addNotification("❌ Network error sending alert.", "error");
-                              } finally {
-                                setProcessingAlerts((prev) => prev.filter((name) => name !== item.name));
-                              }
-                            }}
-                          >
-                            {processingAlerts.includes(item.name) ? "⏳ Sending..." : "⚠ Send Alert"}
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
+    try {
+      const response = await apiFetch(`${import.meta.env.VITE_API_URL}/low-stock`, {
+        method: "POST",
+        body: JSON.stringify({ name: item.name }),
+      }, "employee");
+
+      if (response.ok) {
+        addNotification(`⚠️ Low stock alert sent for ${item.name}`, "warning");
+      } else {
+        // 🎯 FIX: Log error only when response is NOT ok
+        console.error("Failed to send alert response status rejected");
+        addNotification("❌ Failed to send alert. Try again.", "error");
+      }
+    } catch (err) {
+      console.error("Failed to send alert:", err);
+      addNotification("❌ Network error sending alert.", "error");
+    } finally {
+      // 2. Remove from processing states to unlock the button
+      setProcessingAlerts((prev) => prev.filter((name) => name !== item.name));
+    }
+  }}
+>
+  {processingAlerts.includes(item.name) ? "⏳ Sending..." : "⚠ Send Alert"}
+</button>
+
+          </div>
+
+        </motion.div>
+      ))}
+
+  </div>
+
+</div>
+
+{/* LOW STOCK ITEMS */}
+<div className="stock-card restore">
+
+  <div className="stock-header modern">
+
+    <div className="stock-header-left">
+      <h2>⚠️ Low Stock Items</h2>
+      <p>Items needing refill</p>
+    </div>
+
+    <div className="stock-count-badge warning">
+      {lowStockItems.length}
+    </div>
+
+  </div>
+
+  <div className="stock-restore-list">
+
+    {lowStockItems.length === 0 ? (
+
+      <div className="empty-stock-state">
+        ✅ No low stock items
+      </div>
+
+    ) : (
+
+      lowStockItems.map(
+        (itemData, index) => (
+
+          <motion.div
+            key={itemData.id || index}
+            className="stock-restore-item"
+            initial={{
+              opacity: 0,
+              y: 15
+            }}
+            animate={{
+              opacity: 1,
+              y: 0
+            }}
+            transition={{
+              duration: 0.3,
+              delay: index * 0.05
+            }}
+          >
+
+            <div className="stock-row">
+
+              <div className="stock-info">
+                <div className="stock-name">
+                  {itemData.item_name}
                 </div>
               </div>
 
-              {/* LOW STOCK ITEMS */}
-              <div className="stock-card restore">
-                <div className="stock-header modern">
-                  <div className="stock-header-left">
-                    <h2>⚠️ Low Stock Items</h2>
-                    <p>Items needing refill</p>
-                  </div>
-                  <div className="stock-count-badge warning">{lowStockItems.length}</div>
-                </div>
+              <button
+  className="btn btn-success stock-btn"
+  disabled={processingAlerts.includes(itemData.item_name)}
+  onClick={async () => {
+    if (processingAlerts.includes(itemData.item_name)) return;
 
-                <div className="stock-restore-list">
-                  {lowStockItems.length === 0 ? (
-                    <div className="empty-stock-state">✅ No low stock items</div>
-                  ) : (
-                    lowStockItems.map((itemData, index) => (
-                      <motion.div
-                        key={itemData.id || index}
-                        className="stock-restore-item"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                      >
-                        <div className="stock-row">
-                          <div className="stock-info">
-                            <div className="stock-name">{itemData.item_name}</div>
-                          </div>
-                          <button
-                            className="btn btn-success stock-btn"
-                            disabled={processingAlerts.includes(itemData.item_name)}
-                            onClick={async () => {
-                              if (processingAlerts.includes(itemData.item_name)) return;
-                              setProcessingAlerts((prev) => [...prev, itemData.item_name]);
-                              try {
-                                const response = await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
-                                  { method: "DELETE" },
-                                  "employee"
-                                );
+    // 1. Instantly lock the button by adding it to processing states
+    setProcessingAlerts((prev) => [...prev, itemData.item_name]);
 
-                                if (response.ok) {
-                                  addNotification(`♻️ ${itemData.item_name} restored successfully!`, "success");
-                                } else {
-                                  addNotification("❌ Failed to restore item.", "error");
-                                }
-                              } catch (err) {
-                                console.error("Failed to restore item:", err);
-                                addNotification("❌ Network error restoring item.", "error");
-                              } finally {
-                                setProcessingAlerts((prev) => prev.filter((name) => name !== itemData.item_name));
-                              }
-                            }}
-                          >
-                            {processingAlerts.includes(itemData.item_name) ? "⏳ Restoring..." : "♻ Restore"}
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-              </div>
+    try {
+      const response = await apiFetch(
+        `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
+        { method: "DELETE" },
+        "employee"
+      );
+
+      if (response.ok) {
+        addNotification(`♻️ ${itemData.item_name} restored successfully!`, "success");
+        
+        // Optional: If you want an optimistic layout cleanup here, you could remove it 
+        // from your local low-stock view state right away if needed!
+      } else {
+        addNotification("❌ Failed to restore item.", "error");
+      }
+    } catch (err) {
+      console.error("Failed to restore item:", err);
+      addNotification("❌ Network error restoring item.", "error");
+    } finally {
+      // 2. Remove from processing states to unlock the button
+      setProcessingAlerts((prev) => prev.filter((name) => name !== itemData.item_name));
+    }
+  }}
+>
+  {processingAlerts.includes(itemData.item_name) ? "⏳ Restoring..." : "♻ Restore"}
+</button>
+
             </div>
-          </>
-        )}
+
+          </motion.div>
+        )
+      )
+
+    )}
+
+  </div>
+
+
+
+</div>
+</div>
+  </>
+)}
+
+
+
+{/* ========== RESTORE STOCK VIEW ========== */}
+
+
+
 
         <ToastContainer notifications={notifications} />
 
@@ -881,7 +1009,9 @@ return (
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <span className="toast-icon" aria-hidden="true">!</span>
+            <span className="toast-icon" aria-hidden="true">
+              !
+            </span>
             <span className="toast-message">{lowStockMessage}</span>
           </motion.div>
         )}
