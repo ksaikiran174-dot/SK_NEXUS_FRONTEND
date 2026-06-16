@@ -2489,152 +2489,100 @@ return (
   </div>
 )}
 
+
 {/* ========== ANALYTICS PANEL ========== */}
-        {showAnalyticsView && analytics && (
-          <div className="analytics-container">
-            <div className="main-header">
-              <h1>📊 Analytics & Performance</h1>
-            </div>
-            {/* BUSINESS STATUS CARD */}
-            <div className="status-card">
-              <h3>Day Status</h3>
-              {businessDay && businessDay.cycle_number ? (
-                <p className="text-green-500 font-bold">
-                  Business day {businessDay.cycle_number} Active ✅
-                </p>
-              ) : (
-                <p className="text-red-500 font-bold">
-                  Business Day Inactive ❌
-                </p>
-              )}
-            </div>
+{showAnalyticsView && analytics && (
+  <div className="analytics-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    
+    <div className="main-header">
+      <h1>📊 Analytics & Performance</h1>
+    </div>
 
-            {/* Stat Cards */}
-            <div className="grid grid-4">
-              <motion.div
-                className="stat-card primary"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="stat-label">💰 Total Sales</div>
-                <div className="stat-value">₹{analytics.total_sales}</div>
-              </motion.div>
+    {/* BUSINESS STATUS CARD */}
+    <div className="status-card" style={{ margin: 0 }}>
+      <h3>Day Status</h3>
+      {businessDay && businessDay.cycle_number ? (
+        <p className="text-green-500 font-bold">
+          Business day {businessDay.cycle_number} Active ✅
+        </p>
+      ) : (
+        <p className="text-red-500 font-bold">
+          Business Day Inactive ❌
+        </p>
+      )}
+    </div>
 
-              <motion.div
-                className="stat-card success"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="stat-label">📦 Total Orders</div>
-                <div className="stat-value">{analytics.total_orders}</div>
-              </motion.div>
+    {/* 🎯 STAT CARDS - Uniform class layout */}
+    <div className="grid grid-4" style={{ gap: '24px' }}>
+      <motion.div className="stat-card primary" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="stat-label">💰 Total Sales</div>
+        <div className="stat-value">₹{analytics.total_sales}</div>
+      </motion.div>
 
-              <motion.div
-                className="stat-card warning"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <div className="stat-label">💵 Cash Sales</div>
-                <div className="stat-value">₹{analytics.cash_sales}</div>
-              </motion.div>
+      <motion.div className="stat-card success" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="stat-label">📦 Total Orders</div>
+        <div className="stat-value">{analytics.total_orders}</div>
+      </motion.div>
 
-              <motion.div
-                className="stat-card danger"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7 }}
-              >
-                <div className="stat-label">💳 Online Sales</div>
-                <div className="stat-value">₹{analytics.online_sales}</div>
-              </motion.div>
-            </div>
+      <motion.div className="stat-card warning" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+        <div className="stat-label">💵 Cash Sales</div>
+        <div className="stat-value">₹{analytics.cash_sales}</div>
+      </motion.div>
 
-            {/* Charts Row 1 */}
-            <div className="grid grid-2">
-              <div className="chart-container">
-                <h3 className="chart-title">Payment Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={paymentData}
-                      dataKey="value"
-                      nameKey="name"
-                      outerRadius={100}
-                      label
-                    >
-                      {paymentData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+      <motion.div className="stat-card danger" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+        <div className="stat-label">💳 Online Sales</div>
+        <div className="stat-value">₹{analytics.online_sales}</div>
+      </motion.div>
+    </div>
 
-            {/* Charts Row 2 */}
-            <div className="grid grid-2">
-              
-              {/* 🎯 TOP SELLING ITEMS */}
-<div className="chart-container">
-  <h3 className="chart-title">Top Selling Items</h3>
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart 
-      data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} 
-      layout="vertical"
-      margin={{ top: 10, right: 10, left: -20, bottom: 0 }} /* 🚀 Negative left margin removes the hidden Y-axis spacing */
-    >
-      <XAxis type="number" />
-      <YAxis 
-        dataKey="name" 
-        type="category" 
-        width={90} /* 🚀 Slightly reduced width for phone screens */
-        stroke="#64748b" 
-        fontSize={12} 
-      />
-      <Tooltip />
-      <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
+    {/* 🎯 ALL CHARTS UNIFIED - Using a single parent column wrapper to guarantee perfectly identical gaps */}
+    <div className="analytics-charts-feed" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      
+      {/* 1. Payment Distribution */}
+      <div className="chart-container" style={{ margin: 0 }}>
+        <h3 className="chart-title">Payment Distribution</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie data={paymentData} dataKey="value" nameKey="name" outerRadius={100} label>
+              {paymentData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      
+      {/* 2. Top Selling Items */}
+      <div className="chart-container" style={{ margin: 0 }}>
+        <h3 className="chart-title">Top Selling Items</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} layout="vertical" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <XAxis type="number" />
+            <YAxis dataKey="name" type="category" width={90} stroke="#64748b" fontSize={12} />
+            <Tooltip />
+            <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-{/* 🎯 RUSH HOUR ANALYTICS */}
-<div className="chart-container">
-  <h3 className="chart-title">Rush Hour Analytics</h3>
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart 
-      data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)}
-      margin={{ top: 10, right: 0, left: -30, bottom: 0 }} /* 🚀 Zeroed out margins + tucked left axis */
-    >
-      <XAxis 
-        dataKey="hour" 
-        angle={-45} 
-        textAnchor="end" 
-        height={60} 
-        interval={0} 
-        stroke="#64748b"
-        fontSize={12}
-      />
-      <YAxis stroke="#64748b" fontSize={12} />
-      <Tooltip />
-      <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
+      {/* 3. Rush Hour Analytics */}
+      <div className="chart-container" style={{ margin: 0 }}>
+        <h3 className="chart-title">Rush Hour Analytics</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)} margin={{ top: 10, right: 0, left: -30, bottom: 0 }}>
+            <XAxis dataKey="hour" angle={-45} textAnchor="end" height={60} interval={0} stroke="#64748b" fontSize={12} />
+            <YAxis stroke="#64748b" fontSize={12} />
+            <Tooltip />
+            <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-            </div>
-          </div>
-        )}
-
-
-
+    </div>
+  </div>
+)}
 
 {/* ========== CREATE MENU PANEL ========== */}
 {showCreateMenu && (
