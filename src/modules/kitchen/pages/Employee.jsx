@@ -561,7 +561,7 @@ return (
 
     {/* ========== SIDEBAR: Now dynamically accepts the toggle state ========== */}
     <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
-      <div className="sidebar-header">
+      <div className="emp-sidebar-header">
         {settings?.logo_url ? (
           <img
             src={settings.logo_url}
@@ -569,14 +569,14 @@ return (
             className="sidebar-logo"
           />
         ) : (
-          <span className="sidebar-icon">👨‍🍳</span>
+          <span className="emp-sidebar-icon">👨‍🍳</span>
         )}
         <h1>{settings?.restaurant_name || "Restaurant"} Employee</h1>
       </div>
 
       <nav className="sidebar-nav">
         <div
-          className={`sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
+          className={`emp-sidebar-link ${!showLowStock && !showRestore ? 'active' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
             setShowLowStock(false);
@@ -584,12 +584,12 @@ return (
             setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
-          <span className="sidebar-icon">📝</span>
+          <span className="emp-sidebar-icon">📝</span>
           <span>Orders</span>
         </div>
 
         <div
-          className={`sidebar-link ${showLowStock ? 'active' : ''}`}
+          className={`emp-sidebar-link ${showLowStock ? 'active' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
             setShowLowStock(true);
@@ -597,19 +597,19 @@ return (
             setEmployeeSidebarOpen(false); // Closes drawer cleanly on selection
           }}
         >
-          <span className="sidebar-icon">⚠️</span>
+          <span className="emp-sidebar-icon">⚠️</span>
           <span>Low Stock Alert</span>
         </div>
       </nav>
 
       <div className="sidebar-footer">
-        <div className="sidebar-link" onClick={toggleDarkMode}>
-          <span className="sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
+        <div className="emp-sidebar-link" onClick={toggleDarkMode}>
+          <span className="emp-sidebar-icon">{isDarkMode ? "☀️" : "🌙"}</span>
           <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
         </div>
 
-        <div className="sidebar-link logout-link" onClick={handleLogout}>
-          <span className="sidebar-icon">🚪</span>
+        <div className="emp-sidebar-link logout-link" onClick={handleLogout}>
+          <span className="emp-sidebar-icon">🚪</span>
           <span>Logout</span>
         </div>
       </div>
