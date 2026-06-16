@@ -98,7 +98,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       // 🎉 Hold on final success state for 250ms to seamlessly hit exactly 5.0 seconds
       const transitionTimer = setTimeout(() => {
         if (onAnimationComplete) onAnimationComplete();
-      }, 800);
+      }, 1000);
       return () => clearTimeout(transitionTimer);
     }
   }, [messageIndex, config.messages.length, onAnimationComplete]);
@@ -662,24 +662,33 @@ function App() {
     }
 
     /* ==============================================================================
-        🎯 BOTH STATES PARALLELED (AUTHENTICATING & AUTHENTICATED)
+        🎯 BOTH STATES UNIFIED (Stops Double Mounting / Double Fetching!)
     ============================================================================== */
-    if (authState === "authenticating" && role) {
+    if ((authState === "authenticating" || authState === "authenticated") && role) {
+      const isAnimationRunning = authState === "authenticating";
+
       return (
         <>
-          {/* 1. Visible entry ticker sequence animation interface */}
-          <DashboardAnimation role={role} onAnimationComplete={() => setAuthState("authenticated")} />
+          {/* 1. Show animation panel only while authenticating */}
+          {isAnimationRunning && (
+            <DashboardAnimation 
+              role={role} 
+              onAnimationComplete={() => setAuthState("authenticated")} 
+            />
+          )}
           
-          {/* 2. Background DOM Injection Mount: Completely invisible, but executes its useEffect hooks instantly! */}
-          <div style={{ display: "none", visibility: "hidden" }} aria-hidden="true">
+          {/* 2. Dashboard mounts ONCE right here. It fetches data immediately, 
+                 remains hidden during animation, and flips visible without remounting! */}
+          <div 
+            style={{ 
+              display: isAnimationRunning ? "none" : "block",
+              visibility: isAnimationRunning ? "hidden" : "visible" 
+            }}
+          >
             {getSubDashboardComponent()}
           </div>
         </>
       );
-    }
-
-    if (authState === "authenticated" && role) {
-      return getSubDashboardComponent();
     }
 
     return (
