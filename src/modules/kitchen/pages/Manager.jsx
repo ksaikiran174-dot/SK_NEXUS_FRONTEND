@@ -1948,19 +1948,19 @@ return (
             <div className="main-header">
               <h1>📊 Analytics & Performance</h1>
             </div>
-          {/* BUSINESS STATUS CARD */}
-    <div className="status-card">
-      <h3>Day Status</h3>
-      {businessDay && businessDay.cycle_number ? (
-        <p className="text-green-500 font-bold">
-          Business day {businessDay.cycle_number} Active ✅
-        </p>
-      ) : (
-        <p className="text-red-500 font-bold">
-          Business Day Inactive ❌
-        </p>
-      )}
-    </div>
+            {/* BUSINESS STATUS CARD */}
+            <div className="status-card">
+              <h3>Day Status</h3>
+              {businessDay && businessDay.cycle_number ? (
+                <p className="text-green-500 font-bold">
+                  Business day {businessDay.cycle_number} Active ✅
+                </p>
+              ) : (
+                <p className="text-red-500 font-bold">
+                  Business Day Inactive ❌
+                </p>
+              )}
+            </div>
 
             {/* Stat Cards */}
             <div className="grid grid-4">
@@ -2005,7 +2005,7 @@ return (
               </motion.div>
             </div>
 
-            {/* Charts */}
+            {/* Charts Row 1 */}
             <div className="grid grid-2">
               <div className="chart-container">
                 <h3 className="chart-title">Payment Distribution</h3>
@@ -2032,35 +2032,55 @@ return (
               </div>
             </div>
 
+            {/* Charts Row 2 */}
             <div className="grid grid-2">
+              
+              {/* 🎯 TOP SELLING ITEMS - LIMITED TO TOP 5 */}
               <div className="chart-container">
                 <h3 className="chart-title">Top Selling Items</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData}>
+                  <BarChart 
+                    /* Sorts descending by 'sold' and grabs the top 5 */
+                    data={[...chartData].sort((a, b) => b.sold - a.sold).slice(0, 5)} 
+                    layout="vertical"
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis type="number" />
+                    <YAxis dataKey="name" type="category" width={110} stroke="#64748b" fontSize={12} />
                     <Tooltip />
-                    <Bar dataKey="sold" fill="#2563eb" />
+                    <Bar dataKey="sold" fill="#2563eb" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
+              {/* 🎯 RUSH HOUR ANALYTICS - LIMITED TO TOP 5 BUSIEST HOURS */}
               <div className="chart-container">
                 <h3 className="chart-title">Rush Hour Analytics</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analytics.rush_hours}>
+                  <BarChart 
+                    /* Sorts descending by 'orders' to show the top 5 peak hours */
+                    data={[...analytics.rush_hours].sort((a, b) => b.orders - a.orders).slice(0, 5)}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="hour" />
+                    <XAxis 
+                      dataKey="hour" 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={60} 
+                      interval={0} 
+                      stroke="#64748b"
+                      fontSize={12}
+                    />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="orders" fill="#10b981" />
+                    <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+
             </div>
           </div>
-        )} 
+        )}
 
 {/* ==========================================
           💳 2. TRANSACTIONS PANEL
