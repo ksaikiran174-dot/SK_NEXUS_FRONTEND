@@ -1561,13 +1561,13 @@
 
 /* Countdown Card */
 .sub-countdown-card {
-  background-color: #f8fafc;
+  background: #f8fafc;
   padding: 20px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
 }
 .sub-countdown-card.critical {
-  background-color: #fff5f5;
+  background: #f8fafc;
   border-color: #feb2b2;
 }
 .countdown-label {
