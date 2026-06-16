@@ -1,3 +1,178 @@
+
+/* table employee */
+/* ============================================
+   EMPLOYEE PAGE PROFESSIONAL STYLING
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.employee-container {
+  --employee-sidebar-width: 280px;
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
+   OVERLAY — completely invisible until open
+   ============================================ */
+
+.emp-mobile-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0; /* Covers the whole viewport initially */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.emp-mobile-sidebar-overlay.emp-overlay-visible {
+  display: block; /* Make sure it's visible */
+  opacity: 1;
+  pointer-events: auto; /* Allow clicks */
+  backdrop-filter: blur(2px); /* Blur effect only on overlay */
+  -webkit-backdrop-filter: blur(2px); /* Safari support */
+}
+
+/* ============================================
+   TOPBAR — hidden on desktop
+   ============================================ */
+
+.emp-mobile-topbar {
+  display: none; /* Hidden by default, only shown on mobile */
+}
+
+/* ============================================
+   SIDEBAR — DESKTOP
+   ============================================ */
+
+.employee-sidebar {
+  width: var(--employee-sidebar-width);
+  background: linear-gradient(160deg, #10b981 0%, #059669 100%);
+  padding: 30px 20px;
+  color: white;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  position: fixed;
+  height: 100vh;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 12px 12px 0;
+}
+
+.emp-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.emp-sidebar-header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.emp-sidebar-icon { /* Changed to class from emp-sidebar-icon (element type) */
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.employee-sidebar .sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.employee-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.employee-sidebar .emp-sidebar-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.88);
+  border: 2px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.employee-sidebar .emp-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateX(3px);
+}
+
+.employee-sidebar .emp-sidebar-link.active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: white;
+  font-weight: 600;
+}
+
+.employee-sidebar .emp-sidebar-link.logout-link {
+  color: #fca5a5;
+}
+
+.employee-sidebar .emp-sidebar-link.logout-link:hover {
+  color: #fecaca;
+  background: rgba(220, 38, 38, 0.22);
+  transform: translateX(3px);
+}
+
 /* ============================================
    MAIN CONTENT
    ============================================ */
@@ -23,7 +198,7 @@
 .main-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 2px solid var(--border-color);
@@ -51,6 +226,8 @@
   max-width: 220px;
   min-width: 0;
   flex-shrink: 1;
+  align-items: center;
+  margin-left: auto;
 }
 
 .employee-profile-email {
@@ -373,7 +550,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;                  /* 🎯 Force the header to take up the full card width */
+  width: 100%;
   box-sizing: border-box;
   padding-bottom: 18px;
   margin-bottom: 20px;
@@ -852,7 +1029,8 @@
     background: linear-gradient(160deg, #10b981 0%, #059669 100%) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    pointer-events: none !important; 
+    pointer-events: none !important;
+    border-radius: 12px; 
   }
 
   aside.employee-sidebar.emp-sidebar-open { /* Use the new unique class name */
@@ -1008,6 +1186,11 @@
 
   .orders-page {
     position: static !important;
+  }
+
+  .orders-page .card p { /* Target the paragraph inside the card */
+    font-size: 14px !important; /* Make it smaller */
+    text-align: center !important; /* Ensure it's centered if needed */
   }
 
 .employee-profile-card {
