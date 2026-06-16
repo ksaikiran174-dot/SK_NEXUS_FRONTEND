@@ -4087,7 +4087,7 @@ const SubscriptionCountdownCard = ({ expiryDate }) => {
   }, [expiryDate]);
 
   return (
-    <div className={`sub-countdown-card ${isCritical ? 'critical' : ''}`}>
+    <div className={`subscription-meta-card ${isCritical ? 'critical' : ''}`}>
       <span className="countdown-label">Time Remaining</span>
       <h3 className="countdown-value">{timeLeft}</h3>
     </div>
