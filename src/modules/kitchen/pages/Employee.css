@@ -1,3 +1,5 @@
+
+
 /* ============================================
    EMPLOYEE PAGE PROFESSIONAL STYLING
    ============================================ */
@@ -28,24 +30,31 @@ body {
    OVERLAY — completely invisible until open
    ============================================ */
 
-.sidebar-overlay {
+.emp-mobile-sidebar-overlay {
   display: none;
   position: fixed;
-  inset: 0;
+  inset: 0; /* Covers the whole viewport initially */
   background: rgba(0, 0, 0, 0.5);
   z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-.sidebar-overlay.overlay-visible {
-  display: block;
+.emp-mobile-sidebar-overlay.emp-overlay-visible {
+  display: block; /* Make sure it's visible */
+  opacity: 1;
+  pointer-events: auto; /* Allow clicks */
+  backdrop-filter: blur(2px); /* Blur effect only on overlay */
+  -webkit-backdrop-filter: blur(2px); /* Safari support */
 }
 
 /* ============================================
    TOPBAR — hidden on desktop
    ============================================ */
 
-.mobile-topbar {
-  display: none;
+.emp-mobile-topbar {
+  display: none; /* Hidden by default, only shown on mobile */
 }
 
 /* ============================================
@@ -97,7 +106,7 @@ body {
   flex-shrink: 0;
 }
 
-emp-sidebar-icon {
+.emp-sidebar-icon { /* Changed to class from emp-sidebar-icon (element type) */
   font-size: 20px;
   flex-shrink: 0;
   line-height: 1;
@@ -173,7 +182,13 @@ emp-sidebar-icon {
   padding: 40px;
   overflow: visible;
   min-height: 100vh;
+  position: relative; /* Needed for z-index of overlay to work correctly */
+  z-index: 1; /* Ensures main content is below sidebar overlay when active */
+  transition: margin-left 0.3s ease; /* Smooth transition for sidebar open/close */
 }
+
+
+
 
 .orders-page {
   position: relative;
@@ -230,11 +245,12 @@ emp-sidebar-icon {
   letter-spacing: 0.5px;
 }
 
-.employee-profile-email {
+/* This class already had emp- prefix, so should be fine */
+/* .employee-profile-email {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
-}
+} */
 
 /* ============================================
    CARDS
@@ -814,7 +830,7 @@ emp-sidebar-icon {
   }
 
   /* Hide all text labels in icon-strip mode */
-  .employee-sidebar .emp-sidebar-link > span:not(emp-sidebar-icon) {
+  .employee-sidebar .emp-sidebar-link > span:not(.emp-sidebar-icon) { /* Changed selector */
     display: none !important;
     width: 0 !important;
     overflow: hidden !important;
@@ -822,7 +838,7 @@ emp-sidebar-icon {
     left: -9999px !important;
   }
 
-  .employee-sidebar emp-sidebar-icon {
+  .employee-sidebar .emp-sidebar-icon { /* Changed selector */
     font-size: 21px !important;
     margin: 0 !important;
   }
@@ -886,9 +902,13 @@ emp-sidebar-icon {
    ============================================ */
 
 @media (max-width: 430px) {
+  .employee-container {
+    flex-direction: column; /* Stacks topbar and main content */
+    align-items: stretch;
+  }
 
   /* ── TOPBAR ── */
-  .mobile-topbar.is-mobile {
+  .emp-mobile-topbar.is-mobile { /* Use the new unique class name */
     display: flex !important;
     position: fixed;
     top: 0;
@@ -905,7 +925,7 @@ emp-sidebar-icon {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
   }
 
-  .mobile-topbar .mobile-logo {
+  .emp-mobile-topbar .emp-mobile-logo { /* Use the new unique class name */
     width: 34px;
     height: 34px;
     border-radius: 8px;
@@ -913,13 +933,13 @@ emp-sidebar-icon {
     flex-shrink: 0;
   }
 
-  .mobile-topbar .mobile-logo-placeholder {
+  .emp-mobile-topbar .emp-mobile-logo-placeholder { /* Use the new unique class name */
     font-size: 26px;
     line-height: 1;
     flex-shrink: 0;
   }
 
-  .mobile-topbar .mobile-restaurant-name {
+  .emp-mobile-topbar .emp-mobile-restaurant-name { /* Use the new unique class name */
     color: white;
     font-size: 15px;
     font-weight: 700;
@@ -931,7 +951,7 @@ emp-sidebar-icon {
   }
 
   /* ── HAMBURGER — 3 lines animate to X ── */
-  .hamburger-btn {
+  .emp-hamburger-btn { /* Use the new unique class name */
     display: flex !important;
     flex-direction: column;
     justify-content: center;
@@ -948,11 +968,11 @@ emp-sidebar-icon {
     transition: background 0.2s ease;
   }
 
-  .hamburger-btn:hover {
+  .emp-hamburger-btn:hover {
     background: rgba(255, 255, 255, 0.25);
   }
 
-  .hamburger-line {
+  .emp-hamburger-line { /* Use the new unique class name */
     width: 18px;
     height: 2px;
     background-color: white;
@@ -963,21 +983,21 @@ emp-sidebar-icon {
   }
 
   /* Animate to X when open */
-  .hamburger-btn.is-open .hamburger-line:nth-child(1) {
+  .emp-hamburger-btn.is-open .emp-hamburger-line:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
   }
 
-  .hamburger-btn.is-open .hamburger-line:nth-child(2) {
+  .emp-hamburger-btn.is-open .emp-hamburger-line:nth-child(2) {
     opacity: 0;
     width: 0;
   }
 
-  .hamburger-btn.is-open .hamburger-line:nth-child(3) {
+  .emp-hamburger-btn.is-open .emp-hamburger-line:nth-child(3) {
     transform: translateY(-7px) rotate(-45deg);
   }
 
   /* ── SIDEBAR DRAWER ── */
-  aside.employee-sidebar {
+  aside.employee-sidebar { /* Original sidebar style, will be transitioned */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -1000,7 +1020,7 @@ emp-sidebar-icon {
     pointer-events: none !important; 
   }
 
-  aside.employee-sidebar.sidebar-open {
+  aside.employee-sidebar.emp-sidebar-open { /* Use the new unique class name */
     transform: translateX(0) !important;
     box-shadow: 6px 0 40px rgba(0, 0, 0, 0.2) !important;
     pointer-events: auto !important;
@@ -1033,7 +1053,7 @@ emp-sidebar-icon {
   }
 
   .employee-sidebar .sidebar-logo,
-  .employee-sidebar .emp-sidebar-header emp-sidebar-icon {
+  .employee-sidebar .emp-sidebar-icon { /* Changed selector */
     flex-shrink: 0 !important;
   }
 
@@ -1086,7 +1106,7 @@ emp-sidebar-icon {
   }
 
   /* ── CRITICAL: Show the text label ── */
-  .employee-sidebar .emp-sidebar-link > span:not(emp-sidebar-icon) {
+  .employee-sidebar .emp-sidebar-link > span:not(.emp-sidebar-icon) { /* Changed selector */
     display: inline !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -1102,7 +1122,7 @@ emp-sidebar-icon {
     left: auto !important;
   }
 
-  .employee-sidebar .emp-sidebar-link emp-sidebar-icon {
+  .employee-sidebar .emp-sidebar-icon { /* Changed selector */
     font-size: 19px !important;
     width: 24px !important;
     text-align: center !important;
@@ -1135,13 +1155,21 @@ emp-sidebar-icon {
 
   /* ── MAIN CONTENT ── */
   .employee-main {
-    margin-left: 0 !important;
+    margin-left: 0 !important; /* Reset margin for mobile */
     width: 100% !important;
     max-width: 100% !important;
-    padding: 72px 14px 20px 14px !important;
+    padding: 72px 14px 20px 14px !important; /* Adjust for fixed topbar */
     box-sizing: border-box !important;
     min-height: 100vh !important;
+    /* Blur main content when sidebar is open */
+    transition: filter 0.3s ease;
   }
+
+  .employee-container.emp-sidebar-open .employee-main {
+    filter: blur(2px);
+    pointer-events: none; /* Disable interaction with blurred content */
+  }
+
 
   .orders-page {
     position: static !important;

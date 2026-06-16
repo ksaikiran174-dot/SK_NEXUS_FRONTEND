@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { createSocket } from "../../../services/socket";
 import { useRef } from "react";
@@ -532,35 +533,35 @@ return (
 
     {/* ── MOBILE BACKDROP OVERLAY: Clicking this shuts the sidebar ── */}
     <div
-      className={`sidebar-overlay ${employeeSidebarOpen ? "overlay-visible" : ""}`}
+      className={`emp-mobile-sidebar-overlay ${employeeSidebarOpen ? "emp-overlay-visible" : ""}`}
       onClick={() => setEmployeeSidebarOpen(false)}
     />
 
     {/* ── MOBILE TOP BAR ── */}
     <div 
-      className={`mobile-topbar employee-topbar ${isMobile ? 'is-mobile' : ''}`} // Conditionally add is-mobile class
+      className={`emp-mobile-topbar ${isMobile ? 'is-mobile' : ''}`} // Conditionally add is-mobile class
     >
       {settings?.logo_url ? (
-        <img src={settings.logo_url} alt="logo" className="mobile-logo" />
+        <img src={settings.logo_url} alt="logo" className="emp-mobile-logo" />
       ) : (
-        <span className="mobile-logo-placeholder">🍽️</span>
+        <span className="emp-mobile-logo-placeholder">🍽️</span>
       )}
-      <span className="mobile-restaurant-name">
+      <span className="emp-mobile-restaurant-name">
         {settings?.restaurant_name || "Restaurant"}
       </span>
       <button
-        className={`hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
+        className={`emp-hamburger-btn ${employeeSidebarOpen ? "is-open" : ""}`}
         onClick={() => setEmployeeSidebarOpen(prev => !prev)}
         aria-label="Toggle menu"
       >
-        <span className="hamburger-line" />
-        <span className="hamburger-line" />
-        <span className="hamburger-line" />
+        <span className="emp-hamburger-line" />
+        <span className="emp-hamburger-line" />
+        <span className="emp-hamburger-line" />
       </button>
     </div> 
 
     {/* ========== SIDEBAR: Now dynamically accepts the toggle state ========== */}
-    <aside className={`employee-sidebar ${employeeSidebarOpen ? "sidebar-open" : ""}`}>
+    <aside className={`employee-sidebar ${employeeSidebarOpen ? "emp-sidebar-open" : ""}`}>
       <div className="emp-sidebar-header">
         {settings?.logo_url ? (
           <img
