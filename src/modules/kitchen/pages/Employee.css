@@ -880,12 +880,72 @@ emp-sidebar-icon {
   }
 }
 
-/* ============================================
-   RESPONSIVE — MOBILE ≤430px
-   Drawer sidebar + topbar
-   ============================================ */
+/* ==========================================================================
+   👨‍🍳 KITCHEN EMPLOYEE BASE & DESKTOP STYLES (Default / Outside Media Queries)
+   ========================================================================== */
 
-@media (max-width: 430px) {
+/* Main layout grid splits the sidebar and the scrolling main container */
+.employee-container.employee-dashboard-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Base structural rules for desktop sidebar */
+aside.employee-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #10b981 0%, #059669 100%);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+/* Hide mobile topbar on desktop viewing sizes */
+.mobile-topbar.is-mobile {
+  display: none !important;
+}
+
+/* Centralized main layout content container wrapper area */
+.employee-main {
+  padding: 32px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Desktop profile header configuration layout placement */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.employee-profile-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   📱 MOBILE DRAWER RESPONSIVE STYLES (Triggers for modern mobile screens)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Break standard desktop layout columns */
+  .employee-container.employee-dashboard-layout {
+    display: block; 
+  }
 
   /* ── TOPBAR ── */
   .mobile-topbar.is-mobile {
@@ -930,7 +990,7 @@ emp-sidebar-icon {
     white-space: nowrap;
   }
 
-  /* ── HAMBURGER — 3 lines animate to X ── */
+  /* ── HAMBURGER BUTTON ── */
   .hamburger-btn {
     display: flex !important;
     flex-direction: column;
@@ -962,7 +1022,6 @@ emp-sidebar-icon {
     display: block;
   }
 
-  /* Animate to X when open */
   .hamburger-btn.is-open .hamburger-line:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
   }
@@ -976,7 +1035,7 @@ emp-sidebar-icon {
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  /* ── SIDEBAR DRAWER ── */
+  /* ── SIDEBAR DRAWER OVERWRITES ── */
   aside.employee-sidebar {
     position: fixed !important;
     top: 0 !important;
@@ -997,16 +1056,15 @@ emp-sidebar-icon {
     background: linear-gradient(160deg, #10b981 0%, #059669 100%) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    pointer-events: none !important; 
+    pointer-events: none; /* Block accidental back clicks when hidden */
   }
 
   aside.employee-sidebar.sidebar-open {
     transform: translateX(0) !important;
     box-shadow: 6px 0 40px rgba(0, 0, 0, 0.2) !important;
-    pointer-events: auto !important;
+    pointer-events: auto;
   }
 
-  /* Sidebar inner padding wrapper */
   .employee-sidebar .emp-sidebar-header {
     display: flex !important;
     flex-direction: row !important;
@@ -1032,11 +1090,6 @@ emp-sidebar-icon {
     line-height: 1.3 !important;
   }
 
-  .employee-sidebar .sidebar-logo,
-  .employee-sidebar .emp-sidebar-header emp-sidebar-icon {
-    flex-shrink: 0 !important;
-  }
-
   .employee-sidebar .sidebar-nav {
     flex: 1 !important;
     display: flex !important;
@@ -1059,7 +1112,6 @@ emp-sidebar-icon {
     box-sizing: border-box !important;
   }
 
-  /* ── SIDEBAR LINKS — single row, icon + text ── */
   .employee-sidebar .emp-sidebar-link {
     display: flex !important;
     flex-direction: row !important;
@@ -1068,76 +1120,28 @@ emp-sidebar-icon {
     gap: 12px !important;
     width: 100% !important;
     height: 46px !important;
-    min-width: unset !important;
-    max-width: unset !important;
     padding: 0 14px !important;
     border-radius: 10px !important;
     color: rgba(255, 255, 255, 0.88) !important;
     font-size: 15px !important;
     font-weight: 500 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
     box-sizing: border-box !important;
-    border: 2px solid transparent !important;
-    margin: 0 !important;
     cursor: pointer !important;
     transition: background 0.2s ease !important;
-  }
-
-  /* ── CRITICAL: Show the text label ── */
-  .employee-sidebar .emp-sidebar-link > span:not(emp-sidebar-icon) {
-    display: inline !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: static !important;
-    width: auto !important;
-    height: auto !important;
-    overflow: visible !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    font-size: 15px !important;
-    color: inherit !important;
-    pointer-events: none !important;
-    left: auto !important;
-  }
-
-  .employee-sidebar .emp-sidebar-link emp-sidebar-icon {
-    font-size: 19px !important;
-    width: 24px !important;
-    text-align: center !important;
-    flex-shrink: 0 !important;
-    margin: 0 !important;
-    line-height: 1 !important;
-  }
-
-  .employee-sidebar .emp-sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    transform: none !important;
   }
 
   .employee-sidebar .emp-sidebar-link.active {
     background: rgba(255, 255, 255, 0.22) !important;
     border-color: rgba(255, 255, 255, 0.4) !important;
     color: white !important;
-    font-weight: 600 !important;
   }
 
-  .employee-sidebar .emp-sidebar-link.logout-link {
-    color: #fca5a5 !important;
-  }
-
-  .employee-sidebar .emp-sidebar-link.logout-link:hover {
-    background: rgba(220, 38, 38, 0.22) !important;
-    color: #fecaca !important;
-  }
-
-  /* ── MAIN CONTENT ── */
+  /* ── MOBILE MAIN CONTENT ── */
   .employee-main {
     margin-left: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    /* 🎯 72px padding top prevents mobile topbar overlap completely */
     padding: 72px 14px 20px 14px !important;
     box-sizing: border-box !important;
     min-height: 100vh !important;
@@ -1147,89 +1151,43 @@ emp-sidebar-icon {
     position: static !important;
   }
 
-.employee-profile-card {
-  position: static !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 6px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 7px 12px !important;
-  margin-bottom: 12px !important;
-  border-radius: 8px !important;
-  box-sizing: border-box !important;
-}
-
-.employee-profile-label {
-  font-size: 10px !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-}
-
-.employee-profile-email {
-  font-size: 12px !important;
-  flex: 1 !important;
-  min-width: 0 !important;
-  max-width: unset !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
+  .employee-profile-card {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    margin-top: 10px !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+  }
 
   .main-header {
-    margin-top: 0 !important;
-    border-top: none !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
   }
 
-  .main-header h1 {
-    font-size: 22px !important;
+  .order-header, .order-actions, .stock-row {
+    flex-direction: column !important;
+    gap: 10px !important;
   }
 
-  .order-token {
-    font-size: 20px !important;
+  .order-actions .btn, .stock-btn {
+    width: 100% !important;
+    max-width: unset !important;
   }
-
-  .order-header {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .order-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .order-actions .btn {
-    width: 100%;
-    padding: 10px;
-    font-size: 13px;
-  }
-
+  
   .stock-section {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
   }
+}
 
-  .stock-card {
-    min-height: auto;
-  }
-
-  .stock-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .stock-name {
-    white-space: normal;
-  }
-
-  .stock-btn {
-    width: 100%;
-    max-width: unset;
-  }
-
-  /* ── DARK MODE ── */
-  [data-theme="dark"] aside.employee-sidebar {
-    background: linear-gradient(160deg, #064e3b 0%, #065f46 100%) !important;
-  }
+/* ── DARK MODE FALLBACK OVERRIDE ── */
+[data-theme="dark"] aside.employee-sidebar {
+  background: linear-gradient(160deg, #064e3b 0%, #065f46 100%) !important;
 }
