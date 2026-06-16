@@ -31,7 +31,7 @@ const getModeFromPlan = (plan) => {
   return "billing"; 
 };
 
-// 🎯 DASHBOARD ANIMATION COMPONENT - UPDATED WITH ONCOMPLETION PROP TRIGGER
+// 🎯 DASHBOARD ANIMATION COMPONENT - PERFECTED 5-SECOND STEADY ENGINE
 function DashboardAnimation({ role, onAnimationComplete }) {
   const [messageIndex, setMessageIndex] = useState(0);
   const audioRef = useRef(null);
@@ -76,9 +76,11 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       color: "#4f46e5",
       avatar: "https://cdn-icons-png.flaticon.com/512/2206/2206368.png",
       messages: [
-        "Fetching restaurants...",
-        "Loading subscriptions...",
-        "Preparing admin dashboard..."
+        "🔐 Verifying administrative access...",
+        "🏢 Fetching registered global branches...",
+        "💳 Synchronizing client subscription states...",
+        "⚙️ Initializing platform control panels...",
+        "✅ Super Admin controls established!"
       ]
     }
   };
@@ -86,16 +88,17 @@ function DashboardAnimation({ role, onAnimationComplete }) {
   const config = roleConfig[role];
 
   useEffect(() => {
+    // ⏱️ 5 Ticks * 950ms = 4750ms total sequence time
     if (messageIndex < config.messages.length - 1) {
       const timer = setTimeout(() => {
         setMessageIndex((prev) => prev + 1);
-      }, 700); // ⚡ Slightly optimized tick speed
+      }, 950); 
       return () => clearTimeout(timer);
     } else {
-      // 🚀 We reached the last message! Let it rest for a blink then clear out
+      // 🎉 Hold on final success state for 250ms to seamlessly hit exactly 5.0 seconds
       const transitionTimer = setTimeout(() => {
         if (onAnimationComplete) onAnimationComplete();
-      }, 600);
+      }, 250);
       return () => clearTimeout(transitionTimer);
     }
   }, [messageIndex, config.messages.length, onAnimationComplete]);
@@ -154,13 +157,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
         }
       `}</style>
 
-      <motion.div
-        initial={{ scale: 0.6, opacity: 0, y: 40 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: [0.19, 1, 0.22, 1] }}
-        style={{ position: "relative" }}
-        className="dash-avatar-outer"
-      >
+      <div style={{ position: "relative", marginBottom: "30px" }} className="dash-avatar-outer">
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
@@ -172,13 +169,6 @@ function DashboardAnimation({ role, onAnimationComplete }) {
             filter: "blur(25px)"
           }}
         />
-      </motion.div>
-
-      <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        style={{ position: "relative", zIndex: 2 }}
-      >
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
@@ -200,10 +190,12 @@ function DashboardAnimation({ role, onAnimationComplete }) {
             borderStyle: "solid",
             borderColor: config.color,
             background: "white",
-            boxShadow: `0 0 40px ${config.color}55`
+            boxShadow: `0 0 40px ${config.color}55`,
+            position: "relative",
+            zIndex: 2
           }}
         />
-      </motion.div>
+      </div>
 
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
@@ -235,7 +227,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
             key={index}
             initial={{ opacity: 0, x: -20 }}
             animate={index <= messageIndex ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="dash-msg-card"
             style={{
               background: index < messageIndex ? "#e0f2fe" : "#f1f5f9",
@@ -254,11 +246,11 @@ function DashboardAnimation({ role, onAnimationComplete }) {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
+          transition={{ duration: 0.4, type: "spring", stiffness: 100 }}
           className="dash-launching-text"
           style={{ fontWeight: "600", color: config.color }}
         >
-          🎉 Launching...
+          🎉 Launching Dashboard...
         </motion.div>
       )}
     </div>
