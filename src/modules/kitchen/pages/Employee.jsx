@@ -624,13 +624,14 @@ return (
         {!showLowStock && !showRestore && (
           <div className="orders-page">
   <div className="main-header" style={{ borderTop: 'none' }}>
-    <h1>📝 Incoming Orders</h1>
+    
     {currentUser?.email && (
       <div className="employee-profile-card">
         <span className="employee-profile-label">Logged In</span>
         <span className="employee-profile-email">{currentUser.email}</span>
       </div>
     )}
+    <h1>📝 Incoming Orders</h1>
   </div>
 
             {orders.length === 0 ? (

@@ -197,7 +197,7 @@ body {
 .main-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 2px solid var(--border-color);
@@ -1017,7 +1017,8 @@ body {
     background: linear-gradient(160deg, #10b981 0%, #059669 100%) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    pointer-events: none !important; 
+    pointer-events: none !important;
+    border-radius: 12px; 
   }
 
   aside.employee-sidebar.emp-sidebar-open { /* Use the new unique class name */
