@@ -38,6 +38,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
+  border-radius: 0 12px 12px 0 !important;
 }
 
 .sidebar-header {
@@ -2683,7 +2684,7 @@
     flex-direction: column;
     align-items: flex-start;
     pointer-events: all !important;
-    border-radius: 12px !important;
+    border-radius: 0 12px 12px 0 !important;
   }
 
   .manager-sidebar.sidebar-open {

@@ -73,6 +73,7 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  border-radius: 0 12px 12px 0; /* 🚀 Added 12px right-side border radius here */
 }
 
 .emp-sidebar-header {
@@ -1023,14 +1024,17 @@ body {
   }
 
   /* ── SIDEBAR DRAWER ── */
-  aside.employee-sidebar { /* Original sidebar style, will be transitioned */
+aside.employee-sidebar {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     height: 100vh !important;
-    width: 275px !important;
-    min-width: 275px !important;
-    max-width: 275px !important;
+    
+    /* 🚀 Changed from 275px to 60% across all locks */
+    width: 60% !important;
+    min-width: 60% !important;
+    max-width: 60% !important;
+    
     padding: 0 !important;
     z-index: 1002 !important;
     transform: translateX(-100%) !important;
@@ -1042,10 +1046,10 @@ body {
     box-sizing: border-box !important;
     background: linear-gradient(160deg, #10b981 0%, #059669 100%) !important;
     box-shadow: none !important;
-    border-radius: 0 !important;
     pointer-events: none !important;
-    border-radius: 12px; 
+    border-radius: 0 12px 12px 0 !important; /* ✅ Kept pristine at 12px */
   }
+
 
   aside.employee-sidebar.emp-sidebar-open { /* Use the new unique class name */
     transform: translateX(0) !important;
