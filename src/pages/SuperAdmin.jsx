@@ -365,84 +365,99 @@ function SuperAdmin() {
             </tr>
           </thead>
           <tbody>
-            {restaurants
-              .filter((restaurant) => restaurant.status === "pending" || (restaurant.status === "approved" && restaurant.payment_status === "pending"))
-              .map((restaurant) => (
-                <tr key={restaurant.id}>
-                  <td>
-                    <button className="restaurant-link-btn" onClick={() => openRestaurantModal(restaurant.id)}>
-                      {restaurant.name}
-                    </button>
-                  </td>
-                  <td>{restaurant.plan}</td>
-                  <td>
-                    {restaurant.status === "pending" ? (
-                      <span style={{ backgroundColor: "#eff6ff", color: "#2563eb", padding: "3px 8px", borderRadius: "4px", fontSize: "12px", fontWeight: "700" }}>
-                        NEW REGISTER
-                      </span>
-                    ) : (
-                      <span style={{ backgroundColor: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: "4px", fontSize: "12px", fontWeight: "700" }}>
-                        PLAN RENEWAL
-                      </span>
-                    )}
-                  </td>
-                  <td className="actions-cell">
-                    <button
-                      className="approve-btn"
-                      disabled={isProcessing[`sub-approve-${restaurant.id}`]}
-                      onClick={() => handleApproveSubscription(restaurant.id)}
-                    >
-                      {isProcessing[`sub-approve-${restaurant.id}`] ? "Processing..." : "Approve"}
-                    </button>
+  {restaurants
+    .filter((restaurant) => restaurant.status === "pending" || (restaurant.status === "approved" && restaurant.payment_status === "pending"))
+    .map((restaurant) => (
+      <tr key={restaurant.id}>
+        <td>
+          <button className="restaurant-link-btn" onClick={() => openRestaurantModal(restaurant.id)}>
+            {restaurant.name}
+          </button>
+        </td>
+        <td>{restaurant.plan}</td>
+        <td>
+          {/* 🚀 COMBINED TYPE BADGES CONTAINER */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start" }}>
+            {restaurant.status === "pending" ? (
+              <span style={{ backgroundColor: "#eff6ff", color: "#2563eb", padding: "3px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: "700" }}>
+                NEW REGISTER
+              </span>
+            ) : (
+              <span style={{ backgroundColor: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: "700" }}>
+                PLAN RENEWAL
+              </span>
+            )}
 
-                    {restaurant.status === "pending" ? (
-                      <button
-                        className="delete-btn"
-                        disabled={isProcessing[`delete-${restaurant.id}`]}
-                        onClick={() => handleDelete(restaurant.id)}
-                      >
-                        {isProcessing[`delete-${restaurant.id}`] ? "Deleting..." : "Delete"}
-                      </button>
-                    ) : (
-                      <button
-                        className="decline-btn"
-                        disabled={isProcessing[`sub-decline-${restaurant.id}`]}
-                        onClick={() => openDeclineInterface(restaurant.id)}
-                        style={{
-                          backgroundColor: "#ef4444", color: "white", border: "none",
-                          padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
-                          fontWeight: "600", marginLeft: "8px", transition: "background-color 0.2s"
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = "#dc2626"}
-                        onMouseOut={(e) => e.target.style.backgroundColor = "#ef4444"}
-                      >
-                        {isProcessing[`sub-decline-${restaurant.id}`] ? "Processing..." : "Decline"}
-                      </button>
-                    )}
-                  </td>
-                  <td>
-                    <strong style={{ fontFamily: "monospace", color: "#334155" }}>
-                      {restaurant.payment_reference || "N/A"}
-                    </strong>
-                  </td>
-                  <td>
-                    {restaurant.payment_screenshot ? (
-                      <button
-                        className="view-payment-btn"
-                        onClick={() => {
-                          setSelectedImage(`${import.meta.env.VITE_API_URL}${restaurant.payment_screenshot}`);
-                          setShowImageModal(true);
-                        }}
-                      >
-                        View Screenshot
-                      </button>
-                    ) : (
-                      "No Screenshot"
-                    )}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
+            {/* 🎯 NEW: Dynamic Request Type Indicators */}
+            {restaurant.request_type === "trial" ? (
+              <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontWeight: "800", border: "1px solid #f59e0b" }}>
+                🌱 FREE TRIAL
+              </span>
+            ) : (
+              <span style={{ backgroundColor: "#f3e8ff", color: "#7c3aed", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontWeight: "800", border: "1px solid #8b5cf6" }}>
+                💰 PAID SIGNUP
+              </span>
+            )}
+          </div>
+        </td>
+        <td className="actions-cell">
+          <button
+            className="approve-btn"
+            disabled={isProcessing[`sub-approve-${restaurant.id}`]}
+            onClick={() => handleApproveSubscription(restaurant.id)}
+          >
+            {isProcessing[`sub-approve-${restaurant.id}`] ? "Processing..." : "Approve"}
+          </button>
+
+          {restaurant.status === "pending" ? (
+            <button
+              className="delete-btn"
+              disabled={isProcessing[`delete-${restaurant.id}`]}
+              onClick={() => handleDelete(restaurant.id)}
+            >
+              {isProcessing[`delete-${restaurant.id}`] ? "Deleting..." : "Delete"}
+            </button>
+          ) : (
+            <button
+              className="decline-btn"
+              disabled={isProcessing[`sub-decline-${restaurant.id}`]}
+              onClick={() => openDeclineInterface(restaurant.id)}
+              style={{
+                backgroundColor: "#ef4444", color: "white", border: "none",
+                padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
+                fontWeight: "600", marginLeft: "8px", transition: "background-color 0.2s"
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = "#dc2626"}
+              onMouseOut={(e) => e.target.style.backgroundColor = "#ef4444"}
+            >
+              {isProcessing[`sub-decline-${restaurant.id}`] ? "Processing..." : "Decline"}
+            </button>
+          )}
+        </td>
+        <td>
+          <strong style={{ fontFamily: "monospace", color: "#334155" }}>
+            {restaurant.payment_reference || "N/A"}
+          </strong>
+        </td>
+        <td>
+          {/* Handle cases where trial entries don't contain real files */}
+          {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
+            <button
+              className="view-payment-btn"
+              onClick={() => {
+                setSelectedImage(`${import.meta.env.VITE_API_URL}${restaurant.payment_screenshot}`);
+                setShowImageModal(true);
+              }}
+            >
+              View Screenshot
+            </button>
+          ) : (
+            <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>No Screenshot</span>
+          )}
+        </td>
+      </tr>
+    ))}
+</tbody>
         </table>
       </div>
 
