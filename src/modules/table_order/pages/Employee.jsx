@@ -418,8 +418,8 @@ function TableEmployee() {
             </div>
 
             {orders.length === 0 ? (
-              <div className="card" style={{ textAlign: "center", padding: "60px 20px" }}>
-                <p style={{ fontSize: "18px", color: "var(--text-secondary)", textAlign: "left" }}>
+              <div className="card">
+                <p>
                   No orders at the moment. Please wait...
                 </p>
               </div>

@@ -1023,6 +1023,11 @@ body {
     transform: translateY(-7px) rotate(-45deg);
   }
 
+  .card p {
+    font-size: 13px !important; /* Adjust to 12px or 14px depending on how small you want it */
+    color: var(--text-muted, #64748b); /* Optional: subtly mutes the empty state text color */
+  }
+
   /* ── SIDEBAR DRAWER ── */
 aside.employee-sidebar {
     position: fixed !important;
