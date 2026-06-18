@@ -1,20 +1,24 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-// 🎯 Bulletproof check: Catch it via field OR fallback reference indicators
+  // 🎯 BACKWARD COMPATIBILITY BRIDGE:
+  // If the parent passed a nested object, use it. 
+  // If the parent passed a flat user object instead, fall back to that!
+  const data = restaurantData?.restaurantData || restaurantData;
+
+  // Now, all checks look at our safely resolved 'data' object
   const isTrial = 
-    String(restaurantData?.request_type).toLowerCase() === "trial" || 
-    String(restaurantData?.payment_reference).toLowerCase() === "free_trial" ||
-    restaurantData?.plan?.toLowerCase().includes("trial");
-  // Safe fallbacks for data
-  const utrNumber = restaurantData?.payment_reference || "Not Found / Uploaded";
-  const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
+    String(data?.request_type).toLowerCase() === "trial" || 
+    String(data?.payment_reference).toLowerCase() === "free_trial" ||
+    String(data?.plan).toLowerCase().includes("trial");
 
-  // Dynamically craft WhatsApp message depending on trial vs paid state
+  const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+  const adminContact = "+1234567890"; // Put your actual contact phone number here
+
   const whatsappMessage = isTrial
-    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${restaurantData?.name || "My Restaurant"}`
+    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${data?.name || data?.restaurant_name || "My Restaurant"}`
     : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
-
+    
   return (
     <div style={styles.container}>
       <div style={styles.card}>
