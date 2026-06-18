@@ -409,61 +409,121 @@ function Register({
                 </div>
               </div>
 
-              {/* 🎯 SEGMENTED METHOD SELECTION BUTTON LAYOUT */}
-              {formData.plan && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "15px 0" }}>
-                  
-                  {/* Option A: Paid Path */}
-                  <button
-                    type="button"
-                    className={`btn-payment ${paymentCompleted && !isTrialRequest ? 'completed' : ''}`}
-                    onClick={() => {
-                      setIsTrialRequest(false);
-                      setShowPaymentModal(true);
-                    }}
-                    disabled={loading}
-                    style={{
-                      width: "100%",
-                      padding: "12px",
-                      background: (paymentCompleted && !isTrialRequest) ? "#22c55e" : "#2563eb",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontWeight: "600",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {paymentCompleted && !isTrialRequest 
-                      ? "✓ Payment Completed (30-Day Setup)" 
-                      : `Pay ₹${PLAN_PRICES[formData.plan]} / Month`}
-                  </button>
+              {/* ========================================= */}
+{/* 🎯 SMART DYNAMIC METHOD SELECTION LAYOUT */}
+{/* ========================================= */}
+{formData.plan && (
+  <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", gap: "12px" }}>
+    
+    {/* CASE 1: USER IS ON THE TRIAL PATH */}
+    {isTrialRequest ? (
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+      >
+        {/* Main Active Selection Button */}
+        <div style={{
+          width: "100%",
+          padding: "14px",
+          background: "#e6f4ea",
+          color: "#137333",
+          border: "2px solid #10b981",
+          borderRadius: "8px",
+          fontWeight: "700",
+          textAlign: "center",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px"
+        }}>
+          🌱 Free Trial Selected (7-Day Setup)
+        </div>
 
-                  {/* Option B: Free Trial Path */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentCompleted(false); // resets paid path flags
-                      setPaymentReference("");
-                      setPaymentScreenshot(null);
-                      setIsTrialRequest(true);
-                    }}
-                    disabled={loading}
-                    style={{
-                      width: "100%",
-                      padding: "12px",
-                      background: isTrialRequest ? "#10b981" : "transparent",
-                      color: isTrialRequest ? "white" : "#10b981",
-                      border: "2px solid #10b981",
-                      borderRadius: "8px",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease"
-                    }}
-                  >
-                    {isTrialRequest ? "🌱 Free Trial Selected (7-Day Setup)" : "Start 7-Day Free Trial"}
-                  </button>
-                </div>
-              )}
+        {/* Alternative Route Triggers Here */}
+        <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
+          Want full continuous access instead?{" "}
+          <button
+            type="button"
+            className="link-btn"
+            onClick={() => {
+              setIsTrialRequest(false);
+              setShowPaymentModal(true); // Pops open the payment module right away
+            }}
+            style={{ 
+              color: "#2563eb", 
+              fontWeight: "600", 
+              background: "none", 
+              border: "none", 
+              padding: "0", 
+              cursor: "pointer",
+              textDecoration: "underline" 
+            }}
+          >
+            Pay Now for 30-Day Setup
+          </button>
+        </p>
+      </motion.div>
+    ) : (
+      /* CASE 2: USER IS ON THE PAID PATH (DEFAULT OR TOGGLED) */
+      <motion.div 
+        initial={{ scale: 0.95, opacity: 0 }} 
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+      >
+        {/* Main Active Selection Button */}
+        <button
+          type="button"
+          className={`btn-payment ${paymentCompleted ? 'completed' : ''}`}
+          onClick={() => setShowPaymentModal(true)}
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "14px",
+            background: paymentCompleted ? "#22c55e" : "#2563eb",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontWeight: "600",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(37, 99, 235, 0.1)"
+          }}
+        >
+          {paymentCompleted 
+            ? "✓ Payment Verified (30-Day Setup)" 
+            : `Pay ₹${PLAN_PRICES[formData.plan]} / Month`}
+        </button>
+
+        {/* Alternative Route Triggers Here */}
+        <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
+          Not ready to commit?{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setPaymentCompleted(false); // Clear out payment states
+              setPaymentReference("");
+              setPaymentScreenshot(null);
+              setIsTrialRequest(true); // Toggle alternative route visibility
+            }}
+            disabled={loading}
+            style={{
+              color: "#10b981",
+              fontWeight: "600",
+              background: "none",
+              border: "none",
+              padding: "0",
+              cursor: "pointer",
+              textDecoration: "underline"
+            }}
+          >
+            Start 7-Day Free Trial
+          </button>
+        </p>
+      </motion.div>
+    )}
+
+  </div>
+)}
 
 {/* REGISTER EXECUTION CTA BUTTON */}
 <motion.button

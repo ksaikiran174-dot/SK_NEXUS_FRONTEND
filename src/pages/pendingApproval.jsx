@@ -1,9 +1,11 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // Check if this is a free trial request type
-  const isTrial = String(restaurantData?.request_type).toLowerCase() === "trial";
-
+// 🎯 Bulletproof check: Catch it via field OR fallback reference indicators
+  const isTrial = 
+    String(restaurantData?.request_type).toLowerCase() === "trial" || 
+    String(restaurantData?.payment_reference).toLowerCase() === "free_trial" ||
+    restaurantData?.plan?.toLowerCase().includes("trial");
   // Safe fallbacks for data
   const utrNumber = restaurantData?.payment_reference || "Not Found / Uploaded";
   const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
@@ -38,30 +40,50 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
 
         <hr style={styles.divider} />
 
-        {/* Informational Data Points */}
-        <div style={styles.infoBox}>
-          {/* 🎯 Dynamically toggle UTR row out for Free Trial path */}
-          {!isTrial ? (
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Submitted UTR / Reference No:</span>
-              <span style={styles.value}>{utrNumber}</span>
-            </div>
-          ) : (
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Requested Route:</span>
-              <span style={{ ...styles.value, color: "#d97706", fontWeight: "bold" }}>
-                FREE TRIAL ACCESS
-              </span>
-            </div>
-          )}
+{/* Informational Data Points */}
+<div style={styles.infoBox}>
+  {/* 🎯 Route / Payment Verification Row */}
+  <div style={styles.infoRow}>
+    <span style={styles.label}>
+      {isTrial ? "Requested Route:" : "Submitted UTR / Reference No:"}
+    </span>
+    {isTrial ? (
+      <span style={{ 
+        backgroundColor: "#fef3c7", 
+        color: "#d97706", 
+        padding: "4px 10px", 
+        borderRadius: "6px", 
+        fontSize: "12px", 
+        fontWeight: "800", 
+        border: "1px solid #f59e0b",
+        display: "inline-block"
+      }}>
+        🌱 FREE TRIAL ACCESS
+      </span>
+    ) : (
+      <span style={{ ...styles.value, letterSpacing: "0.5px" }}>
+        {utrNumber}
+      </span>
+    )}
+  </div>
 
-          <div style={styles.infoRow}>
-            <span style={styles.label}>Current Setup Status:</span>
-            <span style={{ ...styles.value, color: "#ffc107", fontWeight: "bold" }}>
-              ⚠️ PENDING APPROVAL
-            </span>
-          </div>
-        </div>
+  {/* 🎯 System Setup Status Row */}
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Current Setup Status:</span>
+    <span style={{ 
+      backgroundColor: "#fffbeb", 
+      color: "#b45309", 
+      padding: "4px 10px", 
+      borderRadius: "6px", 
+      fontSize: "12px", 
+      fontWeight: "700", 
+      border: "1px solid #fcd34d",
+      display: "inline-block"
+    }}>
+      ⚠️ PENDING APPROVAL
+    </span>
+  </div>
+</div> 
 
         {/* Support Call-to-Actions */}
         <div style={styles.supportSection}>
