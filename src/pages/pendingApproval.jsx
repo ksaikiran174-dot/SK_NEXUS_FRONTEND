@@ -1,31 +1,60 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // Safe fallbacks if data is still loading
+  // Check if this is a free trial request type
+  const isTrial = String(restaurantData?.request_type).toLowerCase() === "trial";
+
+  // Safe fallbacks for data
   const utrNumber = restaurantData?.payment_reference || "Not Found / Uploaded";
   const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
+
+  // Dynamically craft WhatsApp message depending on trial vs paid state
+  const whatsappMessage = isTrial
+    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${restaurantData?.name || "My Restaurant"}`
+    : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* Animated Clock / Processing Icon */}
+        {/* Animated Icon Container - Toggles based on trial type */}
         <div style={styles.iconContainer}>
-          <span style={styles.pulseIcon}>⏳</span>
+          {isTrial ? (
+            <span style={{ ...styles.pulseIcon, fontSize: "55px" }}>🌱</span>
+          ) : (
+            <span style={styles.pulseIcon}>⏳</span>
+          )}
         </div>
 
-        <h2 style={styles.heading}>Workspace Request Submitted!</h2>
+        <h2 style={styles.heading}>
+          {isTrial ? "Trial Request Submitted!" : "Workspace Request Submitted!"}
+        </h2>
         <p style={styles.subtext}>
-          Your restaurant setup is currently undergoing administrative review. Please wait for the super-admin to verify your payment status.
+          {isTrial ? (
+            <>Your free trial workspace setup is currently undergoing quick administrative configuration. Please wait a moment while the super-admin activates your trial access pipeline.</>
+          ) : (
+            <>Your restaurant setup is currently undergoing administrative review. Please wait for the super-admin to verify your payment status.</>
+          )}
         </p>
 
         <hr style={styles.divider} />
 
         {/* Informational Data Points */}
         <div style={styles.infoBox}>
-          <div style={styles.infoRow}>
-            <span style={styles.label}>Submitted UTR / Reference No:</span>
-            <span style={styles.value}>{utrNumber}</span>
-          </div>
+          {/* 🎯 Dynamically toggle UTR row out for Free Trial path */}
+          {!isTrial ? (
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Submitted UTR / Reference No:</span>
+              <span style={styles.value}>{utrNumber}</span>
+            </div>
+          ) : (
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Requested Route:</span>
+              <span style={{ ...styles.value, color: "#d97706", fontWeight: "bold" }}>
+                FREE TRIAL ACCESS
+              </span>
+            </div>
+          )}
+
           <div style={styles.infoRow}>
             <span style={styles.label}>Current Setup Status:</span>
             <span style={{ ...styles.value, color: "#ffc107", fontWeight: "bold" }}>
@@ -41,7 +70,7 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
             📞 Call Support Admin
           </a>
           <a 
-            href={`https://wa.me/${adminContact.replace("+", "")}?text=Hi%20Admin,%20please%20approve%20my%20restaurant%20UTR:%20${utrNumber}`} 
+            href={`https://wa.me/${adminContact.replace("+", "")}?text=${encodeURIComponent(whatsappMessage)}`} 
             target="_blank" 
             rel="noopener noreferrer" 
             className="btn btn-success" 

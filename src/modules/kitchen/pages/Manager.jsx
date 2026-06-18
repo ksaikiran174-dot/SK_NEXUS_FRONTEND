@@ -193,6 +193,9 @@ function KitchenManager() {
 const [showAnalyticsView, setShowAnalyticsView] = useState(false);
 const [showTransactions, setShowTransactions] = useState(false);
 
+const [isStartingDay, setIsStartingDay] = useState(false);
+const [isClosingDay, setIsClosingDay] = useState(false);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Helper: close sidebar (call this in every tab onClick)
   const closeSidebar = () => setSidebarOpen(false);
@@ -2237,23 +2240,33 @@ return (
       </div>
 
       {/* ACTION BUTTONS */}
-      <div className="summary-actions">
-        {!(businessDay && businessDay.cycle_number) ? (
-          <button
-            className="btn btn-success"
-            onClick={handleStartDay}
-          >
-            ▶ Start Today
-          </button>
-        ) : (
-          <button
-            className="btn btn-danger"
-            onClick={handleCloseDay} // 🎯 Make sure this function sets businessDay to null!
-          >
-            🔒 Close Today Sales
-          </button>
-        )}
-      </div>
+<div className="summary-actions">
+  {!(businessDay && businessDay.cycle_number) ? (
+    <button 
+      className="btn btn-success" 
+      onClick={handleStartDay}
+      disabled={isStartingDay} /* 🚀 Prevents double-clicks */
+    >
+      {isStartingDay ? (
+        <>⌛ Starting Day...</>
+      ) : (
+        <>▶ Start Today</>
+      )}
+    </button>
+  ) : (
+    <button 
+      className="btn btn-danger" 
+      onClick={handleCloseDay}
+      disabled={isClosingDay} /* 🚀 Prevents double-clicks */
+    >
+      {isClosingDay ? (
+        <>⏳ Closing Day...</>
+      ) : (
+        <>🔒 Close Today Sales</>
+      )}
+    </button>
+  )}
+</div>
     </div>
   </>
 )}

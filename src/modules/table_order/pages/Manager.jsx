@@ -203,7 +203,8 @@ const handlePasswordInputChange = (e) => {
   setPasswordPayload(prev => ({ ...prev, [name]: value }));
 };
 
-
+const [isStartingDay, setIsStartingDay] = useState(false);
+const [isClosingDay, setIsClosingDay] = useState(false);
 
   // State tracking for editing an item's category inline
   const [editCategory, setEditCategory] = useState("");
@@ -2362,23 +2363,33 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       </div>
 
       {/* ACTION BUTTONS */}
-      <div className="summary-actions">
-        {!(businessDay && businessDay.cycle_number) ? (
-          <button
-            className="btn btn-success"
-            onClick={handleStartDay}
-          >
-            ▶ Start Today
-          </button>
-        ) : (
-          <button
-            className="btn btn-danger"
-            onClick={handleCloseDay} // 🎯 Make sure this function sets businessDay to null!
-          >
-            🔒 Close Today Sales
-          </button>
-        )}
-      </div>
+<div className="summary-actions">
+  {!(businessDay && businessDay.cycle_number) ? (
+    <button 
+      className="btn btn-success" 
+      onClick={handleStartDay}
+      disabled={isStartingDay} /* 🚀 Prevents double-clicks */
+    >
+      {isStartingDay ? (
+        <>⌛ Starting Day...</>
+      ) : (
+        <>▶ Start Today</>
+      )}
+    </button>
+  ) : (
+    <button 
+      className="btn btn-danger" 
+      onClick={handleCloseDay}
+      disabled={isClosingDay} /* 🚀 Prevents double-clicks */
+    >
+      {isClosingDay ? (
+        <>⏳ Closing Day...</>
+      ) : (
+        <>🔒 Close Today Sales</>
+      )}
+    </button>
+  )}
+</div>
     </div>
   </>
 )}
