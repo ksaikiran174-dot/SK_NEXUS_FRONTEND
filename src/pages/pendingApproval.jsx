@@ -2,13 +2,20 @@ import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
   // Resolve flat vs nested backend data payloads safely
-  const data = restaurantData?.restaurantData || restaurantData;
 
-  // 🎯 Clean evaluation using exact key values
-  const isTrial = String(data?.request_type).toLowerCase() === "trial" || 
-                  String(data?.payment_reference).toLowerCase() === "trial_request";
+  const data = restaurantData?.restaurantData || restaurantData || storedPendingData || {};
 
-  const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+const requestType = String(data?.request_type || "").toLowerCase();
+const paymentRef = String(data?.payment_reference || "").toLowerCase();
+
+const isTrial =
+  requestType === "trial" ||
+  paymentRef === "trial_request" ||
+  data?.payment_screenshot === "FREE_TRIAL";
+
+const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+
+
   const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
 
   // WhatsApp template routing configuration
@@ -23,18 +30,6 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
     return null;
   }
 })();
-
-const data = restaurantData?.restaurantData || restaurantData || storedPendingData || {};
-
-const requestType = String(data?.request_type || "").toLowerCase();
-const paymentRef = String(data?.payment_reference || "").toLowerCase();
-
-const isTrial =
-  requestType === "trial" ||
-  paymentRef === "trial_request" ||
-  data?.payment_screenshot === "FREE_TRIAL";
-
-const utrNumber = data?.payment_reference || "Not Found / Uploaded";
 
   return (
     <div style={styles.container}>
