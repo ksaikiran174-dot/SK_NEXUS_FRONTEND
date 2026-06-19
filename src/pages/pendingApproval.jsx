@@ -1,49 +1,50 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // 🎯 Bridge to handle both flat and nested structures safely
+  // Resolve flat vs nested backend data payloads safely
   const data = restaurantData?.restaurantData || restaurantData;
 
-  // 🎯 BULLETPROOF CHECK: Converts everything to lowercase and looks for "trial" anywhere
-  const isTrial = 
-    String(data?.request_type).toLowerCase().includes("trial") || 
-    String(data?.payment_reference).toLowerCase().includes("trial") ||
-    String(data?.plan).toLowerCase().includes("trial");
+  // 🎯 Clean evaluation using exact key values
+  const isTrial = String(data?.request_type).toLowerCase() === "trial" || 
+                  String(data?.payment_reference).toLowerCase() === "trial_request";
 
-  // Safe fallbacks for data
   const utrNumber = data?.payment_reference || "Not Found / Uploaded";
-  const adminContact = "+1234567890"; // Put your actual contact phone number here
+  const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
 
-  // Dynamically craft WhatsApp message depending on trial vs paid state
+  // WhatsApp template routing configuration
   const whatsappMessage = isTrial
     ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${data?.name || data?.restaurant_name || "My Restaurant"}`
     : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
-    
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
+        {/* Animated Icon Container */}
         <div style={styles.iconContainer}>
           {isTrial ? (
             <span style={{ fontSize: "55px" }}>🌱</span>
           ) : (
-            <span>⏳</span>
+            <span style={{ fontSize: "55px" }}>⏳</span>
           )}
         </div>
 
         <h2 style={styles.heading}>
           {isTrial ? "Trial Request Submitted!" : "Workspace Request Submitted!"}
         </h2>
+        
         <p style={styles.subtext}>
           {isTrial ? (
             <>Your free trial workspace setup is currently undergoing quick administrative configuration. Please wait a moment while the super-admin activates your trial access pipeline.</>
           ) : (
-            <>Your restaurant setup is currently undergoing administrative review. Please wait for the super-admin to verify your payment status.</>
+            <>Your restaurant setup is currently undergoing administrative review. Please wait for the super-admin to verify your payment status and activate your dashboard.</>
           )}
         </p>
 
         <hr style={styles.divider} />
 
+        {/* Informational Data Points */}
         <div style={styles.infoBox}>
+          {/* Route / Payment Verification Row */}
           <div style={styles.infoRow}>
             <span style={styles.label}>
               {isTrial ? "Requested Route:" : "Submitted UTR / Reference No:"}
@@ -63,6 +64,7 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
             )}
           </div>
 
+          {/* System Setup Status Row */}
           <div style={styles.infoRow}>
             <span style={styles.label}>Current Setup Status:</span>
             <span style={{ 
@@ -73,25 +75,27 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
               ⚠️ PENDING APPROVAL
             </span>
           </div>
-        </div>
+        </div> 
 
+        {/* Support Call-to-Actions */}
         <div style={styles.supportSection}>
           <p style={styles.supportText}>Have any questions or need urgent activation?</p>
-          <a href={`tel:${adminContact}`} style={styles.supportBtn} className="btn btn-primary">
+          <a href={`tel:${adminContact}`} className="btn btn-primary" style={styles.supportBtn}>
             📞 Call Support Admin
           </a>
           <a 
             href={`https://wa.me/${adminContact.replace("+", "")}?text=${encodeURIComponent(whatsappMessage)}`} 
             target="_blank" 
             rel="noopener noreferrer" 
+            className="btn btn-success" 
             style={styles.supportBtn}
-            className="btn btn-success"
           >
             💬 WhatsApp Chat
           </a>
         </div>
 
-        <button onClick={onLogout} style={styles.logoutBtn} className="btn btn-outline-danger">
+        {/* Exit Vector */}
+        <button onClick={onLogout} className="btn btn-outline-danger" style={styles.logoutBtn}>
           ↪️ Log Out / Switch Account
         </button>
       </div>
@@ -113,7 +117,7 @@ const styles = {
   supportSection: { marginBottom: "25px" },
   supportText: { fontSize: "14px", color: "#495057", marginBottom: "10px" },
   supportBtn: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "10px", fontWeight: "500", marginBottom: "10px", borderRadius: "6px", textDecoration: "none" },
-  logoutBtn: { width: "100%", padding: "8px", fontSize: "14px", cursor: "pointer" }
+  logoutBtn: { width: "100%", padding: "8px", fontSize: "14px" },
 };
 
 export default PendingApproval;

@@ -367,112 +367,117 @@ function SuperAdmin() {
     </thead>
     <tbody>
       {restaurants
-        .filter((restaurant) => restaurant.status === "pending" || (restaurant.status === "approved" && restaurant.payment_status === "pending"))
-        .map((restaurant) => {
-          // Bulletproof check for admin row item string values
-          const isTrial = 
-            String(restaurant.request_type).toLowerCase().includes("trial") ||
-            String(restaurant.payment_reference).toLowerCase().includes("trial") ||
-            String(restaurant.plan).toLowerCase().includes("trial");
+  .filter((restaurant) => restaurant.status === "pending" || (restaurant.status === "approved" && restaurant.payment_status === "pending"))
+  .map((restaurant) => {
+    // 🎯 MATCH THE BACKEND SPECIFIC FIELD VALUE EXACTLY
+    const isTrial = String(restaurant.request_type).toLowerCase() === "trial";
 
-          return (
-            <tr key={restaurant.id}>
-              {/* Column 1: Restaurant Name */}
-              <td>
-                <button className="restaurant-link-btn" onClick={() => openRestaurantModal(restaurant.id)}>
-                  {restaurant.name}
-                </button>
-              </td>
+    return (
+      <tr key={restaurant.id}>
+        {/* Column 1: Restaurant Name */}
+        <td>
+          <button className="restaurant-link-btn" onClick={() => openRestaurantModal(restaurant.id)}>
+            {restaurant.name}
+          </button>
+        </td>
 
-              {/* Column 2: Selected Subscription Plan */}
-              <td>{restaurant.plan}</td>
+        {/* Column 2: Selected Subscription Plan */}
+        <td>{restaurant.plan}</td>
 
-              {/* Column 3: Registration Status Badge */}
-              <td>
-                {restaurant.status === "pending" ? (
-                  <span style={{ backgroundColor: "#eff6ff", color: "#2563eb", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "700", display: "inline-block" }}>
-                    NEW REGISTER
-                  </span>
-                ) : (
-                  <span style={{ backgroundColor: "#f0fdf4", color: "#16a34a", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "700", display: "inline-block" }}>
-                    PLAN RENEWAL
-                  </span>
-                )}
-              </td>
+        {/* Column 3: Registration Status Badge */}
+        <td>
+          {restaurant.status === "pending" ? (
+            <span style={{ backgroundColor: "#eff6ff", color: "#2563eb", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "700", display: "inline-block" }}>
+              NEW REGISTER
+            </span>
+          ) : (
+            <span style={{ backgroundColor: "#f0fdf4", color: "#16a34a", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "700", display: "inline-block" }}>
+              PLAN RENEWAL
+            </span>
+          )}
+        </td>
 
-              {/* Column 4: Payment Path Verification Badge */}
-              <td>
-                {isTrial ? (
-                  <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "800", border: "1px solid #f59e0b", display: "inline-block" }}>
-                    🌱 FREE TRIAL
-                  </span>
-                ) : (
-                  <span style={{ backgroundColor: "#f3e8ff", color: "#7c3aed", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "800", border: "1px solid #8b5cf6", display: "inline-block" }}>
-                    💰 PAID SIGNUP
-                  </span>
-                )}
-              </td>
+        {/* Column 4: Payment Path Verification Badge */}
+        <td>
+          {isTrial ? (
+            <span style={{ backgroundColor: "#fef3c7", color: "#d97706", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "800", border: "1px solid #f59e0b", display: "inline-block" }}>
+              🌱 FREE TRIAL
+            </span>
+          ) : (
+            <span style={{ backgroundColor: "#f3e8ff", color: "#7c3aed", padding: "4px 10px", borderRadius: "4px", fontSize: "11px", fontWeight: "800", border: "1px solid #8b5cf6", display: "inline-block" }}>
+              💰 PAID SIGNUP
+            </span>
+          )}
+        </td>
 
-              {/* Column 5: Operational Action Elements */}
-              <td className="actions-cell">
-                <button
-                  className="approve-btn"
-                  disabled={isProcessing[`sub-approve-${restaurant.id}`]}
-                  onClick={() => handleApproveSubscription(restaurant.id)}
-                >
-                  {isProcessing[`sub-approve-${restaurant.id}`] ? "Processing..." : "Approve"}
-                </button>
+        {/* Column 5: Operational Action Elements */}
+        <td className="actions-cell">
+          <button
+            className="approve-btn"
+            disabled={isProcessing[`sub-approve-${restaurant.id}`]}
+            onClick={() => handleApproveSubscription(restaurant.id)}
+          >
+            {isProcessing[`sub-approve-${restaurant.id}`] ? "Processing..." : "Approve"}
+          </button>
 
-                {restaurant.status === "pending" ? (
-                  <button
-                    className="delete-btn"
-                    disabled={isProcessing[`delete-${restaurant.id}`]}
-                    onClick={() => handleDelete(restaurant.id)}
-                  >
-                    {isProcessing[`delete-${restaurant.id}`] ? "Deleting..." : "Delete"}
-                  </button>
-                ) : (
-                  <button
-                    className="decline-btn"
-                    disabled={isProcessing[`sub-decline-${restaurant.id}`]}
-                    onClick={() => openDeclineInterface(restaurant.id)}
-                    style={{
-                      backgroundColor: "#ef4444", color: "white", border: "none",
-                      padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
-                      fontWeight: "600", marginLeft: "8px"
-                    }}
-                  >
-                    {isProcessing[`sub-decline-${restaurant.id}`] ? "Processing..." : "Decline"}
-                  </button>
-                )}
-              </td>
+          {restaurant.status === "pending" ? (
+            <button
+              className="delete-btn"
+              disabled={isProcessing[`delete-${restaurant.id}`]}
+              onClick={() => handleDelete(restaurant.id)}
+            >
+              {isProcessing[`delete-${restaurant.id}`] ? "Deleting..." : "Delete"}
+            </button>
+          ) : (
+            <button
+              className="decline-btn"
+              disabled={isProcessing[`sub-decline-${restaurant.id}`]}
+              onClick={() => openDeclineInterface(restaurant.id)}
+              style={{
+                backgroundColor: "#ef4444", color: "white", border: "none",
+                padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
+                fontWeight: "600", marginLeft: "8px"
+              }}
+            >
+              {isProcessing[`sub-decline-${restaurant.id}`] ? "Processing..." : "Decline"}
+            </button>
+          )}
+        </td>
 
-              {/* Column 6: UTR / Reference ID */}
-              <td>
-                <strong style={{ fontFamily: "monospace", color: "#334155", fontSize: "13px" }}>
-                  {restaurant.payment_reference || "N/A"}
-                </strong>
-              </td>
+        {/* Column 6: UTR / Reference ID */}
+        <td>
+          <strong style={{ fontFamily: "monospace", color: "#334155", fontSize: "13px" }}>
+            {isTrial ? "TRIAL_REQUEST" : (restaurant.payment_reference || "N/A")}
+          </strong>
+        </td>
 
-              {/* Column 7: Screenshot Handler */}
-              <td>
-                {restaurant.payment_screenshot && !String(restaurant.payment_screenshot).toLowerCase().includes("trial") ? (
-                  <button
-                    className="view-payment-btn"
-                    onClick={() => {
-                      setSelectedImage(`${import.meta.env.VITE_API_URL}${restaurant.payment_screenshot}`);
-                      setShowImageModal(true);
-                    }}
-                  >
-                    View Screenshot
-                  </button>
-                ) : (
-                  <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>No Screenshot</span>
-                )}
-              </td>
-            </tr>
-          );
-        })}
+        {/* Column 7: Screenshot Handler */}
+        <td>
+          {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
+            <button
+              className="view-payment-btn"
+              onClick={() => {
+                // Ensure double slashes don't break the asset URL
+                const baseUrl = import.meta.env.VITE_API_URL.endsWith('/') 
+                  ? import.meta.env.VITE_API_URL.slice(0, -1) 
+                  : import.meta.env.VITE_API_URL;
+                const filePath = restaurant.payment_screenshot.startsWith('/')
+                  ? restaurant.payment_screenshot
+                  : `/${restaurant.payment_screenshot}`;
+                  
+                setSelectedImage(`${baseUrl}${filePath}`);
+                setShowImageModal(true);
+              }}
+            >
+              View Screenshot
+            </button>
+          ) : (
+            <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>No Screenshot</span>
+          )}
+        </td>
+      </tr>
+    );
+  })}
     </tbody>
   </table>
 </div>
