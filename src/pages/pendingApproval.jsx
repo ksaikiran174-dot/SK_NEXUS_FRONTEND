@@ -1,22 +1,24 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // Safe extraction lookup: Check inside restaurantData or fallback to direct top-level props
-  const finalData = restaurantData?.restaurantData || restaurantData;
+  // 🎯 Bridge to handle both flat and nested structures safely
+  const data = restaurantData?.restaurantData || restaurantData;
 
-  // Evaluate if trial request based on string presence
+  // 🎯 BULLETPROOF CHECK: Converts everything to lowercase and looks for "trial" anywhere
   const isTrial = 
-    String(finalData?.request_type).toLowerCase().includes("trial") || 
-    String(finalData?.payment_reference).toLowerCase().includes("trial") ||
-    String(finalData?.plan).toLowerCase().includes("trial");
+    String(data?.request_type).toLowerCase().includes("trial") || 
+    String(data?.payment_reference).toLowerCase().includes("trial") ||
+    String(data?.plan).toLowerCase().includes("trial");
 
-  const utrNumber = finalData?.payment_reference || "Not Found / Uploaded";
-  const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
+  // Safe fallbacks for data
+  const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+  const adminContact = "+1234567890"; // Put your actual contact phone number here
 
+  // Dynamically craft WhatsApp message depending on trial vs paid state
   const whatsappMessage = isTrial
-    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${finalData?.name || finalData?.restaurant_name || "My Restaurant"}`
+    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${data?.name || data?.restaurant_name || "My Restaurant"}`
     : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
-
+    
   return (
     <div style={styles.container}>
       <div style={styles.card}>
