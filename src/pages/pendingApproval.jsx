@@ -1,35 +1,33 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // Resolve flat vs nested backend data payloads safely
+  // 1️⃣ DEFINE LOCAL STORAGE FALLBACK FIRST
+  const storedPendingData = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("pendingRestaurantData") || "null");
+    } catch {
+      return null;
+    }
+  })();
 
+  // 2️⃣ NOW SAFE TO USE IN THE DATA RESOLVER
   const data = restaurantData?.restaurantData || restaurantData || storedPendingData || {};
 
-const requestType = String(data?.request_type || "").toLowerCase();
-const paymentRef = String(data?.payment_reference || "").toLowerCase();
+  const requestType = String(data?.request_type || "").toLowerCase();
+  const paymentRef = String(data?.payment_reference || "").toLowerCase();
 
-const isTrial =
-  requestType === "trial" ||
-  paymentRef === "trial_request" ||
-  data?.payment_screenshot === "FREE_TRIAL";
+  const isTrial =
+    requestType === "trial" ||
+    paymentRef === "trial_request" ||
+    data?.payment_screenshot === "FREE_TRIAL";
 
-const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+  const utrNumber = data?.payment_reference || "Not Found / Uploaded";
+  const adminContact = "+1234567890"; 
 
-
-  const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
-
-  // WhatsApp template routing configuration
   const whatsappMessage = isTrial
     ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${data?.name || data?.restaurant_name || "My Restaurant"}`
     : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
 
-  const storedPendingData = (() => {
-  try {
-    return JSON.parse(localStorage.getItem("pendingRestaurantData") || "null");
-  } catch {
-    return null;
-  }
-})();
 
   return (
     <div style={styles.container}>

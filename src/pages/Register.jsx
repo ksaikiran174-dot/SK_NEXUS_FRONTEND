@@ -169,30 +169,24 @@ function Register({
       if (response.ok) {
   const data = await response.json();
 
-  const pendingRestaurantData = {
-    ...data,
-    restaurant_name: data.restaurant_name || formData.restaurantName,
-    name: data.name || formData.restaurantName,
-    plan: data.plan || formData.plan,
-    request_type: data.request_type || (isTrialRequest ? "trial" : "paid"),
-    payment_reference: data.payment_reference || refId,
-    payment_screenshot: data.payment_screenshot || screenshotPath,
-    restaurant_status: data.restaurant_status || "pending"
-  };
-
-  localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
-  localStorage.setItem("managerRefreshToken", data.refresh_token || "");
-  localStorage.setItem("plan", formData.plan);
-  localStorage.setItem("pendingRestaurantData", JSON.stringify(pendingRestaurantData));
-
   setSuccess(
-    isTrialRequest
-      ? "Free Trial registration submitted! Awaiting Admin Activation."
-      : "Paid workspace registration submitted! Awaiting Admin verification."
+    isTrialRequest 
+      ? "✓ Free Trial registration submitted! Awaiting Admin Activation." 
+      : "✓ Paid workspace registration submitted! Awaiting Admin verification."
   );
 
+  // SAVE SEGMENTED TOKENS
+  localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
+  localStorage.setItem("managerRefreshToken", data.refresh_token);
+  localStorage.setItem("plan", formData.plan);
+  
+  // 🎯 ADD THESE TO SAVE TRACKING TYPE FOR REFRESHES:
+  localStorage.setItem("managerRequestType", isTrialRequest ? "trial" : "paid");
+  localStorage.setItem("managerUTR", isTrialRequest ? "TRIAL_REQUEST" : paymentReference);
+  localStorage.setItem("managerScreenshot", screenshotPath); // Stores path string or "FREE_TRIAL"
+
   setTimeout(() => {
-    onRegisterSuccess(pendingRestaurantData);
+    onRegisterSuccess(data); // Pass data payload upstream
   }, 1200);
 } else {
         const errorData = await response.json();

@@ -507,17 +507,28 @@ function App() {
     if (role === "super_admin") return <SuperAdmin />;
     
     if (role === "manager" && restaurantStatus === "pending") {
-      return (
-        <PendingApproval 
-          restaurantData={{ payment_reference: localStorage.getItem("managerUTR") }} 
-          onLogout={() => {
-            clearAllRoleData();
-            setRole(null);
-            setAuthState("role-selection");
-          }}
-        />
-      );
-    }
+  // 🎯 Construct a complete mock object matching your data requirements
+  const localRestaurantPayload = {
+    request_type: localStorage.getItem("managerRequestType") || "paid",
+    payment_reference: localStorage.getItem("managerUTR") || "N/A",
+    payment_screenshot: localStorage.getItem("managerScreenshot") || "FREE_TRIAL",
+    restaurant_name: "My Restaurant"
+  };
+
+  return (
+    <PendingApproval 
+      restaurantData={localRestaurantPayload} 
+      onLogout={() => {
+        clearAllRoleData();
+        localStorage.removeItem("managerRequestType");
+        localStorage.removeItem("managerUTR");
+        localStorage.removeItem("managerScreenshot");
+        setRole(null);
+        setAuthState("role-selection");
+      }}
+    />
+  );
+}
 
     const mode = getModeFromPlan(plan); 
     switch (mode) {
