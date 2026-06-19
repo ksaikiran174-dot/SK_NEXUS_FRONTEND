@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./Register.css";
 
+
 function Register({
   onRegisterSuccess,
   onLoginClick,
@@ -14,7 +15,8 @@ function Register({
     phone: "",
     plan: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    paymentReference: "" // 🎯 Fixed: Kept inside formData to match input name attribute
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +27,6 @@ function Register({
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [paymentReference, setPaymentReference] = useState("");
   const [paymentScreenshot, setPaymentScreenshot] = useState(null);
 
   // 🚀 NEW STATE: Differentiates standard workflows from free trials
@@ -45,10 +46,7 @@ function Register({
 
     // 🎯 RESTRICTION: Lock Reference / UTR Number to digits only with a 22-digit maximum cap
     if (name === "paymentReference") {
-      // Strip everything except numbers (0-9)
       const onlyDigits = value.replace(/[^0-9]/g, "");
-      
-      // Prevent typing more than 22 characters
       if (onlyDigits.length > 22) return;
 
       setFormData((prev) => ({
@@ -74,7 +72,7 @@ function Register({
       !formData.ownerName ||
       !formData.email ||
       !formData.phone ||
-      !formData.plan || // Safety check: Plan must be selected!
+      !formData.plan || 
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -132,41 +130,45 @@ function Register({
 
       // ── IF IT IS A PAID SUBSCRIPTION SYSTEM REQUEST ──
       if (!isTrialRequest) {
-        if (!paymentScreenshot) {
-          setError("Please upload your payment verification screenshot! ");
+        // Validate Payment Reference length before processing uploads
+        const refLength = formData.paymentReference?.length || 0;
+        if (refLength < 12 || refLength > 22) {
+          setError("❌ Error: Payment Reference Number must be between 12 and 22 digits long.");
           setLoading(false);
           return;
         }
 
-        if (paymentScreenshot.size > 5 * 1024 * 1024) {
-          setError("Screenshot image must be smaller than 5MB, bro!");
-          setLoading(false);
-          return;
-        }
-
-        if (!isTrialRequest) {
-  const refLength = formData.paymentReference?.length || 0;
-          if (refLength < 12 || refLength > 22) {
-    alert("❌ Error: Payment Reference Number must be between 12 and 22 digits long.");
-    return;
-  }
-}
-
-        const imageFormData = new FormData();
-        imageFormData.append("file", paymentScreenshot);
-
-        // Upload picture chunk to system disk
-        const uploadResponse = await fetch(
-          `${import.meta.env.VITE_API_URL}/auth/upload-payment-image`,
-          {
-            method: "POST",
-            body: imageFormData
+        // Optional screenshot verification layout 
+        if (paymentScreenshot) {
+          if (paymentScreenshot.size > 5 * 1024 * 1024) {
+            setError("Screenshot image must be smaller than 5MB, bro!");
+            setLoading(false);
+            return;
           }
-        );
 
-        const uploadData = await uploadResponse.json();
-        screenshotPath = uploadData.image_path;
-        refId = paymentReference;
+          const imageFormData = new FormData();
+          imageFormData.append("file", paymentScreenshot);
+
+          // Upload picture chunk to system disk
+          const uploadResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/auth/upload-payment-image`,
+            {
+              method: "POST",
+              body: imageFormData
+            }
+          );
+
+          if (!uploadResponse.ok) {
+            throw new Error("Failed to upload verification image screenshot.");
+          }
+
+          const uploadData = await uploadResponse.json();
+          screenshotPath = uploadData.image_path;
+        } else {
+          screenshotPath = "NO_SCREENSHOT_PROVIDED";
+        }
+
+        refId = formData.paymentReference;
       }
 
       // ── SUBMIT MAIN REGISTRATION LOGIC PACKET ──
@@ -184,7 +186,7 @@ function Register({
             phone: formData.phone,
             password: formData.password,
             plan: formData.plan,
-            request_type: isTrialRequest ? "trial" : "paid", // 🚀 Informs your admin panel query flags
+            request_type: isTrialRequest ? "trial" : "paid", 
             payment_reference: refId,
             payment_screenshot: screenshotPath
           })
@@ -192,34 +194,33 @@ function Register({
       );
 
       if (response.ok) {
-  const data = await response.json();
+        const data = await response.json();
 
-  setSuccess(
-    isTrialRequest 
-      ? "✓ Free Trial registration submitted! Awaiting Admin Activation." 
-      : "✓ Paid workspace registration submitted! Awaiting Admin verification."
-  );
+        setSuccess(
+          isTrialRequest 
+            ? "✓ Free Trial registration submitted! Awaiting Admin Activation." 
+            : "✓ Paid workspace registration submitted! Awaiting Admin verification."
+        );
 
-  // SAVE SEGMENTED TOKENS
-  localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
-  localStorage.setItem("managerRefreshToken", data.refresh_token);
-  localStorage.setItem("plan", formData.plan);
-  
-  // 🎯 ADD THESE TO SAVE TRACKING TYPE FOR REFRESHES:
-  localStorage.setItem("managerRequestType", isTrialRequest ? "trial" : "paid");
-  localStorage.setItem("managerUTR", isTrialRequest ? "TRIAL_REQUEST" : paymentReference);
-  localStorage.setItem("managerScreenshot", screenshotPath); // Stores path string or "FREE_TRIAL"
+        // SAVE SEGMENTED TOKENS
+        localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
+        localStorage.setItem("managerRefreshToken", data.refresh_token);
+        localStorage.setItem("plan", formData.plan);
+        
+        localStorage.setItem("managerRequestType", isTrialRequest ? "trial" : "paid");
+        localStorage.setItem("managerUTR", isTrialRequest ? "TRIAL_REQUEST" : formData.paymentReference);
+        localStorage.setItem("managerScreenshot", screenshotPath);
 
-  setTimeout(() => {
-    onRegisterSuccess(data); // Pass data payload upstream
-  }, 1200);
-} else {
+        setTimeout(() => {
+          onRegisterSuccess(data); 
+        }, 1200);
+      } else {
         const errorData = await response.json();
         setError(errorData.detail || "Registration failed");
       }
 
     } catch (err) {
-      setError("Connection error. Please try again.");
+      setError(err.message || "Connection error. Please try again.");
       console.error("Registration error:", err);
     } finally {
       setLoading(false);
@@ -439,142 +440,136 @@ function Register({
               </div>
 
               {/* ========================================= */}
-{/* 🎯 SMART DYNAMIC METHOD SELECTION LAYOUT */}
-{/* ========================================= */}
-{formData.plan && (
-  <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", gap: "12px" }}>
-    
-    {/* CASE 1: USER IS ON THE TRIAL PATH */}
-    {isTrialRequest ? (
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0 }} 
-        animate={{ scale: 1, opacity: 1 }}
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        {/* Main Active Selection Button */}
-        <div style={{
-          width: "100%",
-          padding: "14px",
-          background: "#e6f4ea",
-          color: "#137333",
-          border: "2px solid #10b981",
-          borderRadius: "8px",
-          fontWeight: "700",
-          textAlign: "center",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px"
-        }}>
-          🌱 Free Trial Selected (7-Day Setup)
-        </div>
+              {/* 🎯 SMART DYNAMIC METHOD SELECTION LAYOUT */}
+              {/* ========================================= */}
+              {formData.plan && (
+                <div style={{ margin: "20px 0", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  
+                  {/* CASE 1: USER IS ON THE TRIAL PATH */}
+                  {isTrialRequest ? (
+                    <motion.div 
+                      initial={{ scale: 0.95, opacity: 0 }} 
+                      animate={{ scale: 1, opacity: 1 }}
+                      style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+                    >
+                      <div style={{
+                        width: "100%",
+                        padding: "14px",
+                        background: "#e6f4ea",
+                        color: "#137333",
+                        border: "2px solid #10b981",
+                        borderRadius: "8px",
+                        fontWeight: "700",
+                        textAlign: "center",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px"
+                      }}>
+                        🌱 Free Trial Selected (7-Day Setup)
+                      </div>
 
-        {/* Alternative Route Triggers Here */}
-        <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
-          Want full continuous access instead?{" "}
-          <button
-            type="button"
-            className="link-btn"
-            onClick={() => {
-              setIsTrialRequest(false);
-              setShowPaymentModal(true); // Pops open the payment module right away
-            }}
-            style={{ 
-              color: "#2563eb", 
-              fontWeight: "600", 
-              background: "none", 
-              border: "none", 
-              padding: "0", 
-              cursor: "pointer",
-              textDecoration: "underline" 
-            }}
-          >
-            Pay Now for 30-Day Setup
-          </button>
-        </p>
-      </motion.div>
-    ) : (
-      /* CASE 2: USER IS ON THE PAID PATH (DEFAULT OR TOGGLED) */
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0 }} 
-        animate={{ scale: 1, opacity: 1 }}
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        {/* Main Active Selection Button */}
-        <button
-          type="button"
-          className={`btn-payment ${paymentCompleted ? 'completed' : ''}`}
-          onClick={() => setShowPaymentModal(true)}
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "14px",
-            background: paymentCompleted ? "#22c55e" : "#2563eb",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            fontWeight: "600",
-            cursor: "pointer",
-            boxShadow: "0 2px 4px rgba(37, 99, 235, 0.1)"
-          }}
-        >
-          {paymentCompleted 
-            ? "✓ Payment Verified (30-Day Setup)" 
-            : `Pay ₹${PLAN_PRICES[formData.plan]} / Month`}
-        </button>
+                      <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
+                        Want full continuous access instead?{" "}
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={() => {
+                            setIsTrialRequest(false);
+                            setShowPaymentModal(true);
+                          }}
+                          style={{ 
+                            color: "#2563eb", 
+                            fontWeight: "600", 
+                            background: "none", 
+                            border: "none", 
+                            padding: "0", 
+                            cursor: "pointer",
+                            textDecoration: "underline" 
+                          }}
+                        >
+                          Pay Now for 30-Day Setup
+                        </button>
+                      </p>
+                    </motion.div>
+                  ) : (
+                    /* CASE 2: USER IS ON THE PAID PATH (DEFAULT OR TOGGLED) */
+                    <motion.div 
+                      initial={{ scale: 0.95, opacity: 0 }} 
+                      animate={{ scale: 1, opacity: 1 }}
+                      style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+                    >
+                      <button
+                        type="button"
+                        className={`btn-payment ${paymentCompleted ? 'completed' : ''}`}
+                        onClick={() => setShowPaymentModal(true)}
+                        disabled={loading}
+                        style={{
+                          width: "100%",
+                          padding: "14px",
+                          background: paymentCompleted ? "#22c55e" : "#2563eb",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          boxShadow: "0 2px 4px rgba(37, 99, 235, 0.1)"
+                        }}
+                      >
+                        {paymentCompleted 
+                          ? "✓ Payment Information Saved" 
+                          : `Pay ₹${PLAN_PRICES[formData.plan]} / Month`}
+                      </button>
 
-        {/* Alternative Route Triggers Here */}
-        <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
-          Not ready to commit?{" "}
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentCompleted(false); // Clear out payment states
-              setPaymentReference("");
-              setPaymentScreenshot(null);
-              setIsTrialRequest(true); // Toggle alternative route visibility
-            }}
-            disabled={loading}
-            style={{
-              color: "#10b981",
-              fontWeight: "600",
-              background: "none",
-              border: "none",
-              padding: "0",
-              cursor: "pointer",
-              textDecoration: "underline"
-            }}
-          >
-            Start 7-Day Free Trial
-          </button>
-        </p>
-      </motion.div>
-    )}
+                      <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0 0", textAlign: "center" }}>
+                        Not ready to commit?{" "}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentCompleted(false);
+                            setFormData(prev => ({ ...prev, paymentReference: "" }));
+                            setPaymentScreenshot(null);
+                            setIsTrialRequest(true);
+                          }}
+                          disabled={loading}
+                          style={{
+                            color: "#10b981",
+                            fontWeight: "600",
+                            background: "none",
+                            border: "none",
+                            padding: "0",
+                            cursor: "pointer",
+                            textDecoration: "underline"
+                          }}
+                        >
+                          Start 7-Day Free Trial
+                        </button>
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
+              )}
 
-  </div>
-)}
-
-{/* REGISTER EXECUTION CTA BUTTON */}
-<motion.button
-  type="submit"
-  className="btn-register"
-  // 🔐 Safety Lock: Must either finish the payment form OR explicitly select the trial path!
-  disabled={loading || (!paymentCompleted && !isTrialRequest)}
-  style={{
-    opacity: (loading || (!paymentCompleted && !isTrialRequest)) ? 0.6 : 1
-  }}
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
->
-  {loading ? (
-    <>
-      <span className="spinner"></span>
-      Creating Workspace...
-    </>
-  ) : (
-    <>Create Workspace</> // Always premium, always real! 😂🚀
-  )}
-</motion.button>
+              {/* REGISTER EXECUTION CTA BUTTON */}
+              <motion.button
+                type="submit"
+                className="btn-register"
+                disabled={loading || (!paymentCompleted && !isTrialRequest)}
+                style={{
+                  opacity: (loading || (!paymentCompleted && !isTrialRequest)) ? 0.6 : 1
+                }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Creating Workspace...
+                  </>
+                ) : (
+                  <>Create Workspace</>
+                )}
+              </motion.button>
             </form>
 
             {/* FOOTER */}
@@ -623,26 +618,29 @@ function Register({
             <h3>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
 
             {/* UTR / Payment Reference Input Field */}
-<input
-  type="text"
-  name="paymentReference"
-  placeholder="Enter 12-22 Digit Ref / UTR Number"
-  value={formData.paymentReference || ""}
-  onChange={handleInputChange}
-  required={!isTrialRequest} // Only required if it's not a free trial
-/>
+            <input
+              type="text"
+              name="paymentReference"
+              placeholder="Enter 12-22 Digit Ref / UTR Number"
+              value={formData.paymentReference}
+              onChange={handleInputChange}
+              style={{ width: "100%", padding: "10px", margin: "10px 0", borderRadius: "4px", border: "1px solid #ccc" }}
+            />
 
-{/* Payment Screenshot Input Field */}
-<input
-  type="file"
-  accept="image/*"
-  onChange={(e) => setPaymentScreenshot(e.target.files[0] || null)}
-  // 🎯 REMOVED the 'required' flag here to make it completely optional!
-/>
+            {/* Payment Screenshot Input Field */}
+            <label style={{ fontSize: "12px", display: "block", textAlign: "left", color: "#64748b", marginBottom: "4px" }}>
+              Upload Transaction Screenshot (Optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPaymentScreenshot(e.target.files[0] || null)}
+              style={{ width: "100%", marginBottom: "15px" }}
+            />
 
             <button
               type="button"
-              disabled={!paymentReference.trim() || !paymentScreenshot}
+              disabled={!formData.paymentReference.trim()} // 🎯 Fixed: Enabled validation only on UTR string match
               onClick={() => {
                 setPaymentCompleted(true);
                 setShowPaymentModal(false);
@@ -650,18 +648,18 @@ function Register({
               style={{
                 width: "100%",
                 padding: "12px",
-                backgroundColor: (!paymentReference.trim() || !paymentScreenshot) ? "#cbd5e1" : "#22c55e",
+                backgroundColor: (!formData.paymentReference.trim()) ? "#cbd5e1" : "#22c55e",
                 color: "#fff",
                 border: "none",
                 borderRadius: "6px",
-                cursor: (!paymentReference.trim() || !paymentScreenshot) ? "not-allowed" : "pointer",
+                cursor: (!formData.paymentReference.trim()) ? "not-allowed" : "pointer",
                 fontWeight: "600",
                 marginTop: "10px",
                 transition: "background-color 0.2s"
               }}
             >
-              {(!paymentReference.trim() || !paymentScreenshot) 
-                ? "Please fill details to continue" 
+              {!formData.paymentReference.trim() 
+                ? "Please enter UTR Number to continue" 
                 : "Confirm Payment Details"}
             </button>
           </div>

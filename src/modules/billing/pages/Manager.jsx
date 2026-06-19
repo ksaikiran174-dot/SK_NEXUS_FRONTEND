@@ -48,7 +48,8 @@ const uploadDirectToCloudinary = async (file) => {
         img.onload = () => {
           const canvas = document.createElement("canvas");
           
-          const MAX_WIDTH = 600; 
+          // 🚀 INCREASED RESOLUTION: Bumped from 600 to 1200 for crisp quality on large screens
+          const MAX_WIDTH = 1200; 
           let width = img.width;
           let height = img.height;
 
@@ -65,7 +66,7 @@ const uploadDirectToCloudinary = async (file) => {
 
           canvas.toBlob((blob) => {
             resolve(blob);
-          }, "image/jpeg", 0.75);
+          }, "image/jpeg", 0.85); // 🚀 HIGHER QUALITY: Bumped from 0.75 to 0.85 to remove blur and artifacts
         };
       };
     });

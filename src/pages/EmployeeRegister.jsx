@@ -2,8 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import "./Register.css";
 
-
-
 function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -25,117 +23,78 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
   };
 
   const validateForm = () => {
-
-  if (
-    !formData.name ||
-    !formData.email ||
-    !formData.password
-  ) {
-
-    setError("Please fill in all fields");
-    return false;
-  }
-
-  if (formData.name.trim().length < 2) {
-
-    setError("Name must be at least 2 characters");
-    return false;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(formData.email)) {
-
-    setError("Please enter a valid email address");
-    return false;
-  }
-
-  if (formData.password.length < 8) {
-
-    setError("Password must be at least 8 characters");
-    return false;
-  }
-
-  return true;
-};
-
-  const handleRegister = async (e) => {
-
-  e.preventDefault();
-
-  setError("");
-  setSuccess("");
-  setLoading(true);
-
-  if (!validateForm()) {
-
-    setLoading(false);
-    return;
-  }
-
-  try {
-
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/employees`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-
-          Authorization:
-            `Bearer ${localStorage.getItem("managerAccessToken")}`,
-        },
-
-        body: JSON.stringify({
-
-          name: formData.name,
-
-          email: formData.email,
-
-          password: formData.password,
-        }),
-      }
-    );
-
-    if (response.ok) {
-
-      setSuccess(
-        "✓ Employee account created successfully!"
-      );
-
-      localStorage.setItem("plan", formData.plan);
-
-      setTimeout(() => {
-
-        onRegisterSuccess();
-
-      }, 1500);
-
-    } else {
-
-      const errorData =
-        await response.json();
-
-      setError(
-        errorData.detail ||
-        "Registration failed"
-      );
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Please fill in all fields");
+      return false;
     }
 
-  } catch (err) {
+    if (formData.name.trim().length < 2) {
+      setError("Name must be at least 2 characters");
+      return false;
+    }
 
-    setError(
-      "Connection error. Please try again."
-    );
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address");
+      return false;
+    }
 
-    console.error(err);
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return false;
+    }
 
-  } finally {
+    return true;
+  };
 
-    setLoading(false);
-  }
-};
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    if (!validateForm()) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("managerAccessToken")}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuccess("✓ Employee account created successfully!");
+
+        // 🎯 FIX: Avoid saving undefined. Inherit plan from server response if available
+        if (data?.plan) {
+          localStorage.setItem("plan", data.plan);
+        }
+
+        setTimeout(() => {
+          onRegisterSuccess();
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || errorData.message || "Registration failed");
+      }
+    } catch (err) {
+      setError("Connection error. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-container employee-auth">
@@ -155,10 +114,14 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
           <div className="visual-content">
             <div className="visual-icon chef-icon">
               <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="35" y="10" width="30" height="15" rx="2" fill="currentColor" />
-                <circle cx="50" cy="35" r="12" fill="currentColor" />
-                <path d="M30 50C30 45 35 42 50 42C65 42 70 45 70 50L70 75C70 77 68 80 65 80L35 80C32 80 30 77 30 75Z" fill="currentColor" />
-                <path d="M28 75L20 95M72 75L80 95" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                {/* Chef Hat */}
+                <rect x="35" y="10" width="30" height="12" rx="2" fill="#ffffff" />
+                {/* Head */}
+                <circle cx="50" cy="35" r="12" fill="#f4c4a0" />
+                {/* Chef Coat */}
+                <path d="M30 50C30 45 35 42 50 42C65 42 70 45 70 50L70 75C70 77 68 80 65 80L35 80C32 80 30 77 30 75Z" fill="#ffffff" />
+                {/* Apron lines */}
+                <path d="M28 75L20 95M72 75L80 95" stroke="#8b4513" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </div>
             <h2 className="visual-title">Join Our Kitchen Team</h2>
@@ -192,9 +155,7 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
           <div className="auth-form-inner">
             <div className="form-header">
               <h1 className="form-title">Create Employee Account</h1>
-              <p className="form-subtitle">
-                Add a new employee to your restaurant
-              </p>
+              <p className="form-subtitle">Add a new employee to your restaurant</p>
             </div>
 
             {error && (
@@ -289,11 +250,25 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
                 )}
               </motion.button>
             </form>
-            {/* 🎯 ADDED: Back to Settings Button */}
+
+            {/* Link to login directly if needed */}
+            <div style={{ textAlign: "center", marginTop: "15px" }}>
+              <p style={{ fontSize: "14px", color: "#64748b" }}>
+                Already have an account?{" "}
+                <button 
+                  onClick={onLoginClick} 
+                  style={{ background: "none", border: "none", color: "#c41e3a", fontWeight: "600", cursor: "pointer" }}
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
+
+            {/* Back to Settings Button */}
             <div className="form-footer" style={{ marginTop: "20px", textAlign: "center", borderTop: "1px solid #e2e8f0", paddingTop: "20px" }}>
                <button
                  type="button"
-                 onClick={onBackClick} // ⚡ This triggers the redirect back to settings
+                 onClick={onBackClick}
                  className="btn-back-link"
                  style={{
                    background: "none",
@@ -309,7 +284,7 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
                    width: "100%"
                  }}
                >
-                 <span>←</span> Back to Manager Settings
+                 <span>&larr;</span> Back to Manager Settings
                </button>
             </div>
           </div>
@@ -319,4 +294,4 @@ function EmployeeRegister({ onRegisterSuccess, onLoginClick, onBackClick }) {
   );
 }
 
-export default EmployeeRegister;
+export default EmployeeRegister;           

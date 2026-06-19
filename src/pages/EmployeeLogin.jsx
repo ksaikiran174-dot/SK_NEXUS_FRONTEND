@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./Login.css";
 
@@ -11,82 +11,95 @@ function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setError("");
-  setSuccess("");
-  setLoading(true);
-
-  // Basic validation
-  if (!email || !password) {
-    setError("Please fill in all fields");
-    setLoading(false);
-    return;
-  }
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    setError("Please enter a valid email address");
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        role: "employee", // 🎯 Keeps it locked to employee role
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setSuccess("✓ Login successful! Redirecting...");
-
-      // 🧼 Clear any leftover cross-contamination session data from previous accounts
-      localStorage.clear();
-
-      // 🎯 Safely resolve plan or any specific metadata flags if your system sends them
-      const userPlan = data.user?.plan || data.plan || "basic";
-      
-      if (data.access_token) {
-        // 🔥 Mirrored storage logic using employee target identifiers
-        localStorage.setItem("employeeAccessToken", data.access_token);
-        localStorage.setItem("employeeRefreshToken", data.refresh_token);
-        localStorage.setItem("role", "employee");
-        localStorage.setItem("plan", userPlan);
-      }
-
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      }
-
-      // ✅ Single, clean execution wrapper passing elements up to your App.jsx layout
-      setTimeout(() => {
-        onLoginSuccess({ 
-          role: "employee",
-          plan: userPlan
-        });
-      }, 1000);
-
-    } else {
-      const errorData = await response.json();
-      setError(errorData.detail || errorData.message || "Invalid email or password");
+  // 🎯 Hook up the preserved session email on configuration mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
     }
-  } catch (err) {
-    setError("Connection error. Please try again.");
-    console.error("Login error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  }, []);
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    // Basic validation
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      setLoading(false);
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role: "employee", // 🎯 Keeps it locked to employee role
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuccess("✓ Login successful! Redirecting...");
+
+        // 🧼 Target clear only conflicting data tokens instead of hitting .clear()
+        localStorage.removeItem("managerAccessToken");
+        localStorage.removeItem("managerRefreshToken");
+        localStorage.removeItem("employeeAccessToken");
+        localStorage.removeItem("employeeRefreshToken");
+
+        // 🎯 Safely resolve plan or any specific metadata flags if your system sends them
+        const userPlan = data.user?.plan || data.plan || "basic";
+        
+        if (data.access_token) {
+          // 🔥 Mirrored storage logic using employee target identifiers
+          localStorage.setItem("employeeAccessToken", data.access_token);
+          localStorage.setItem("employeeRefreshToken", data.refresh_token);
+          localStorage.setItem("role", "employee");
+          localStorage.setItem("plan", userPlan);
+        }
+
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+
+        // ✅ Single, clean execution wrapper passing elements up to your App.jsx layout
+        setTimeout(() => {
+          onLoginSuccess({ 
+            role: "employee",
+            plan: userPlan
+          });
+        }, 1000);
+
+      } else {
+        const errorData = await response.json();
+        setError(errorData.detail || errorData.message || "Invalid email or password");
+      }
+    } catch (err) {
+      setError("Connection error. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-container employee-auth">
@@ -255,17 +268,14 @@ const handleLogin = async (e) => {
                   <>Sign In</>
                 )}
               </motion.button>
-                            <button
-
+              
+              <button
                 type="button"
-
                 className="back-btn"
-
                 onClick={onBackClick}
+                style={{ marginTop: "12px", width: "100%" }}
               >
-
-                ← Back
-
+                &larr; Back
               </button>
             </form>
           </div>

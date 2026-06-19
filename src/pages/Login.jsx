@@ -48,6 +48,13 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
       return;
     }
 
+    // 🎯 FRONTEND RESTRICTION: Enforce minimum password lengths
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return;
+    }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -73,10 +80,10 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
         const data = await response.json();
         setSuccess("✓ Login successful! Redirecting...");
 
-        // 🧼 Clear any leftover cross-contamination session data from previous accounts
+        // Clear any leftover cross-contamination session data from previous accounts
         localStorage.clear();
 
-        // 🎯 Safely resolve plan and restaurant status mapping layers
+        // Safely resolve plan and restaurant status mapping layers
         const userPlan = data.user?.plan || data.plan || "basic";
         const restaurantStatus = data.user?.restaurant_status || data.restaurant_status || "pending";
         const paymentRef = data.user?.payment_reference || data.payment_reference || "Not Found";
@@ -86,16 +93,14 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
           localStorage.setItem("managerRefreshToken", data.refresh_token);
           localStorage.setItem("role", "manager");
           localStorage.setItem("plan", userPlan);
-          localStorage.setItem("restaurantStatus", restaurantStatus); // 🎯 Crucial: Save to storage so it survives page reloads!
+          localStorage.setItem("restaurantStatus", restaurantStatus); 
           localStorage.setItem("managerUTR", paymentRef);        
         }
-
 
         if (rememberMe) {
           localStorage.setItem("rememberedEmail", email);
         }
 
-        // ✅ Single, clean execution wrapper passing BOTH elements to satisfy the Gatekeeper in App.jsx
         setTimeout(() => {
           onLoginSuccess({ 
             plan: userPlan,
@@ -168,6 +173,34 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
   // Phase 2: Submit the values to verify and save the new password
   const handleExecuteReset = async (e) => {
     e.preventDefault();
+    
+    // 🎯 FRONTEND RESTRICTION: Ensure security boundaries match schema requirements
+    if (forgotPayload.otp.length !== 6) {
+      setModal({
+        isOpen: true,
+        title: "Invalid Code",
+        message: "The reset code must be exactly 6 digits.",
+        type: "error",
+        onConfirm: () => setModal({ ...modal, isOpen: false }),
+        confirmText: "OK",
+        showCancelButton: false,
+      });
+      return;
+    }
+
+    if (forgotPayload.new_password.length < 8) {
+      setModal({
+        isOpen: true,
+        title: "Weak Password",
+        message: "New password must be at least 8 characters long.",
+        type: "error",
+        onConfirm: () => setModal({ ...modal, isOpen: false }),
+        confirmText: "OK",
+        showCancelButton: false,
+      });
+      return;
+    }
+
     if (forgotPayload.new_password !== forgotPayload.confirm_password) {
       setModal({
         isOpen: true,
@@ -253,37 +286,25 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
         >
           <div className="visual-content">
             <div className="visual-icon manager-icon">
+              {/* SVG Graphic */}
               <svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Hair */}
                 <path d="M60 45 Q60 20 100 20 Q140 20 140 45 L140 70 Q100 75 60 70 Z" fill="#2c1810" />
-                {/* Head */}
                 <circle cx="100" cy="65" r="30" fill="#f4c4a0" />
-                {/* Eyes */}
                 <ellipse cx="88" cy="60" rx="5" ry="8" fill="#4a90e2" />
                 <ellipse cx="112" cy="60" rx="5" ry="8" fill="#4a90e2" />
                 <circle cx="88" cy="62" r="2" fill="white" />
                 <circle cx="112" cy="62" r="2" fill="white" />
-                {/* Eyebrows */}
                 <path d="M82 50 Q88 48 94 50" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
                 <path d="M106 50 Q112 48 118 50" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
-                {/* Nose */}
                 <line x1="100" y1="62" x2="100" y2="75" stroke="#d4a574" strokeWidth="1.5" />
-                {/* Mouth */}
                 <path d="M92 82 Q100 88 108 82" stroke="#d4666a" strokeWidth="2" strokeLinecap="round" fill="none" />
-                {/* Neck */}
                 <rect x="92" y="93" width="16" height="12" fill="#f4c4a0" />
-                {/* Suit jacket */}
                 <path d="M55 105 L55 180 Q55 195 70 200 L130 200 Q145 195 145 180 L145 105 Z" fill="#1a3a52" />
-                {/* Shirt/Tie area */}
                 <path d="M85 105 L85 140 L115 140 L115 105" fill="#ffffff" />
-                {/* Tie */}
                 <path d="M98 105 L96 135 L100 137 L104 135 L102 105" fill="#c41e3a" />
-                {/* Shoulders definition */}
                 <path d="M55 105 Q70 100 100 100 Q130 100 145 105" stroke="#0f2438" strokeWidth="1" />
-                {/* Arms */}
                 <path d="M60 120 L30 150" stroke="#f4c4a0" strokeWidth="14" strokeLinecap="round" />
                 <path d="M140 120 L170 150" stroke="#f4c4a0" strokeWidth="14" strokeLinecap="round" />
-                {/* Hands */}
                 <circle cx="28" cy="152" r="8" fill="#f4c4a0" />
                 <circle cx="172" cy="152" r="8" fill="#f4c4a0" />
               </svg>
@@ -338,6 +359,8 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
+                  maxLength="100" // 🎯 RULE: Hard stop at 100 matching Schema limits
+                  required
                 />
               </div>
 
@@ -352,6 +375,8 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
+                    maxLength="128" // 🎯 RULE: Hard stop at 128 matching Schema limits
+                    required
                   />
                   <button
                     type="button"
@@ -422,6 +447,8 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Forgot Password Modal */}
       {showForgotModal && (
         <div className="forgot-password-overlay">
           <motion.div
@@ -462,6 +489,7 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                     onChange={(e) => setForgotEmail(e.target.value)}
                     placeholder="manager@restaurant.com"
                     disabled={loadingForgot}
+                    maxLength="100" // 🎯 RULE: Hard stop at 100 matching Schema limits
                   />
                 </div>
                 <div className="forgot-modal-footer">
@@ -505,15 +533,17 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                     required
                     className="form-input"
                     placeholder="123456"
-                    maxLength="6"
                     value={forgotPayload.otp}
-                    onChange={(e) =>
+                    disabled={loadingForgot}
+                    // 🎯 FILTER MECHANISM: Force purely numerical inputs and block key entry at 6 chars
+                    onChange={(e) => {
+                      const cleanOtp = e.target.value.replace(/[^0-9]/g, "");
+                      if (cleanOtp.length > 6) return;
                       setForgotPayload((prev) => ({
                         ...prev,
-                        otp: e.target.value,
-                      }))
-                    }
-                    disabled={loadingForgot}
+                        otp: cleanOtp,
+                      }));
+                    }}
                   />
                 </div>
                 <div className="form-group">
@@ -525,13 +555,14 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                     className="form-input"
                     placeholder="••••••••"
                     value={forgotPayload.new_password}
+                    disabled={loadingForgot}
+                    maxLength="128" // 🎯 RULE: Limit maximum input string payload
                     onChange={(e) =>
                       setForgotPayload((prev) => ({
                         ...prev,
                         new_password: e.target.value,
                       }))
                     }
-                    disabled={loadingForgot}
                   />
                 </div>
                 <div className="form-group">
@@ -543,13 +574,14 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                     className="form-input"
                     placeholder="••••••••"
                     value={forgotPayload.confirm_password}
+                    disabled={loadingForgot}
+                    maxLength="128" // 🎯 RULE: Limit maximum input string payload
                     onChange={(e) =>
                       setForgotPayload((prev) => ({
                         ...prev,
                         confirm_password: e.target.value,
                       }))
                     }
-                    disabled={loadingForgot}
                   />
                 </div>
                 <div className="forgot-modal-footer">
