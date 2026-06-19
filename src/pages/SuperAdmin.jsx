@@ -452,23 +452,33 @@ function SuperAdmin() {
         </td>
 
         {/* Column 7: Screenshot Handler */}
-        <td>
-          {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
-  <button
-    className="view-payment-btn"
-    onClick={() => {
-      setSelectedImage(getPaymentScreenshotUrl(restaurant.payment_screenshot));
-      setShowImageModal(true);
-    }}
-  >
-    View Screenshot
-  </button>
-) : (
-  <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>
-    No Screenshot
-  </span>
-)}
-        </td>
+<td>
+  {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
+    <button
+      className="view-payment-btn"
+      onClick={() => {
+        let finalUrl = restaurant.payment_screenshot;
+
+        // 🎯 If it doesn't start with http, prepend your API base url cleanly
+        if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+          const baseUrl = import.meta.env.VITE_API_URL.endsWith('/') 
+            ? import.meta.env.VITE_API_URL.slice(0, -1) 
+            : import.meta.env.VITE_API_URL;
+            
+          const filePath = finalUrl.startsWith('/') ? finalUrl : `/${finalUrl}`;
+          finalUrl = `${baseUrl}${filePath}`;
+        }
+
+        setSelectedImage(finalUrl);
+        setShowImageModal(true);
+      }}
+    >
+      View Screenshot
+    </button>
+  ) : (
+    <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>No Screenshot</span>
+  )}
+</td>
       </tr>
     );
   })}
