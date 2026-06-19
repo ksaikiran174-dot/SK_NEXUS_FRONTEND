@@ -32,9 +32,9 @@ function Register({
   const [isTrialRequest, setIsTrialRequest] = useState(false);
 
   const PLAN_PRICES = {
-    basic: 999,
-    pro: 1999,
-    enterprise: 3999
+    basic: 499,
+    pro: 999,
+    enterprise: 999
   };
 
   // =========================================
@@ -42,6 +42,23 @@ function Register({
   // =========================================
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // 🎯 RESTRICTION: Lock Reference / UTR Number to digits only with a 22-digit maximum cap
+    if (name === "paymentReference") {
+      // Strip everything except numbers (0-9)
+      const onlyDigits = value.replace(/[^0-9]/g, "");
+      
+      // Prevent typing more than 22 characters
+      if (onlyDigits.length > 22) return;
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: onlyDigits
+      }));
+      return;
+    }
+
+    // Default handler for all other standard form fields
     setFormData((prev) => ({
       ...prev,
       [name]: value
@@ -116,7 +133,7 @@ function Register({
       // ── IF IT IS A PAID SUBSCRIPTION SYSTEM REQUEST ──
       if (!isTrialRequest) {
         if (!paymentScreenshot) {
-          setError("Please upload your payment verification screenshot, bro!");
+          setError("Please upload your payment verification screenshot! ");
           setLoading(false);
           return;
         }
@@ -126,6 +143,14 @@ function Register({
           setLoading(false);
           return;
         }
+
+        if (!isTrialRequest) {
+  const refLength = formData.paymentReference?.length || 0;
+          if (refLength < 12 || refLength > 22) {
+    alert("❌ Error: Payment Reference Number must be between 12 and 22 digits long.");
+    return;
+  }
+}
 
         const imageFormData = new FormData();
         imageFormData.append("file", paymentScreenshot);
@@ -597,20 +622,23 @@ function Register({
             <p>UPI ID: saikiran@upi</p>
             <h3>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
 
-            <input
-              type="text"
-              placeholder="Enter UTR / Reference ID"
-              value={paymentReference}
-              onChange={(e) => setPaymentReference(e.target.value)}
-              required
-            />
+            {/* UTR / Payment Reference Input Field */}
+<input
+  type="text"
+  name="paymentReference"
+  placeholder="Enter 12-22 Digit Ref / UTR Number"
+  value={formData.paymentReference || ""}
+  onChange={handleInputChange}
+  required={!isTrialRequest} // Only required if it's not a free trial
+/>
 
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setPaymentScreenshot(e.target.files[0])}
-              required
-            />
+{/* Payment Screenshot Input Field */}
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => setPaymentScreenshot(e.target.files[0] || null)}
+  // 🎯 REMOVED the 'required' flag here to make it completely optional!
+/>
 
             <button
               type="button"
