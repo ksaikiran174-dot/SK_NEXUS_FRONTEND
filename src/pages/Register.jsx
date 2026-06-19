@@ -176,7 +176,7 @@ function Register({
         );
 
         // SAVE SEGMENTED TOKENS
-        localStorage.setItem("managerAccessToken", data.access_token);
+        localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
         localStorage.setItem("managerRefreshToken", data.refresh_token);
         localStorage.setItem("plan", formData.plan);
 
