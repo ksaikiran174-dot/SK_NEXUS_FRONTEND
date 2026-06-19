@@ -1,33 +1,30 @@
 import React from "react";
 
 const PendingApproval = ({ restaurantData, onLogout }) => {
-  // 🎯 Bridge to handle both flat and nested structures safely
-  const data = restaurantData?.restaurantData || restaurantData;
+  // Safe extraction lookup: Check inside restaurantData or fallback to direct top-level props
+  const finalData = restaurantData?.restaurantData || restaurantData;
 
-  // 🎯 BULLETPROOF CHECK: Converts everything to lowercase and looks for "trial" anywhere
+  // Evaluate if trial request based on string presence
   const isTrial = 
-    String(data?.request_type).toLowerCase().includes("trial") || 
-    String(data?.payment_reference).toLowerCase().includes("trial") ||
-    String(data?.plan).toLowerCase().includes("trial");
+    String(finalData?.request_type).toLowerCase().includes("trial") || 
+    String(finalData?.payment_reference).toLowerCase().includes("trial") ||
+    String(finalData?.plan).toLowerCase().includes("trial");
 
-  // Safe fallbacks for data
-  const utrNumber = data?.payment_reference || "Not Found / Uploaded";
-  const adminContact = "+1234567890"; // Put your actual contact phone number here
+  const utrNumber = finalData?.payment_reference || "Not Found / Uploaded";
+  const adminContact = "+1234567890"; // 🎯 Put your actual contact phone number here
 
-  // Dynamically craft WhatsApp message depending on trial vs paid state
   const whatsappMessage = isTrial
-    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${data?.name || data?.restaurant_name || "My Restaurant"}`
+    ? `Hi Admin, please activate my Free Trial setup for my restaurant: ${finalData?.name || finalData?.restaurant_name || "My Restaurant"}`
     : `Hi Admin, please approve my restaurant UTR: ${utrNumber}`;
-    
-    return (
+
+  return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* Animated Icon Container - Toggles based on trial type */}
         <div style={styles.iconContainer}>
           {isTrial ? (
-            <span style={{ ...styles.pulseIcon, fontSize: "55px" }}>🌱</span>
+            <span style={{ fontSize: "55px" }}>🌱</span>
           ) : (
-            <span style={styles.pulseIcon}>⏳</span>
+            <span>⏳</span>
           )}
         </div>
 
@@ -44,70 +41,55 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
 
         <hr style={styles.divider} />
 
-{/* Informational Data Points */}
-<div style={styles.infoBox}>
-  {/* 🎯 Route / Payment Verification Row */}
-  <div style={styles.infoRow}>
-    <span style={styles.label}>
-      {isTrial ? "Requested Route:" : "Submitted UTR / Reference No:"}
-    </span>
-    {isTrial ? (
-      <span style={{ 
-        backgroundColor: "#fef3c7", 
-        color: "#d97706", 
-        padding: "4px 10px", 
-        borderRadius: "6px", 
-        fontSize: "12px", 
-        fontWeight: "800", 
-        border: "1px solid #f59e0b",
-        display: "inline-block"
-      }}>
-        🌱 FREE TRIAL ACCESS
-      </span>
-    ) : (
-      <span style={{ ...styles.value, letterSpacing: "0.5px" }}>
-        {utrNumber}
-      </span>
-    )}
-  </div>
+        <div style={styles.infoBox}>
+          <div style={styles.infoRow}>
+            <span style={styles.label}>
+              {isTrial ? "Requested Route:" : "Submitted UTR / Reference No:"}
+            </span>
+            {isTrial ? (
+              <span style={{ 
+                backgroundColor: "#fef3c7", color: "#d97706", padding: "4px 10px", 
+                borderRadius: "6px", fontSize: "12px", fontWeight: "800", 
+                border: "1px solid #f59e0b", display: "inline-block"
+              }}>
+                🌱 FREE TRIAL ACCESS
+              </span>
+            ) : (
+              <span style={styles.value}>
+                {utrNumber}
+              </span>
+            )}
+          </div>
 
-  {/* 🎯 System Setup Status Row */}
-  <div style={styles.infoRow}>
-    <span style={styles.label}>Current Setup Status:</span>
-    <span style={{ 
-      backgroundColor: "#fffbeb", 
-      color: "#b45309", 
-      padding: "4px 10px", 
-      borderRadius: "6px", 
-      fontSize: "12px", 
-      fontWeight: "700", 
-      border: "1px solid #fcd34d",
-      display: "inline-block"
-    }}>
-      ⚠️ PENDING APPROVAL
-    </span>
-  </div>
-</div> 
+          <div style={styles.infoRow}>
+            <span style={styles.label}>Current Setup Status:</span>
+            <span style={{ 
+              backgroundColor: "#fffbeb", color: "#b45309", padding: "4px 10px", 
+              borderRadius: "6px", fontSize: "12px", fontWeight: "700", 
+              border: "1px solid #fcd34d", display: "inline-block"
+            }}>
+              ⚠️ PENDING APPROVAL
+            </span>
+          </div>
+        </div>
 
-        {/* Support Call-to-Actions */}
         <div style={styles.supportSection}>
           <p style={styles.supportText}>Have any questions or need urgent activation?</p>
-          <a href={`tel:${adminContact}`} className="btn btn-primary" style={styles.supportBtn}>
+          <a href={`tel:${adminContact}`} style={styles.supportBtn} className="btn btn-primary">
             📞 Call Support Admin
           </a>
           <a 
             href={`https://wa.me/${adminContact.replace("+", "")}?text=${encodeURIComponent(whatsappMessage)}`} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="btn btn-success" 
             style={styles.supportBtn}
+            className="btn btn-success"
           >
             💬 WhatsApp Chat
           </a>
         </div>
 
-        {/* Exit Vector */}
-        <button onClick={onLogout} className="btn btn-outline-danger" style={styles.logoutBtn}>
+        <button onClick={onLogout} style={styles.logoutBtn} className="btn btn-outline-danger">
           ↪️ Log Out / Switch Account
         </button>
       </div>
@@ -115,90 +97,22 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
   );
 };
 
-// Inline CSS Styles engine to ensure clean rendering out of the box
 const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    backgroundColor: "#f8f9fa",
-    padding: "20px",
-  },
-  card: {
-    maxWidth: "550px",
-    width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-    padding: "40px 30px",
-    textAlign: "center",
-  },
-  iconContainer: {
-    fontSize: "50px",
-    marginBottom: "15px",
-  },
-  heading: {
-    color: "#212529",
-    fontSize: "24px",
-    fontWeight: "600",
-    marginBottom: "10px",
-  },
-  subtext: {
-    color: "#6c757d",
-    fontSize: "15px",
-    lineHeight: "1.6",
-    marginBottom: "20px",
-  },
-  divider: {
-    border: "0",
-    borderTop: "1px solid #dee2e6",
-    margin: "20px 0",
-  },
-  infoBox: {
-    backgroundColor: "#f1f3f5",
-    borderRadius: "8px",
-    padding: "15px",
-    textAlign: "left",
-    marginBottom: "25px",
-  },
-  infoRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "8px",
-    fontSize: "14px",
-  },
-  label: {
-    color: "#495057",
-  },
-  value: {
-    color: "#212529",
-    fontWeight: "500",
-    fontFamily: "monospace",
-  },
-  supportSection: {
-    marginBottom: "25px",
-  },
-  supportText: {
-    fontSize: "14px",
-    color: "#495057",
-    marginBottom: "10px",
-  },
-  supportBtn: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    padding: "10px",
-    fontWeight: "500",
-    marginBottom: "10px",
-    borderRadius: "6px",
-  },
-  logoutBtn: {
-    width: "100%",
-    padding: "8px",
-    fontSize: "14px",
-  },
+  container: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "#f8f9fa", padding: "20px" },
+  card: { maxWidth: "550px", width: "100%", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)", padding: "40px 30px", textAlign: "center" },
+  iconContainer: { fontSize: "50px", marginBottom: "15px" },
+  heading: { color: "#212529", fontSize: "24px", fontWeight: "600", marginBottom: "10px" },
+  subtext: { color: "#6c757d", fontSize: "15px", lineHeight: "1.6", marginBottom: "20px" },
+  divider: { border: "0", borderTop: "1px solid #dee2e6", margin: "20px 0" },
+  infoBox: { backgroundColor: "#f1f3f5", borderRadius: "8px", padding: "15px", textAlign: "left", marginBottom: "25px" },
+  infoRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", fontSize: "14px" },
+  label: { color: "#495057" },
+  value: { color: "#212529", fontWeight: "500", fontFamily: "monospace" },
+  supportSection: { marginBottom: "25px" },
+  supportText: { fontSize: "14px", color: "#495057", marginBottom: "10px" },
+  supportBtn: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "10px", fontWeight: "500", marginBottom: "10px", borderRadius: "6px", textDecoration: "none" },
+  logoutBtn: { width: "100%", padding: "8px", fontSize: "14px", cursor: "pointer" }
 };
 
 export default PendingApproval;
+

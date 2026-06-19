@@ -348,7 +348,7 @@ function SuperAdmin() {
         </button>
       </div>
 
-      {/* =======================================
+{/* =======================================
     PENDING APPROVALS (COMBINED REGISTRATION & RECHARGES)
 ======================================= */}
 <div className="admin-section">
@@ -358,8 +358,8 @@ function SuperAdmin() {
       <tr>
         <th>Name</th>
         <th>Plan</th>
-        <th>Registration Status</th> {/* 🎯 Clear header mapping */}
-        <th>Payment Path</th>         {/* 🎯 Clear header mapping */}
+        <th>Registration Status</th>
+        <th>Payment Path</th>
         <th>Actions</th>
         <th>Payment Ref (UTR)</th>
         <th>Screenshot</th>
@@ -369,8 +369,11 @@ function SuperAdmin() {
       {restaurants
         .filter((restaurant) => restaurant.status === "pending" || (restaurant.status === "approved" && restaurant.payment_status === "pending"))
         .map((restaurant) => {
-          // Robust normalized parsing to ensure "trial" catches accurately
-          const isTrial = String(restaurant.request_type).toLowerCase() === "trial";
+          // Bulletproof check for admin row item string values
+          const isTrial = 
+            String(restaurant.request_type).toLowerCase().includes("trial") ||
+            String(restaurant.payment_reference).toLowerCase().includes("trial") ||
+            String(restaurant.plan).toLowerCase().includes("trial");
 
           return (
             <tr key={restaurant.id}>
@@ -436,26 +439,24 @@ function SuperAdmin() {
                     style={{
                       backgroundColor: "#ef4444", color: "white", border: "none",
                       padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
-                      fontWeight: "600", marginLeft: "8px", transition: "background-color 0.2s"
+                      fontWeight: "600", marginLeft: "8px"
                     }}
-                    onMouseOver={(e) => e.target.style.backgroundColor = "#dc2626"}
-                    onMouseOut={(e) => e.target.style.backgroundColor = "#ef4444"}
                   >
                     {isProcessing[`sub-decline-${restaurant.id}`] ? "Processing..." : "Decline"}
                   </button>
                 )}
               </td>
 
-              {/* Column 6: Bank Statement Verification ID Code */}
+              {/* Column 6: UTR / Reference ID */}
               <td>
                 <strong style={{ fontFamily: "monospace", color: "#334155", fontSize: "13px" }}>
                   {restaurant.payment_reference || "N/A"}
                 </strong>
               </td>
 
-              {/* Column 7: File Upload Screenshot Preview Action Button */}
+              {/* Column 7: Screenshot Handler */}
               <td>
-                {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
+                {restaurant.payment_screenshot && !String(restaurant.payment_screenshot).toLowerCase().includes("trial") ? (
                   <button
                     className="view-payment-btn"
                     onClick={() => {
