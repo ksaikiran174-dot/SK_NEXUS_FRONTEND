@@ -167,24 +167,34 @@ function Register({
       );
 
       if (response.ok) {
-        const data = await response.json();
+  const data = await response.json();
 
-        setSuccess(
-          isTrialRequest 
-            ? "✓ Free Trial registration submitted! Awaiting Admin Activation." 
-            : "✓ Paid workspace registration submitted! Awaiting Admin verification."
-        );
+  const pendingRestaurantData = {
+    ...data,
+    restaurant_name: data.restaurant_name || formData.restaurantName,
+    name: data.name || formData.restaurantName,
+    plan: data.plan || formData.plan,
+    request_type: data.request_type || (isTrialRequest ? "trial" : "paid"),
+    payment_reference: data.payment_reference || refId,
+    payment_screenshot: data.payment_screenshot || screenshotPath,
+    restaurant_status: data.restaurant_status || "pending"
+  };
 
-        // SAVE SEGMENTED TOKENS
-        localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
-        localStorage.setItem("managerRefreshToken", data.refresh_token);
-        localStorage.setItem("plan", formData.plan);
+  localStorage.setItem("managerAccessToken", data.access_token || data.accessToken);
+  localStorage.setItem("managerRefreshToken", data.refresh_token || "");
+  localStorage.setItem("plan", formData.plan);
+  localStorage.setItem("pendingRestaurantData", JSON.stringify(pendingRestaurantData));
 
-        setTimeout(() => {
-          onRegisterSuccess();
-        }, 1200);
+  setSuccess(
+    isTrialRequest
+      ? "Free Trial registration submitted! Awaiting Admin Activation."
+      : "Paid workspace registration submitted! Awaiting Admin verification."
+  );
 
-      } else {
+  setTimeout(() => {
+    onRegisterSuccess(pendingRestaurantData);
+  }, 1200);
+} else {
         const errorData = await response.json();
         setError(errorData.detail || "Registration failed");
       }

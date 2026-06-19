@@ -454,26 +454,20 @@ function SuperAdmin() {
         {/* Column 7: Screenshot Handler */}
         <td>
           {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
-            <button
-              className="view-payment-btn"
-              onClick={() => {
-                // Ensure double slashes don't break the asset URL
-                const baseUrl = import.meta.env.VITE_API_URL.endsWith('/') 
-                  ? import.meta.env.VITE_API_URL.slice(0, -1) 
-                  : import.meta.env.VITE_API_URL;
-                const filePath = restaurant.payment_screenshot.startsWith('/')
-                  ? restaurant.payment_screenshot
-                  : `/${restaurant.payment_screenshot}`;
-                  
-                setSelectedImage(`${baseUrl}${filePath}`);
-                setShowImageModal(true);
-              }}
-            >
-              View Screenshot
-            </button>
-          ) : (
-            <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>No Screenshot</span>
-          )}
+  <button
+    className="view-payment-btn"
+    onClick={() => {
+      setSelectedImage(getPaymentScreenshotUrl(restaurant.payment_screenshot));
+      setShowImageModal(true);
+    }}
+  >
+    View Screenshot
+  </button>
+) : (
+  <span style={{ color: "#94a3b8", fontSize: "13px", fontStyle: "italic" }}>
+    No Screenshot
+  </span>
+)}
         </td>
       </tr>
     );
