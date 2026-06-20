@@ -164,7 +164,7 @@ function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
                 <circle cx="178" cy="163" r="7" fill="#f4c4a0" />
               </svg>
             </div>
-            <h2 className="visual-title">Kitchen Staff</h2>
+            <h2 className="visual-title">Staff</h2>
           </div>
         </motion.div>
 
@@ -178,7 +178,7 @@ function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
           <div className="auth-form-inner">
             <div className="form-header">
               <h1 className="form-title">Employee Login</h1>
-              <p className="form-subtitle">Sign in to access kitchen dashboard</p>
+              <p className="form-subtitle">Sign in to access dashboard</p>
             </div>
 
             {error && (

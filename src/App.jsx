@@ -55,7 +55,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
     },
     employee: {
       icon: dynamicMode === "billing" ? "💳" : dynamicMode === "table" ? "📱" : "👨‍🍳",
-      title: dynamicMode === "billing" ? "Welcome Cashier" : dynamicMode === "table" ? "Welcome Employee" : "Welcome Chef",
+      title: dynamicMode === "billing" ? "Welcome Cashier" : dynamicMode === "table" ? "Welcome Employee" : "Welcome Employee",
       color: "#10b981",
       avatar: "https://cdn-icons-png.flaticon.com/512/168/168882.png",
       messages: [

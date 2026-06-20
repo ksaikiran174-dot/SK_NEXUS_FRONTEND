@@ -414,7 +414,7 @@ function TableEmployee() {
               </div>
             )}
 
-              <h1>📝 Incoming Orders</h1>
+              <h1 style={{textAlign: 'center'}}>📝 Incoming Orders</h1>
             </div>
 
             {orders.length === 0 ? (

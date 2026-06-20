@@ -629,7 +629,7 @@ return (
         <span className="employee-profile-email">{currentUser.email}</span>
       </div>
     )}
-    <h1>📝 Incoming Orders</h1>
+    <h1 style={{textAlign: 'center'}}>📝 Incoming Orders</h1>
   </div>
 
             {orders.length === 0 ? (
