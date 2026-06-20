@@ -26,6 +26,8 @@ function TableEmployee() {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [processingAlerts, setProcessingAlerts] = useState([]);
 
+  const [stockSearchTerm, setStockSearchTerm] = useState("");
+  
   // New state for mobile detection and sidebar control
   const [employeeSidebarOpen, setEmployeeSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false); 
@@ -541,11 +543,29 @@ function TableEmployee() {
           </div>
         )}
 
-        {/* ========== LOW STOCK ALERT VIEW ========== */}
+{/* ========== LOW STOCK ALERT VIEW ========== */}
         {showLowStock && (
           <>
             <div className="main-header">
               <h1>⚠️ Send Low Stock Alert</h1>
+            </div>
+
+            {/* 🔍 REAL-TIME SEARCH BAR */}
+            <div className="search-container" style={{ marginBottom: "20px" }}>
+              <input
+                type="text"
+                className="form-control search-input"
+                placeholder="🔍 Search items by name..."
+                value={stockSearchTerm}
+                onChange={(e) => setStockSearchTerm(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  fontSize: "16px"
+                }}
+              />
             </div>
 
             <div className="stock-section">
@@ -558,13 +578,23 @@ function TableEmployee() {
                     <p>Items ready for orders</p>
                   </div>
                   <div className="stock-count-badge">
-                    {menu.filter((item) => !lowStockItems.some((low) => low.item_name === item.name)).length}
+                    {
+                      menu.filter(
+                        (item) => 
+                          !lowStockItems.some((low) => low.item_name === item.name) &&
+                          item.name.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                      ).length
+                    }
                   </div>
                 </div>
 
                 <div className="stock-item-list">
                   {menu
-                    .filter((item) => !lowStockItems.some((low) => low.item_name === item.name))
+                    .filter(
+                      (item) => 
+                        !lowStockItems.some((low) => low.item_name === item.name) &&
+                        item.name.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                    )
                     .map((item, index) => (
                       <motion.div
                         key={index}
@@ -618,56 +648,70 @@ function TableEmployee() {
                     <h2>⚠️ Low Stock Items</h2>
                     <p>Items needing refill</p>
                   </div>
-                  <div className="stock-count-badge warning">{lowStockItems.length}</div>
+                  <div className="stock-count-badge warning">
+                    {
+                      lowStockItems.filter((itemData) =>
+                        itemData.item_name.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                      ).length
+                    }
+                  </div>
                 </div>
 
                 <div className="stock-restore-list">
-                  {lowStockItems.length === 0 ? (
-                    <div className="empty-stock-state">✅ No low stock items</div>
+                  {lowStockItems.filter((itemData) =>
+                    itemData.item_name.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                  ).length === 0 ? (
+                    <div className="empty-stock-state">
+                      {stockSearchTerm ? "🔍 No matching items found" : "✅ No low stock items"}
+                    </div>
                   ) : (
-                    lowStockItems.map((itemData, index) => (
-                      <motion.div
-                        key={itemData.id || index}
-                        className="stock-restore-item"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                      >
-                        <div className="stock-row">
-                          <div className="stock-info">
-                            <div className="stock-name">{itemData.item_name}</div>
-                          </div>
-                          <button
-                            className="btn btn-success stock-btn"
-                            disabled={processingAlerts.includes(itemData.item_name)}
-                            onClick={async () => {
-                              if (processingAlerts.includes(itemData.item_name)) return;
-                              setProcessingAlerts((prev) => [...prev, itemData.item_name]);
-                              try {
-                                const response = await apiFetch(
-                                  `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
-                                  { method: "DELETE" },
-                                  "employee"
-                                );
+                    lowStockItems
+                      .filter((itemData) =>
+                        itemData.item_name.toLowerCase().includes(stockSearchTerm.toLowerCase())
+                      )
+                      .map((itemData, index) => (
+                        <motion.div
+                          key={itemData.id || index}
+                          className="stock-restore-item"
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <div className="stock-row">
+                            <div className="stock-info">
+                              <div className="stock-name">{itemData.item_name}</div>
+                            </div>
+                            <button
+                              className="btn btn-success stock-btn"
+                              disabled={processingAlerts.includes(itemData.item_name)}
+                              onClick={async () => {
+                                if (processingAlerts.includes(itemData.item_name)) return;
+                                setProcessingAlerts((prev) => [...prev, itemData.item_name]);
+                                try {
+                                  const response = await apiFetch(
+                                    `${import.meta.env.VITE_API_URL}/low-stock/${itemData.item_name}`,
+                                    { method: "DELETE" },
+                                    "employee"
+                                  );
 
-                                if (response.ok) {
-                                  addNotification(`♻️ ${itemData.item_name} restored successfully!`, "success");
-                                } else {
-                                  addNotification("❌ Failed to restore item.", "error");
+                                  if (response.ok) {
+                                    addNotification(`♻️ ${itemData.item_name} restored successfully!`, "success");
+                                  } else {
+                                    addNotification("❌ Failed to restore item.", "error");
+                                  }
+                                } catch (err) {
+                                  console.error("Failed to restore item:", err);
+                                  addNotification("❌ Network error restoring item.", "error");
+                                } finally {
+                                  setProcessingAlerts((prev) => prev.filter((name) => name !== itemData.item_name));
                                 }
-                              } catch (err) {
-                                console.error("Failed to restore item:", err);
-                                addNotification("❌ Network error restoring item.", "error");
-                              } finally {
-                                setProcessingAlerts((prev) => prev.filter((name) => name !== itemData.item_name));
-                              }
-                            }}
-                          >
-                            {processingAlerts.includes(itemData.item_name) ? "⏳ Restoring..." : "♻ Restore"}
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))
+                              }}
+                            >
+                              {processingAlerts.includes(itemData.item_name) ? "⏳ Restoring..." : "♻ Restore"}
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))
                   )}
                 </div>
               </div>
