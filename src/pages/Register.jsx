@@ -620,21 +620,26 @@ function Register({
         className="modal-close-btn"
         onClick={() => setShowPaymentModal(false)}
         style={{
-          position: "absolute",
-          top: "16px",      // Precise gap from top edge
-          right: "16px",    // Precise gap from right edge
-          background: "none",
-          border: "none",
-          fontSize: "24px",
-          lineHeight: "1",  // Prevents layout shifting from font height differences
-          cursor: "pointer",
-          color: "#94a3b8", // Sleek slate grey color
-          fontWeight: "normal",
-          padding: "4px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "color 0.2s"
+          position: "absolute !important", // Forces separation from layout stream
+    top: "16px !important",          // Locks down strict distance from top border
+    right: "16px !important",        // Locks down strict distance from right border
+    position: "absolute",            // Fallback for standard inline compilation
+    top: "16px",
+    right: "16px",
+    background: "none !important",
+    background: "none",
+    border: "none !important",
+    border: "none",
+    fontSize: "26px",
+    lineHeight: "1",
+    cursor: "pointer",
+    color: "#94a3b8",
+    fontWeight: "bold",
+    padding: "4px",
+    margin: "0 !important",          // Prevents global flex/grid margins from pushing it
+    display: "block",
+    zIndex: "99999 !important",      // Forces it on top of all text layers
+    zIndex: 99999
         }}
         onMouseEnter={(e) => e.target.style.color = "#64748b"} // Darkens slightly on hover
         onMouseLeave={(e) => e.target.style.color = "#94a3b8"}
