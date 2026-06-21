@@ -209,6 +209,8 @@ const closeSidebar = () => setSidebarOpen(false);
 
 const [menuSearchQuery, setMenuSearchQuery] = useState("");
 
+const [isAddingItem, setIsAddingItem] = useState(false);
+
   const [
   currentTime,
   setCurrentTime
@@ -2610,26 +2612,26 @@ return (
       <h1>➕ Add New Menu Item</h1>
     </div>
 
-    <div className="card">
+    <div className="card" style={{ opacity: isAddingItem ? 0.7 : 1, transition: "opacity 0.2s ease" }}>
       <div className="form-group">
         <label>Item Name *</label>
         <input
           className="form-input"
           placeholder="Enter item name"
           value={newItemName}
-          disabled={loading}
+          disabled={isAddingItem}
           onChange={(e) => setNewItemName(e.target.value)}
         />
       </div>
 
-      {/* 🎯 CATEGORY FIELD BLOCK INSERTER */}
+      {/* 🎯 UPGRADED CATEGORY FIELD BLOCK INSERTER */}
       <div className="form-group">
         <label>Item Category *</label>
         {!isCustomCategory ? (
           <select
             className="form-input"
             value={newItemCategory}
-            disabled={loading}
+            disabled={isAddingItem}
             onChange={(e) => {
               if (e.target.value === "__NEW__") {
                 setIsCustomCategory(true);
@@ -2646,6 +2648,7 @@ return (
             <option value="__NEW__" style={{ fontWeight: "bold", color: "#2563eb" }}>➕ Create New Category...</option>
           </select>
         ) : (
+          /* 🛠️ Bulletproof layout wrapper */
           <div style={{ 
             display: "flex", 
             gap: "10px", 
@@ -2657,7 +2660,7 @@ return (
               type="text"
               placeholder="e.g., Biryani, Fast Food, Cool Drinks"
               value={customCategoryInput}
-              disabled={loading}
+              disabled={isAddingItem}
               onChange={(e) => setCustomCategoryInput(e.target.value)}
               style={{ 
                 flex: 1,
@@ -2675,7 +2678,7 @@ return (
             />
             <button
               type="button"
-              disabled={loading}
+              disabled={isAddingItem}
               onClick={() => {
                 setIsCustomCategory(false);
                 setCustomCategoryInput("");
@@ -2683,11 +2686,11 @@ return (
               style={{ 
                 padding: "10px 16px",
                 fontSize: "14px",
-                backgroundColor: "#64748b",
+                backgroundColor: isAddingItem ? "#cbd5e1" : "#64748b",
                 color: "#ffffff",
                 border: "none",
                 borderRadius: "6px",
-                cursor: "pointer",
+                cursor: isAddingItem ? "not-allowed" : "pointer",
                 whiteSpace: "nowrap",
                 display: "inline-flex",
                 alignItems: "center",
@@ -2709,7 +2712,7 @@ return (
             type="number"
             placeholder="0.00"
             value={newItemPrice}
-            disabled={loading}
+            disabled={isAddingItem}
             onChange={(e) => setNewItemPrice(e.target.value)}
           />
         </div>
@@ -2721,7 +2724,7 @@ return (
           className="form-input"
           placeholder="Enter item description"
           value={newItemDescription}
-          disabled={loading}
+          disabled={isAddingItem}
           onChange={(e) => setNewItemDescription(e.target.value)}
         />
       </div>
@@ -2731,8 +2734,8 @@ return (
         <input
           ref={fileInputRef}
           type="file"
+          disabled={isAddingItem}
           accept="image/*"
-          disabled={loading}
           onChange={(e) => {
             const file = e.target.files[0];
             setSelectedFile(file);
@@ -2749,14 +2752,18 @@ return (
         <label
           htmlFor="file-input"
           className="btn btn-secondary"
-          style={{ display: "inline-block", cursor: loading ? "not-allowed" : "pointer" }}
+          style={{ 
+            display: "inline-block",
+            cursor: isAddingItem ? "not-allowed" : "pointer",
+            opacity: isAddingItem ? 0.6 : 1
+          }}
         >
-          {loading ? "⏳ Uploading..." : "🖼️ Choose Image"}
+          {selectedFile ? "🔄 Change Image" : "🖼️ Choose Image"}
         </label>
       </div>
 
       {previewImage && (
-        <div style={{ marginBottom: "20px" }}>
+        <div style={{ marginBottom: "20px", opacity: isAddingItem ? 0.6 : 1 }}>
           <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px" }}>
             Image Preview:
           </p>
@@ -2776,25 +2783,27 @@ return (
 
       <button
         className="btn btn-success"
-        style={{ width: "100%", opacity: loading ? 0.7 : 1, cursor: loading ? "not-allowed" : "pointer" }}
-        disabled={loading}
+        style={{ 
+          width: "100%", 
+          cursor: isAddingItem ? "not-allowed" : "pointer",
+          opacity: isAddingItem ? 0.7 : 1
+        }}
+        disabled={isAddingItem || !newItemName || !newItemPrice}
         onClick={async () => {
+          if (isAddingItem) return;
+
           const finalizedCategory = isCustomCategory 
             ? customCategoryInput.trim() 
             : newItemCategory;
 
           if (!finalizedCategory) {
-            addNotification("Please select a category or write a brand new custom heading name!");
+            addNotification("Please select a category or write a brand new custom heading name!", "error");
             return;
           }
 
-          if (!newItemName || !newItemPrice) {
-            addNotification("Item Name and Price are required fields!");
-            return;
-          }
-
+          // ⏳ Activate Loading Lockout
+          setIsAddingItem(true);
           let imagePath = "";
-          setLoading(true);
 
           if (selectedFile) {
             try {
@@ -2802,7 +2811,7 @@ return (
               console.log("⚡ Cloudinary Secure URL Acquired directly:", imagePath);
             } catch (error) {
               addNotification("❌ Image upload to storage provider failed.", "error");
-              setLoading(false);
+              setIsAddingItem(false); // Drop loading safely on failure
               return;
             }
           }
@@ -2811,12 +2820,10 @@ return (
             name: newItemName,
             price: Number(newItemPrice),
             description: newItemDescription,
-            category: finalizedCategory, 
+            category: finalizedCategory,
             image: imagePath,
             available: true,
           };
-
-          console.log("🚀 Submitting lightweight text data to DB:", newItem);
 
           try {
             const res = await apiFetch(`${import.meta.env.VITE_API_URL}/menu`, {
@@ -2829,6 +2836,7 @@ return (
               const data = await res.json();
               setMenu((prev) => [...prev, data]);
 
+              // 🧼 Clear all fields and clean resets
               setNewItemName("");
               setNewItemPrice("");
               setNewItemDescription("");
@@ -2840,22 +2848,22 @@ return (
 
               addNotification("✅ Item added successfully!", "success");
             } else {
-              addNotification("❌ Database rejected item initialization request.", "error");
+              addNotification("❌ Failed to add item to database schema.", "error");
             }
           } catch (error) {
-            console.error("Failed to add item to DB context layer:", error);
-            addNotification("❌ Network layer communication crash.", "error");
+            console.error("Failed to add item:", error);
+            addNotification("❌ Network communication error occurred.", "error");
           } finally {
-            setLoading(false);
+            // 🔓 Release Loading Lockout
+            setIsAddingItem(false);
           }
         }}
       >
-        {loading ? "⏳ Syncing Cloud Pointers..." : "✅ Add Item to Menu"}
+        {isAddingItem ? "⏳ Uploading & Saving Item..." : "✅ Add Item to Menu"}
       </button>
     </div>
   </div>
 )}
-
 
         {/* ========== ORDER MANAGEMENT (DEFAULT VIEW) ========== */}
         {!showSubscription && !showAnalyticsView && !showTransactions && !showSummaryView && !showManageMenu && !showCreateMenu && !showSettings && (
