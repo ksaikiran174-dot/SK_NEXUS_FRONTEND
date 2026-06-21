@@ -589,82 +589,127 @@ function Register({
       </motion.div>
 
       {/* PAYMENT SCREEN INTERCEPT MODAL */}
-      {showPaymentModal && (
-        <div className="payment-modal-overlay">
-          <div className="payment-modal" style={{ position: "relative", padding: "30px 20px" }}>
-            <button 
-              type="button"
-              className="modal-close-btn"
-              onClick={() => setShowPaymentModal(false)}
-              style={{
-                position: "absolute",
-                top: "12px",
-                right: "16px",
-                background: "none",
-                border: "none",
-                fontSize: "24px",
-                cursor: "pointer",
-                color: "#64748b",
-                fontWeight: "bold",
-                padding: "4px"
-              }}
-            >
-              &times;
-            </button>
+{showPaymentModal && (
+  <div className="payment-modal-overlay" style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000
+  }}>
+    <div 
+      className="payment-modal" 
+      style={{ 
+        position: "relative", // 🔥 Crucial: anchors the absolute button inside here
+        padding: "40px 24px 30px 24px", // Increased top padding slightly so text doesn't hit the X
+        backgroundColor: "#ffffff",
+        borderRadius: "12px",
+        maxWidth: "450px",
+        width: "90%",
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+      }}
+    >
+      {/* 🎯 FIX: Bulletproof Top-Right Positioned Close Button */}
+      <button 
+        type="button"
+        className="modal-close-btn"
+        onClick={() => setShowPaymentModal(false)}
+        style={{
+          position: "absolute",
+          top: "16px",      // Precise gap from top edge
+          right: "16px",    // Precise gap from right edge
+          background: "none",
+          border: "none",
+          fontSize: "24px",
+          lineHeight: "1",  // Prevents layout shifting from font height differences
+          cursor: "pointer",
+          color: "#94a3b8", // Sleek slate grey color
+          fontWeight: "normal",
+          padding: "4px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "color 0.2s"
+        }}
+        onMouseEnter={(e) => e.target.style.color = "#64748b"} // Darkens slightly on hover
+        onMouseLeave={(e) => e.target.style.color = "#94a3b8"}
+      >
+        &times;
+      </button>
 
-            <h2>Complete Payment</h2>
-            <img src="/qr_code.jpeg" alt="QR Code" className="payment-qr" />
-            <p>UPI ID: 8464053060-2@ybl</p>
-            <h3>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
+      <h2 style={{ marginTop: "0", textAlign: "center" }}>Complete Payment</h2>
+      
+      {/* Rest of your fields remain unchanged */}
+      <img src="/qr_code.jpeg" alt="QR Code" className="payment-qr" style={{ display: "block", margin: "0 auto 15px", maxWidth: "200px" }} />
+      <p style={{ textAlign: "center" }}>UPI ID: 8464053060-2@ybl</p>
+      <h3 style={{ textAlign: "center" }}>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
 
-            {/* UTR / Payment Reference Input Field */}
-            <input
-              type="text"
-              name="paymentReference"
-              placeholder="Enter 12-22 Digit Ref / UTR Number"
-              value={formData.paymentReference}
-              onChange={handleInputChange}
-              style={{ width: "100%", padding: "10px", margin: "10px 0", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
+      {/* UTR / Payment Reference Input Field */}
+      <input
+        type="text"
+        name="paymentReference"
+        placeholder="Enter 12-22 Digit Ref / UTR Number"
+        value={formData.paymentReference}
+        onChange={handleInputChange}
+        style={{ width: "100%", padding: "10px", margin: "10px 0", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
+      />
 
-            {/* Payment Screenshot Input Field */}
-            <label style={{ fontSize: "12px", display: "block", textAlign: "left", color: "#64748b", marginBottom: "4px" }}>
-              Upload Transaction Screenshot (Optional)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setPaymentScreenshot(e.target.files[0] || null)}
-              style={{ width: "100%", marginBottom: "15px" }}
-            />
+      {/* Payment Screenshot Input Field */}
+      <label style={{ fontSize: "12px", display: "block", textAlign: "left", color: "#64748b", marginBottom: "4px" }}>
+        Upload Transaction Screenshot (Optional)
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => setPaymentScreenshot(e.target.files[0] || null)}
+        style={{ width: "100%", marginBottom: "15px" }}
+      />
 
-            <button
-              type="button"
-              disabled={!formData.paymentReference.trim()} // 🎯 Fixed: Enabled validation only on UTR string match
-              onClick={() => {
-                setPaymentCompleted(true);
-                setShowPaymentModal(false);
-              }}
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: (!formData.paymentReference.trim()) ? "#cbd5e1" : "#22c55e",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: (!formData.paymentReference.trim()) ? "not-allowed" : "pointer",
-                fontWeight: "600",
-                marginTop: "10px",
-                transition: "background-color 0.2s"
-              }}
-            >
-              {!formData.paymentReference.trim() 
-                ? "Please enter UTR Number to continue" 
-                : "Confirm Payment Details"}
-            </button>
-          </div>
-        </div>
-      )}
+      <button
+  type="button"
+  // 🎯 Validation: Blocks click if empty OR if length is not between 12 and 22 digits
+  disabled={!formData.paymentReference.trim() || formData.paymentReference.trim().length < 12 || formData.paymentReference.trim().length > 22} 
+  onClick={() => {
+    // Extra safety guard check
+    const utrLength = formData.paymentReference.trim().length;
+    if (utrLength < 12 || utrLength > 22) return; 
+
+    setPaymentCompleted(true);
+    setShowPaymentModal(false);
+  }}
+  style={{
+    width: "100%",
+    padding: "12px",
+    // 🎨 Dynamic color depending on structural string length match
+    backgroundColor: (!formData.paymentReference.trim() || formData.paymentReference.trim().length < 12 || formData.paymentReference.trim().length > 22) 
+      ? "#cbd5e1" 
+      : "#22c55e",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    cursor: (!formData.paymentReference.trim() || formData.paymentReference.trim().length < 12 || formData.paymentReference.trim().length > 22) 
+      ? "not-allowed" 
+      : "pointer",
+    fontWeight: "600",
+    marginTop: "10px",
+    transition: "background-color 0.2s"
+  }}
+>
+  {/* 📝 Smart button text updates dynamically based on user typing */}
+  {!formData.paymentReference.trim() 
+    ? "Please enter UTR Number to continue" 
+    : (formData.paymentReference.trim().length < 12 || formData.paymentReference.trim().length > 22)
+      ? `⚠️ UTR must be 12-22 digits (Current: ${formData.paymentReference.trim().length})`
+      : "Confirm Payment Details"}
+</button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
