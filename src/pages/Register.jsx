@@ -590,7 +590,7 @@ function Register({
 
       {/* PAYMENT SCREEN INTERCEPT MODAL */}
       {showPaymentModal && (
-        <div style={{
+        <div className="payment-modal-overlay" style={{
           position: "fixed",
           top: 0,
           left: 0,
@@ -600,11 +600,12 @@ function Register({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 99999
+          zIndex: 1000
         }}>
           <div 
+            className="payment-modal" 
             style={{ 
-              position: "relative", 
+              position: "relative", // ⚓ Anchors absolute container below
               padding: "40px 24px 30px 24px",
               backgroundColor: "#ffffff",
               borderRadius: "12px",
@@ -613,33 +614,40 @@ function Register({
               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
             }}
           >
-            {/* 🎯 FIXED ACCURATE TOP-RIGHT CLOSE CONTAINER BLOCK */}
-            <div style={{ position: "absolute", top: "12px", right: "16px", zIndex: 10000 }}>
+            {/* 🎯 Isolated Close Button wrapper context inside relative card frame */}
+            <div style={{ position: "absolute", top: "16px", right: "16px" }}>
               <button 
                 type="button"
+                className="modal-close-btn"
                 onClick={() => setShowPaymentModal(false)}
                 style={{
                   background: "none",
                   border: "none",
-                  fontSize: "30px",
+                  fontSize: "26px",
                   lineHeight: "1",
                   cursor: "pointer",
                   color: "#94a3b8",
                   fontWeight: "bold",
                   padding: "4px"
                 }}
-                onMouseEnter={(e) => e.target.style.color = "#475569"}
+                onMouseEnter={(e) => e.target.style.color = "#64748b"}
                 onMouseLeave={(e) => e.target.style.color = "#94a3b8"}
               >
                 &times;
               </button>
             </div>
 
-            <h2 style={{ marginTop: "0", textAlign: "center", color: "#1e293b" }}>Complete Payment</h2>
+            <h2 style={{ marginTop: "0", textAlign: "center" }}>Complete Payment</h2>
             
-            <img src="/qr_code.jpeg" alt="QR Code" style={{ display: "block", margin: "0 auto 15px", maxWidth: "180px", borderRadius: "6px" }} />
-            <p style={{ textAlign: "center", fontWeight: "600", color: "#334155", margin: "5px 0" }}>UPI ID: 8464053060-2@ybl</p>
-            <h3 style={{ textAlign: "center", color: "#1e293b", marginTop: "5px" }}>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
+            {/* 🔄 Restored original image constraints and spacing styles */}
+            <img 
+              src="/qr_code.jpeg" 
+              alt="QR Code" 
+              className="payment-qr" 
+              style={{ display: "block", margin: "0 auto 15px", maxWidth: "200px" }} 
+            />
+            <p style={{ textAlign: "center" }}>UPI ID: 8464053060-2@ybl</p>
+            <h3 style={{ textAlign: "center" }}>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
 
             {/* UTR / Payment Reference Input Field */}
             <input
@@ -648,11 +656,11 @@ function Register({
               placeholder="Enter 12-22 Digit Ref / UTR Number"
               value={formData.paymentReference}
               onChange={handleInputChange}
-              style={{ width: "100%", padding: "12px", margin: "10px 0", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "10px", margin: "10px 0", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }}
             />
 
             {/* Payment Screenshot Input Field */}
-            <label style={{ fontSize: "12px", display: "block", textAlign: "left", color: "#64748b", marginBottom: "4px", fontWeight: "500" }}>
+            <label style={{ fontSize: "12px", display: "block", textAlign: "left", color: "#64748b", marginBottom: "4px" }}>
               Upload Transaction Screenshot (Optional)
             </label>
             <input
