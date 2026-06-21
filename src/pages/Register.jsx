@@ -613,8 +613,8 @@ function Register({
             </button>
 
             <h2>Complete Payment</h2>
-            <img src="/logo.png" alt="QR Code" className="payment-qr" />
-            <p>UPI ID: saikiran@upi</p>
+            <img src="/qr_code.jpeg" alt="QR Code" className="payment-qr" />
+            <p>UPI ID: 8464053060-2@ybl</p>
             <h3>Amount: ₹{PLAN_PRICES[formData.plan]}</h3>
 
             {/* UTR / Payment Reference Input Field */}
