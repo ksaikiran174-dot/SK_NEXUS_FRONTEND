@@ -1680,6 +1680,37 @@ const handleResetDecline = async () => {
   }
 };
 
+const handleDeleteMenuItem = (itemId, itemName) => {
+  setConfirmationModal({
+    isOpen: true,
+    title: "Delete Menu Item",
+    message: `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
+    isDangerous: true,
+    confirmText: "Delete",
+    onConfirm: async () => {
+      setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
+      setIsSaving(itemId);
+      try {
+        const res = await apiFetch(
+          `${import.meta.env.VITE_API_URL}/menu/${itemId}`,
+          { method: "DELETE" },
+          "manager"
+        );
+        if (res.ok) {
+          setMenu((prev) => prev.filter((m) => m.id !== itemId));
+          addNotification("🗑️ Menu item deleted successfully.", "success");
+        } else {
+          addNotification("❌ Failed to delete menu item.", "error");
+        }
+      } catch (err) {
+        console.error("Delete menu item error:", err);
+        addNotification("❌ Network error while deleting item.", "error");
+      } finally {
+        setIsSaving(null);
+      }
+    },
+  });
+};
 
 // ➕ Function to add a new table (sequential & autosaved)
 const handleAddTable = async () => {
