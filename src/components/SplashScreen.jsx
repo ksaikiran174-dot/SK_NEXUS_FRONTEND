@@ -131,7 +131,7 @@ export default function SplashScreen({ onFinish }) {
           >
             {/* 💎 THE RE-MASTERED LOGO */}
             <motion.img
-              src="/logo2.png"
+              src="/logo2.wepg"
               alt="SK Nexus"
               initial={{ 
                 scale: 0.7, 
