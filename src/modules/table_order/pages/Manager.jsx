@@ -187,6 +187,8 @@ function TableManager() {
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
 
+  const isProcessingRef = useRef(false);
+  
   const [showSummaryView, setShowSummaryView] = useState(true);
   const [showAnalyticsView, setShowAnalyticsView] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
