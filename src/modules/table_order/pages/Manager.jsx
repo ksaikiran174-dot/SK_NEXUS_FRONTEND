@@ -1186,7 +1186,8 @@ const fetchAnalytics =
    CREATE ORDER (TABLE MANAGEMENT - INSTANT RESPONSE)
 ========================================= */
 const handleCreateOrder = async () => {
-  if (cart.length === 0 || creatingOrder) return;
+  // 1. INSTANT SYNCHRONOUS GUARD (Blocks multi-clicks in < 1ms)
+  if (cart.length === 0 || creatingOrder || isProcessingRef.current) return;
 
   if (!businessDay) {
     addNotification("⚠️ Please open today's sales before creating an order.", "warning");
@@ -1198,64 +1199,36 @@ const handleCreateOrder = async () => {
     return;
   }
 
+  // Set the locks immediately
+  isProcessingRef.current = true;
   setCreatingOrder(true);
 
   const offlineUuid = `off_uuid_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  const localTableBackup = selectedTableNumber;
 
+  // Clone payload instantly so it's safely detached from the UI state
   const orderPayload = {
-    items: cart,
+    items: [...cart], 
     payment_mode: paymentMode, 
     status: "pending",
     table_number: selectedTableNumber,
     offline_uuid: offlineUuid
   };
 
-  // Back up the current state arrays for zero-loss safety rollbacks
   const localCartBackup = [...cart];
-  const localTableBackup = selectedTableNumber;
   const localPaymentModeBackup = paymentMode;
 
-  // ── 1. INSTANTLY CLEAR CHECKOUT UI (Takes < 10ms) ──
+  // ── 2. INSTANT UI CLEANUP (Takes < 5ms) ──
+  // The user sees a totally fresh screen instantly!
   setCart([]);
   setSelectedTableNumber("");
   setPaymentMode("cash");
-  setCreatingOrder(false); // Instantly unlock the checkout UI for the next bill input
+  setCreatingOrder(false); 
+  
+  // NOTE: We keep isProcessingRef.current = true in the background 
+  // to silently block duplicate clicks while the network fetch finishes.
 
-  // 🚨 NETWORK BOUNDARY CHECK
-  if (!navigator.onLine) {
-    try {
-      await saveOfflineOrder(orderPayload);
-
-      setOrders((prev) => [
-        ...prev,
-        {
-          id: `temp_${Date.now()}`,
-          ...orderPayload,
-          isOfflinePending: true,
-          created_at: new Date().toISOString()
-        }
-      ]);
-
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
-
-      addNotification(`⚠️ Running Offline! Order queued locally for Table ${localTableBackup}.`, "warning");
-
-    } catch (dbErr) {
-      console.error("Table floor local DB write error:", dbErr);
-      addNotification("❌ Failed to save table order locally.", "error");
-      
-      // Roll back view UI state only if database cache fails hard
-      setCart(localCartBackup);
-      setSelectedTableNumber(localTableBackup);
-      setPaymentMode(localPaymentModeBackup);
-    }
-    return;
-  }
-
-  // 🟢 ONLINE ROUTE
+  // ── 3. ASYNC NETWORK BACKGROUND PROCESS ──
   try {
     const res = await apiFetch(
       `${import.meta.env.VITE_API_URL}/orders`,
@@ -1267,16 +1240,13 @@ const handleCreateOrder = async () => {
       "manager"
     );
 
-    if (!res.ok) {
-      throw new Error("Network request rejected by server");
-    }
+    if (!res.ok) throw new Error("Network drop or server issue");
     
     const data = await res.json();
 
-    // Silently inject real production payload data into layout context array
+    // Inject server data into background state array
     setOrders((prev) => [...prev, { ...data, items: data.items || [] }]);
 
-    // Play the audio cue right when the response returns successfully
     if (settings?.enable_sound && acceptSoundRef?.current) {
       acceptSoundRef.current.currentTime = 0;
       acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
@@ -1284,7 +1254,6 @@ const handleCreateOrder = async () => {
 
     addNotification(`🎉 Order sent to Kitchen for Table ${localTableBackup}!`, "success");
 
-    // 🖨️ FIRE-AND-FORGET PRINTING & METRICS SYNC
     printToken(data, () => {
       refreshTransactions(); 
       refreshSummary();      
@@ -1292,14 +1261,15 @@ const handleCreateOrder = async () => {
     });
 
   } catch (err) {
-    console.error("Online table submit failed. Dropping back to local cache...", err);
+    console.error("Online route failed, processing background local backup...", err);
     
+    // SAFE OFFLINE FALLBACK
     try {
       await saveOfflineOrder(orderPayload);
 
       if (settings?.enable_sound && acceptSoundRef?.current) {
         acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
+        acceptSoundRef.current.play().catch(innerErr => console.error("Audio blocked:", innerErr));
       }
       
       setOrders((prev) => [
@@ -1314,14 +1284,17 @@ const handleCreateOrder = async () => {
 
       addNotification(`📡 Connection lost! Order securely saved offline for Table ${localTableBackup}.`, "warning");
     } catch (innerDbErr) {
-      console.error("Critical storage failure:", innerDbErr);
-      addNotification("❌ Connection dropped and local storage failed.", "error");
+      console.error("Fatal local storage fail:", innerDbErr);
+      addNotification("❌ Network dropped and local storage failed.", "error");
       
-      // Restore state arrays back into current memory bounds
+      // Rollback only if the local database write completely fails
       setCart(localCartBackup);
       setSelectedTableNumber(localTableBackup);
       setPaymentMode(localPaymentModeBackup);
     }
+  } finally {
+    // 4. UNLOCK for the next order once background pipeline completes
+    isProcessingRef.current = false;
   }
 };
 
