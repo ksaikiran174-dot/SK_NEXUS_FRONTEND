@@ -1437,6 +1437,7 @@ const handleStartDay = async () => {
   setCart([]);
 
   try {
+    setIsStartingDay(true);
     const res = await apiFetch(
       `${import.meta.env.VITE_API_URL}/business-day/start`,
       { method: "POST" },
@@ -1452,6 +1453,8 @@ const handleStartDay = async () => {
   } catch (err) {
     console.error(err);
     addNotification("❌ Failed to start day");
+  } finally {
+    setIsStartingDay(false);
   }
 };
 
@@ -1498,6 +1501,7 @@ const handleCloseDay = async () => {
     onConfirm: async () => {
       setConfirmationModal((prev) => ({ ...prev, isOpen: false }));
       try {
+        setIsClosingDay(true);
         const res = await apiFetch(
           `${import.meta.env.VITE_API_URL}/business-day/close`,
           { method: "PATCH" },
@@ -1545,6 +1549,8 @@ const handleCloseDay = async () => {
       } catch (err) {
         console.error("Day close payload parsing failure:", err);
         addNotification("❌ Failed to finalize day close processes.", "error");
+      } finally {
+        setIsClosingDay(false);
       }
     },
   });
