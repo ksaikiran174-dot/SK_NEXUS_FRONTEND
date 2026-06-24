@@ -383,9 +383,9 @@ function Register({
                   <option value="" disabled hidden>
                     -- Not Selected / Choose a Plan --
                   </option>
-                  <option value="basic">Basic Plan</option>
-                  <option value="pro">Pro Plan</option>
-                  <option value="enterprise">Enterprise Plan</option>
+                  <option value="basic">Basic Plan(Billing)</option>
+                  <option value="pro">Pro Plan(Billing + Employee Communication)</option>
+                  <option value="enterprise">Enterprise Plan(Billing + Communication + Table Order)</option>
                 </select>
               </div>
 
