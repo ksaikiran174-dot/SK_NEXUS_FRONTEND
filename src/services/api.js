@@ -1,13 +1,18 @@
 // api.js
 
 export const apiFetch = async (url, options = {}, role) => {
-  // 🎯 FIX 1: AUTO-DETECT ROLE IF OMITTED TO PREVENT CROSS-TALK CRASHES
+  // 🎯 FIX 1: AUTO-DETECT ROLE ACCURATELY USING LOCAL STORAGE TRUTH
   let currentRole = role;
   if (!currentRole) {
-    // If the URL or window path contains 'manager', treat it as manager, otherwise default to employee
-    currentRole = window.location.pathname.includes("manager") || url.includes("manager") 
-      ? "manager" 
-      : "employee";
+    // Read the explicit global state role token saved by App.jsx
+    currentRole = localStorage.getItem("role");
+    
+    // Fallback safe defaults if local storage hasn't initialized yet
+    if (!currentRole) {
+      currentRole = window.location.pathname.includes("manager") || url.includes("manager") 
+        ? "manager" 
+        : "employee";
+    }
   }
 
   const tokenKey =
