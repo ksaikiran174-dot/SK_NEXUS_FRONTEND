@@ -451,7 +451,7 @@ const downloadReceipt = (transaction) => {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 7; // Increased margin for safety
+  const margin = 7; 
   const rightBoundary = pageWidth - margin; 
   let y = 10;
 
@@ -462,7 +462,7 @@ const downloadReceipt = (transaction) => {
   };
 
   const drawDivider = (yPos) => {
-    doc.setDrawColor(220); // Even lighter gray for a cleaner look
+    doc.setDrawColor(220); 
     doc.line(margin, yPos, rightBoundary, yPos);
   };
 
@@ -470,17 +470,35 @@ const downloadReceipt = (transaction) => {
   if (settings?.logo_url) {
     try {
       doc.addImage(settings.logo_url, "PNG", pageWidth / 2 - 8, y, 16, 16);
-      y += 20;
+      y += 22; // Clean spacing down so image never crowds text
     } catch (e) { y += 0; }
   }
 
-  centerText(settings.restaurant_name?.toUpperCase() || "RESTAURANT", y, "bold", 13);
+  centerText(settings.restaurant_name?.toUpperCase() || "BUSINESS NAME", y, "bold", 13);
   y += 6;
-  centerText(settings.address || "Hyderabad", y, "normal", 8);
-  y += 4;
-  centerText(`Tel: ${settings.phone || ""} | GST: ${settings.gst_number || ""}`, y, "normal", 8);
-  y += 8;
+  
+  if (settings.address) {
+    centerText(settings.address, y, "normal", 8);
+    y += 5;
+  }
+  
+  // 🚀 THE DYNAMIC GST & PHONE COMBINATION STRIPPER (jsPDF)
+  let contactLineItems = [];
+  if (settings.phone && settings.phone.trim() !== "") {
+    contactLineItems.push(`Tel: ${settings.phone}`);
+  }
+  // Check if gst_number exists, isn't empty, and isn't the fallback string
+  if (settings.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED") {
+    contactLineItems.push(`GST: ${settings.gst_number}`);
+  }
 
+  if (contactLineItems.length > 0) {
+    const contactTextString = contactLineItems.join(" | ");
+    centerText(contactTextString, y, "normal", 8);
+    y += 6;
+  }
+
+  y += 2;
   drawDivider(y);
   y += 6;
 
@@ -489,7 +507,6 @@ const downloadReceipt = (transaction) => {
   doc.setFont("JetBrains Mono", "bold");
   doc.text(`${settings.token_prefix || "TOK"}-${transaction.token_id}`, margin, y);
   
-  // Adjusted right alignment anchor
   doc.text(transaction.payment_mode?.toUpperCase() || "ONLINE", rightBoundary, y, { align: "right" });
   y += 5;
 
@@ -504,24 +521,27 @@ const downloadReceipt = (transaction) => {
   drawDivider(y);
   y += 6;
 
+  const colItemX = margin;                                       
+  const colQtyCenter = margin + (rightBoundary - margin) / 2;    
+  const colTotalRight = rightBoundary;                           
+
   // --- ITEMS TABLE HEADER ---
   doc.setFont("JetBrains Mono", "bold");
   doc.setFontSize(8);
-  doc.text("ITEM", margin, y);
-  doc.text("QTY", rightBoundary - 20, y, { align: "right" }); // Shifted left
-  doc.text("TOTAL", rightBoundary, y, { align: "right" });
-  y += 4;
+  doc.text("ITEM", colItemX, y);
+  doc.text("QTY", colQtyCenter, y, { align: "center" }); 
+  doc.text("TOTAL", colTotalRight, y, { align: "right" });
+  y += 5;
 
   // --- ITEMS LIST ---
   doc.setFont("JetBrains Mono", "normal");
   transaction.items.forEach((item) => {
-    // We restrict item name width to prevent overlapping QTY
-    const splitName = doc.splitTextToSize(item.name, 35); 
-    doc.text(splitName, margin, y);
+    const safeNameWidth = (colQtyCenter - margin) - 6; 
+    const splitName = doc.splitTextToSize(item.name, safeNameWidth); 
     
-    // Aligning QTY and Price relative to our safe right boundary
-    doc.text(`${item.quantity}`, rightBoundary - 20, y, { align: "right" });
-    doc.text(`${(item.price * item.quantity).toFixed(2)}`, rightBoundary, y, { align: "right" });
+    doc.text(splitName, colItemX, y);
+    doc.text(`${item.quantity}`, colQtyCenter, y, { align: "center" });
+    doc.text(`Rs.${(item.price * item.quantity).toFixed(2)}`, colTotalRight, y, { align: "right" });
     
     y += (splitName.length * 4) + 1;
   });
@@ -535,61 +555,49 @@ const downloadReceipt = (transaction) => {
   doc.setFont("JetBrains Mono", "bold");
   doc.text("GRAND TOTAL", margin, y);
   doc.setFontSize(11);
-  // Total price logic
-  doc.text(`${Number(transaction.total_price).toFixed(2)}`, rightBoundary, y, { align: "right" });
+  doc.text(`Rs. ${Number(transaction.total_price).toFixed(2)}`, rightBoundary, y, { align: "right" });
   y += 10;
 
   // --- FOOTER ---
   drawDivider(y);
   y += 6;
-  centerText("Thank you for dining with us!", y, "italic", 8);
-  y += 4;
+  
+  // Cleaned up versatile business greeting text
+  centerText("Thank You", y, "italic", 8);
+  y += 5;
   centerText("Visit Again!", y, "normal", 8);
   
   y += 8;
   doc.setFontSize(7);
   centerText(`Receipt ID: ${transaction.id || transaction._id || 'N/A'}`, y, "normal", 7);
 
-  // --- SAVE ---
   doc.save(`Receipt-${transaction.token_id}.pdf`);
 };
 
 const printToken = (order, onComplete) => {
-  // Increased width to ensure Chrome options panel never squeezes the receipt view
   const printWindow = window.open(
     "",
     "",
     "width=480,height=700,top=100,left=100,resizable=yes"
   );
 
+  // 🚀 DYNAMIC GST INJECTION CHECKER FOR THERMAL RECEIPT
+  const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
+
   printWindow.document.write(`
 <html>
 <head>
   <title>Token Receipt</title>
   <style>
-    /* 🎯 CRITICAL THERMAL RESET: Works seamlessly on 58mm, 80mm, or any continuous thermal roll */
     @page {
       size: auto; 
       margin: 0mm;
     }
-    
     @media print {
-      html, body {
-        background: #fff;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        /* Set explicit printable bounds to prevent cut-off texts on 80mm/58mm rolls */
-        width: 72mm; 
-        margin: 0 auto;
-        padding: 4mm 0 10mm 0; /* Clear bottom margin to prevent trailing paper tear clips */
-      }
-      .no-print { display: none !important; }
+      html, body { background: #fff; margin: 0; padding: 0; }
+      body { width: 72mm; margin: 0 auto; padding: 4mm 0 10mm 0; }
     }
-
     body {
-      /* 🚀 HD COURIER RE-ENGINEERING: Fallback to high-contrast native system faces for ultra-sharp rendering */
       font-family: 'Courier New', Courier, Monaco, system-ui, monospace;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -603,69 +611,30 @@ const printToken = (order, onComplete) => {
       font-size: 13px;
       line-height: 1.3;
     }
-    
     .center { text-align: center; }
-    
-    /* 🚀 High Contrast Bold Weights */
-    .restaurant-name { 
-      font-size: 22px; 
-      font-weight: 800; 
-      text-transform: uppercase; 
-      letter-spacing: -0.5px;
-      margin-bottom: 2px;
-    }
+    .restaurant-name { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
     .subtitle { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
     .details { font-size: 11px; font-weight: 500; line-height: 1.4; }
-    
-    /* Pixel-solid dashed dividers instead of generic thin blurs */
-    .divider { 
-      border-top: 1px dashed #000; 
-      margin: 12px 0; 
-      height: 0;
-    }
-    
-    /* Ultra-HD Bold Token Display Block */
-    .token {
-      font-size: 42px;
-      font-weight: 900;
-      text-align: center;
-      margin: 14px 0;
-      padding: 6px;
-      letter-spacing: 0px;
-    }
-
-    .row { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: flex-start;
-      margin-bottom: 5px; 
-      font-weight: 600;
-    }
-    .item-name {
-      text-align: left;
-      padding-right: 10px;
-    }
-    .item-price {
-      text-align: right;
-      white-space: nowrap;
-    }
-    
-    .total { 
-      font-size: 18px; 
-      font-weight: 900; 
-      margin-top: 6px; 
-    }
+    .divider { border-top: 1px dashed #000; margin: 12px 0; height: 0; }
+    .token { font-size: 42px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; }
+    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-weight: 600; }
+    .item-name { text-align: left; padding-right: 10px; }
+    .item-price { text-align: right; white-space: nowrap; }
+    .total { font-size: 18px; font-weight: 900; margin-top: 6px; }
     .footer { text-align: center; font-size: 12px; font-weight: 600; margin-top: 16px; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div class="center">
     ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="70" style="margin-bottom: 6px; display: inline-block;" /></div>` : ""}
-    <div class="restaurant-name">${settings?.restaurant_name || "RESTAURANT"}</div>
-    <div class="subtitle">${settings?.subtitle || "Fresh & Delicious"}</div>
+    <div class="restaurant-name">${settings?.restaurant_name || "BUSINESS NAME"}</div>
+    <div class="subtitle">${settings?.subtitle || "Quality & Service"}</div>
     <div class="details">
       ${settings?.address ? `<div>${settings.address}</div>` : ""}
-      ${settings?.phone ? `<div>Phone: ${settings.phone}</div>` : ""}
+      <div>
+        ${settings?.phone ? `<span>Phone: ${settings.phone}</span>` : ""}
+        ${hasValidGst ? `${settings?.phone ? " | " : ""}<span>GST: ${settings.gst_number}</span>` : ""}
+      </div>
     </div>
   </div>
 
@@ -704,19 +673,16 @@ const printToken = (order, onComplete) => {
       timeZone: "Asia/Kolkata"
     })}
     <br /><br />
-    THANK YOU ❤️
+    We appreciate your business! 🚀
   </div>
 
   <script>
-    // 🚀 THE ULTIMATE ANTI-BLUR TRICK: Wait until the logo asset completely downloads into memory 
-    // before triggering the print dialogue. Ensures rendering calculations are 100% exact.
     window.addEventListener('load', () => {
       const img = document.getElementById('receipt-logo');
       if (img && !img.complete) {
         img.onload = () => setTimeout(() => window.print(), 100);
         img.onerror = () => window.print();
       } else {
-        // If no logo or logo is already cached, execute print layout tracking immediately
         window.print();
       }
     });
@@ -728,17 +694,13 @@ const printToken = (order, onComplete) => {
   printWindow.document.close();
   printWindow.focus();
   
-  // Clean handle routine monitor to intercept window dismissal safely
   setTimeout(() => {
     if (typeof onComplete === "function") onComplete();
     if (typeof setCart === "function") setCart([]);
     if (typeof setCreatingOrder === "function") setCreatingOrder(false);
-    
-    // Check window status before invoking immediate removal string steps
     printWindow.close();
   }, 1000); 
 };
-
 
 /* =========================================================================
     🚀 UNIFIED DASHBOARD MOUNT ENGINE (Perfect Sync & Clean Key Mapping)
