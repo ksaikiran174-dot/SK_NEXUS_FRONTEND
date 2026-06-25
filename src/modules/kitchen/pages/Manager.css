@@ -1235,6 +1235,13 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+.setting-input::placeholder {
+  color: #9ca3af;       /* Cool muted gray (Tailwind gray-400 style) */
+  opacity: 0.75;        /* Ensures cross-browser consistency for dimming */
+  font-weight: 400;     /* Keeps placeholder text light */
+}
+
+
 .checkbox-label {
   display: flex;
   align-items: center;

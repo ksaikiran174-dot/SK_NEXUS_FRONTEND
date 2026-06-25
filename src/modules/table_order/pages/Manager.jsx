@@ -3643,7 +3643,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
     <div className="setting-group">
       <label className="setting-label">Registered Email ID</label>
       <input
-        className="setting-input"
+        className="setting-input setting-input-readonly"
         type="email"
         readOnly // 🔒 Makes it non-editable
         disabled // 🛡️ Grays it out slightly to visually indicate it's locked
