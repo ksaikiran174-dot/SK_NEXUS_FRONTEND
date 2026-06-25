@@ -51,22 +51,27 @@ export const apiFetch = async (url, options = {}, role) => {
   });
 
   // =========================================
-  // 🚀 SUSPENSION CHECK (403 Interceptor)
+  // 🚀 INSTANT BLOCK INTERCEPTOR (403 Catch)
   // =========================================
   if (response.status === 403) {
-    // Clone response to safely parse the body without breaking it for other handlers
     const clonedResponse = response.clone();
     try {
       const data = await clonedResponse.json();
-      if (data?.detail === "RESTAURANT_SUSPENDED") {
-        alert("This restaurant account has been suspended by the administrator.");
+      
+      // Check for either Admin Suspension OR Instant Subscription Expiration
+      if (data?.detail === "RESTAURANT_SUSPENDED" || data?.detail === "SUBSCRIPTION_EXPIRED") {
         
-        // Use your clean logout helper to wipe tokens
+        if (data.detail === "SUBSCRIPTION_EXPIRED") {
+          alert("Your plan subscription has expired. Please contact administration to extend your service.");
+        } else {
+          alert("This restaurant account has been suspended by the administrator.");
+        }
+        
+        // Wipe local tokens and force cleanly back to login page instantly
         logout(currentRole);
         return response;
       }
     } catch (e) {
-      // Not a JSON error body or failed to read, let it fall through normally
       console.error("Error reading 403 error context:", e);
     }
   }
