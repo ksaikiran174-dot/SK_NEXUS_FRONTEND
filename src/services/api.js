@@ -51,6 +51,27 @@ export const apiFetch = async (url, options = {}, role) => {
   });
 
   // =========================================
+  // 🚀 SUSPENSION CHECK (403 Interceptor)
+  // =========================================
+  if (response.status === 403) {
+    // Clone response to safely parse the body without breaking it for other handlers
+    const clonedResponse = response.clone();
+    try {
+      const data = await clonedResponse.json();
+      if (data?.detail === "RESTAURANT_SUSPENDED") {
+        alert("This restaurant account has been suspended by the administrator.");
+        
+        // Use your clean logout helper to wipe tokens
+        logout(currentRole);
+        return response;
+      }
+    } catch (e) {
+      // Not a JSON error body or failed to read, let it fall through normally
+      console.error("Error reading 403 error context:", e);
+    }
+  }
+
+  // =========================================
   // TOKEN EXPIRED (401 Interceptor)
   // =========================================
   if (response.status === 401) {
@@ -112,10 +133,16 @@ const logout = (role) => {
   if (role === "manager") {
     localStorage.removeItem("managerAccessToken");
     localStorage.removeItem("managerRefreshToken");
+    localStorage.removeItem("restaurantStatus");
   } else {
     localStorage.removeItem("employeeAccessToken");
     localStorage.removeItem("employeeRefreshToken");
   }
+  
+  localStorage.removeItem("role");
+  localStorage.removeItem("plan");
 
   window.location.href = "/";
 };
+
+

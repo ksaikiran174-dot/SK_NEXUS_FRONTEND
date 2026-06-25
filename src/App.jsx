@@ -423,6 +423,14 @@ function App() {
         try {
           const msg = JSON.parse(event.data);
           console.log("WS Message:", msg);
+
+          // 🚀 INSTANT KICKOUT VIA WEBSOCKETS
+          if (msg && (msg.action === "SUSPEND" || msg.status === "suspended")) {
+            alert("Your restaurant has been suspended by the admin.");
+            clearAllRoleData(); // Wipe tokens out of local storage
+            setRole(null);
+            setAuthState("role-selection");
+          }
         } catch (e) {
           console.error("Error parsing WS message", e);
         }
