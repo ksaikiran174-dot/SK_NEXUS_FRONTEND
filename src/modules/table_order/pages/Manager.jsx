@@ -707,7 +707,7 @@ const printToken = (order, onComplete) => {
       timeZone: "Asia/Kolkata"
     })}
     <br /><br />
-    We appreciate your business! 🚀
+    THANK YOU ❤️
   </div>
 
   <script>
