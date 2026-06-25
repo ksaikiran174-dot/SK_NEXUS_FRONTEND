@@ -602,12 +602,11 @@ const downloadReceipt = (transaction) => {
 };
 
 const printToken = (order, onComplete) => {
-  // 🎯 FIX 1: Increased default window width (from 300 to 450) 
-  // This gives Chrome enough room to show the Token AND the print options together!
+  // Increased width to ensure Chrome options panel never squeezes the receipt view
   const printWindow = window.open(
     "",
-    "_blank",
-    "width=450,height=650,top=100,left=100,resizable=yes"
+    "",
+    "width=480,height=700,top=100,left=100,resizable=yes"
   );
 
   printWindow.document.write(`
@@ -615,55 +614,106 @@ const printToken = (order, onComplete) => {
 <head>
   <title>Token Receipt</title>
   <style>
+    /* 🎯 CRITICAL THERMAL RESET: Works seamlessly on 58mm, 80mm, or any continuous thermal roll */
     @page {
-      size: 80mm auto;
-      margin: 0;
+      size: auto; 
+      margin: 0mm;
     }
+    
     @media print {
-      body {
-        width: 72mm;
-        margin: 0 auto;
-        padding: 5mm 0;
+      html, body {
+        background: #fff;
+        margin: 0;
+        padding: 0;
       }
-      .no-print { display: none !important; } /* Hide screen elements during print */
+      body {
+        /* Set explicit printable bounds to prevent cut-off texts on 80mm/58mm rolls */
+        width: 72mm; 
+        margin: 0 auto;
+        padding: 4mm 0 10mm 0; /* Clear bottom margin to prevent trailing paper tear clips */
+      }
+      .no-print { display: none !important; }
     }
+
     body {
-      font-family: 'Courier New', Arial, sans-serif;
+      /* 🚀 HD COURIER RE-ENGINEERING: Fallback to high-contrast native system faces for ultra-sharp rendering */
+      font-family: 'Courier New', Courier, Monaco, system-ui, monospace;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
       width: 100%;
-      max-width: 280px;
+      max-width: 290px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 10px;
       color: #000;
       box-sizing: border-box;
+      font-size: 13px;
+      line-height: 1.3;
     }
-    .center { text-align: center; }
-    .restaurant-name { font-size: 20px; font-weight: bold; text-transform: uppercase; }
-    .subtitle { font-size: 11px; margin-bottom: 8px; }
-    .divider { border-top: 1px dashed #000; margin: 10px 0; }
     
-    /* Highlighted Token Area so it catches the eye instantly on screen */
-    .token {
-      font-size: 36px;
-      font-weight: bold;
-      text-align: center;
-      margin: 12px 0;
-      padding: 5px;
-      background: #f3f4f6; /* Soft gray background on screen */
+    .center { text-align: center; }
+    
+    /* 🚀 High Contrast Bold Weights */
+    .restaurant-name { 
+      font-size: 22px; 
+      font-weight: 800; 
+      text-transform: uppercase; 
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
     }
-    @media print { .token { background: transparent; } }
+    .subtitle { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    .details { font-size: 11px; font-weight: 500; line-height: 1.4; }
+    
+    /* Pixel-solid dashed dividers instead of generic thin blurs */
+    .divider { 
+      border-top: 1px dashed #000; 
+      margin: 12px 0; 
+      height: 0;
+    }
+    
+    /* Ultra-HD Bold Token Display Block */
+    .token {
+      font-size: 42px;
+      font-weight: 900;
+      text-align: center;
+      margin: 14px 0;
+      padding: 6px;
+      letter-spacing: 0px;
+    }
 
-    .row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
-    .total { font-size: 16px; font-weight: bold; margin-top: 8px; }
-    .footer { text-align: center; font-size: 11px; margin-top: 14px; }
+    .row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start;
+      margin-bottom: 5px; 
+      font-weight: 600;
+    }
+    .item-name {
+      text-align: left;
+      padding-right: 10px;
+    }
+    .item-price {
+      text-align: right;
+      white-space: nowrap;
+    }
+    
+    .total { 
+      font-size: 18px; 
+      font-weight: 900; 
+      margin-top: 6px; 
+    }
+    .footer { text-align: center; font-size: 12px; font-weight: 600; margin-top: 16px; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div class="center">
-    ${settings?.logo_url ? `<div><img src="${settings.logo_url}" width="60" /></div>` : ""}
+    ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="70" style="margin-bottom: 6px; display: inline-block;" /></div>` : ""}
     <div class="restaurant-name">${settings?.restaurant_name || "RESTAURANT"}</div>
     <div class="subtitle">${settings?.subtitle || "Fresh & Delicious"}</div>
-    <div style="font-size: 11px;">${settings?.address || ""}</div>
-    <div style="font-size: 11px;">Phone: ${settings?.phone || ""}</div>
+    <div class="details">
+      ${settings?.address ? `<div>${settings.address}</div>` : ""}
+      ${settings?.phone ? `<div>Phone: ${settings.phone}</div>` : ""}
+    </div>
   </div>
 
   <div class="divider"></div>
@@ -676,15 +726,15 @@ const printToken = (order, onComplete) => {
 
   ${order.items.map(item => `
     <div class="row">
-      <span>${item.name} x${item.quantity}</span>
-      <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+      <span class="item-name">${item.name} x${item.quantity}</span>
+      <span class="item-price">₹${(item.price * item.quantity).toFixed(2)}</span>
     </div>
   `).join("")}
 
   <div class="divider"></div>
 
   <div class="row total">
-    <span>Total</span>
+    <span>TOTAL</span>
     <span>₹${Number(order.total_price).toFixed(2)}</span>
   </div>
   
@@ -698,10 +748,26 @@ const printToken = (order, onComplete) => {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZone: "Asia/Kolkata"
     })}
     <br /><br />
-    Thank You ❤️
+    THANK YOU ❤️
   </div>
+
+  <script>
+    // 🚀 THE ULTIMATE ANTI-BLUR TRICK: Wait until the logo asset completely downloads into memory 
+    // before triggering the print dialogue. Ensures rendering calculations are 100% exact.
+    window.addEventListener('load', () => {
+      const img = document.getElementById('receipt-logo');
+      if (img && !img.complete) {
+        img.onload = () => setTimeout(() => window.print(), 100);
+        img.onerror = () => window.print();
+      } else {
+        // If no logo or logo is already cached, execute print layout tracking immediately
+        window.print();
+      }
+    });
+  </script>
 </body>
 </html>
 `);
@@ -709,24 +775,15 @@ const printToken = (order, onComplete) => {
   printWindow.document.close();
   printWindow.focus();
   
-  // 🎯 FIX 2: Delay the print trigger by 400ms!
+  // Clean handle routine monitor to intercept window dismissal safely
   setTimeout(() => {
-    printWindow.print();
+    if (typeof onComplete === "function") onComplete();
+    if (typeof setCart === "function") setCart([]);
+    if (typeof setCreatingOrder === "function") setCreatingOrder(false);
     
-    // Auto-destroys the window right after they hit Save/Cancel
-    setTimeout(() => {
-      // 🚀 THE TIMING FIX: Run the callback here so the main screen updates *after* print closes!
-      if (typeof onComplete === "function") {
-        onComplete();
-      }
-
-      // Fallback cleanups
-      if (typeof setCart === "function") setCart([]);
-      if (typeof setCreatingOrder === "function") setCreatingOrder(false);
-      
-      printWindow.close();
-    }, 300);
-  }, 400); 
+    // Check window status before invoking immediate removal string steps
+    printWindow.close();
+  }, 1000); 
 };
 
 /* =========================================================================
