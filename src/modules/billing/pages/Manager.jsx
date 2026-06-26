@@ -616,7 +616,6 @@ const printToken = (order, onComplete) => {
   <div class="center">
     ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="70" style="margin-bottom: 6px; display: inline-block;" /></div>` : ""}
     <div class="restaurant-name">${settings?.restaurant_name || "BUSINESS NAME"}</div>
-    <div class="subtitle">${settings?.subtitle || "Quality & Service"}</div>
     <div class="details">
       ${settings?.address ? `<div>${settings.address}</div>` : ""}
       <div>
