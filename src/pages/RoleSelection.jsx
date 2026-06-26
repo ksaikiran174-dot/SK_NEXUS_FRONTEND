@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import "./RoleSelection.css";
 
+
 function RoleSelection({ onSelectRole }) {
   return (
     <div className="role-selection-container">
@@ -47,7 +48,7 @@ function RoleSelection({ onSelectRole }) {
               className="avatar-wrapper"
             >
               <img
-                src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"
+                src="../../public/manager.png"
                 alt="Manager"
                 className="role-avatar"
               />
@@ -86,7 +87,7 @@ function RoleSelection({ onSelectRole }) {
               className="avatar-wrapper"
             >
               <img
-                src="https://cdn-icons-png.flaticon.com/512/168/168882.png"
+                src="../../public/employee.png"
                 alt="Employee"
                 className="role-avatar"
               />
