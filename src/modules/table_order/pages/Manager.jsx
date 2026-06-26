@@ -1193,9 +1193,15 @@ const fetchAnalytics =
 
 
 /* =========================================
-   CREATE ORDER (TABLE MANAGEMENT - INSTANT RESPONSE)
+   CREATE ORDER (TABLE MANAGEMENT - STRICT ONLINE ONLY)
 ========================================= */
 const handleCreateOrder = async () => {
+  // 🚀 INTERNET STATUS CHECK: Kill execution instantly if offline
+  if (!navigator.onLine) {
+    addNotification("⚠️ Offline! Active internet connection is required to send orders to the kitchen.", "error");
+    return;
+  }
+
   // 1. INSTANT SYNCHRONOUS GUARD (Blocks multi-clicks in < 1ms)
   if (cart.length === 0 || creatingOrder || isProcessingRef.current) return;
 
@@ -1213,20 +1219,17 @@ const handleCreateOrder = async () => {
   isProcessingRef.current = true;
   setCreatingOrder(true);
 
-  const offlineUuid = `off_uuid_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
   const localTableBackup = selectedTableNumber;
+  const localCartBackup = [...cart];
+  const localPaymentModeBackup = paymentMode;
 
   // Clone payload instantly so it's safely detached from the UI state
   const orderPayload = {
     items: [...cart], 
     payment_mode: paymentMode, 
     status: "pending",
-    table_number: selectedTableNumber,
-    offline_uuid: offlineUuid
+    table_number: selectedTableNumber
   };
-
-  const localCartBackup = [...cart];
-  const localPaymentModeBackup = paymentMode;
 
   // ── 2. INSTANT UI CLEANUP (Takes < 5ms) ──
   // The user sees a totally fresh screen instantly!
@@ -1271,43 +1274,18 @@ const handleCreateOrder = async () => {
     });
 
   } catch (err) {
-    console.error("Online route failed, processing background local backup...", err);
+    console.error("Order submission failed, rolling back checkout UI state...", err);
+    addNotification("❌ Failed to send order. Server unreachable. Please check your connection and try again.", "error");
     
-    // SAFE OFFLINE FALLBACK
-    try {
-      await saveOfflineOrder(orderPayload);
-
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(innerErr => console.error("Audio blocked:", innerErr));
-      }
-      
-      setOrders((prev) => [
-        ...prev,
-        {
-          id: `temp_${Date.now()}`,
-          ...orderPayload,
-          isOfflinePending: true,
-          created_at: new Date().toISOString()
-        }
-      ]);
-
-      addNotification(`📡 Connection lost! Order securely saved offline for Table ${localTableBackup}.`, "warning");
-    } catch (innerDbErr) {
-      console.error("Fatal local storage fail:", innerDbErr);
-      addNotification("❌ Network dropped and local storage failed.", "error");
-      
-      // Rollback only if the local database write completely fails
-      setCart(localCartBackup);
-      setSelectedTableNumber(localTableBackup);
-      setPaymentMode(localPaymentModeBackup);
-    }
+    // 🚀 ROLLBACK: Bring everything back onto the checkout view so they don't lose typed data
+    setCart(localCartBackup);
+    setSelectedTableNumber(localTableBackup);
+    setPaymentMode(localPaymentModeBackup);
   } finally {
     // 4. UNLOCK for the next order once background pipeline completes
     isProcessingRef.current = false;
   }
 };
-
 
 const chartData =
   analytics?.top_items?.map((item) => ({
