@@ -1175,10 +1175,15 @@ const fetchAnalytics =
   };
 
 /* =========================================
-   CREATE ORDER (OFFLINE-READY & CLEAN STORAGE)
+   CREATE ORDER (BILLING EXTENSION - STRICT ONLINE ONLY)
 ========================================= */
-
 const handleCreateOrder = async () => {
+  // 🚀 INTERNET STATUS CHECK: Terminate execution instantly if client is offline
+  if (!navigator.onLine) {
+    addNotification("⚠️ Connection Lost! Active internet is required to process bills and log transactions.", "error");
+    return;
+  }
+
   if (cart.length === 0 || creatingOrder) return;
 
   if (!businessDay) {
@@ -1188,45 +1193,18 @@ const handleCreateOrder = async () => {
 
   setCreatingOrder(true); // ⏳ Locks the UI button instantly
 
-  // Generate a distinct, completely unique ID tag for this local snapshot instance
-  const offlineUuid = `off_uuid_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  // Keep an immutable backup copy of the checkout state in case the server call fails mid-flight
+  const localCartBackup = [...cart];
+  const localPaymentModeBackup = paymentMode;
 
-  // Construct your clean base data object matching your backend model expectations
+  // Construct a clean, predictable base data model matching your backend API expectations
   const orderPayload = {
     items: cart,
     payment_mode: paymentMode,
-    status: "completed",
-    offline_uuid: offlineUuid // 👈 Sent down so Python can block sync double-submits later
+    status: "completed"
   };
 
-  // 🚨 NETWORK BOUNDARY CHECK: If the local browser flags are dark
-  if (!navigator.onLine) {
-    try {
-      // Save it directly into our browser's IndexedDB ledger store
-      await saveOfflineOrder(orderPayload);
-      
-      // 🔊 SOUND ONLY: Audio confirmation for successful local storage caching
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
-
-      addNotification("⚠️ Running Offline! Order cached locally and added to background sync queue.", "warning");
-      
-      // Clear your frontend operational view layouts instantly so the next customer can checkout
-      setCart([]);
-      setPaymentMode("cash");
-      
-    } catch (dbErr) {
-      console.error("Local browser storage write error:", dbErr);
-      addNotification("❌ Failed to cache order locally.", "error");
-    } finally {
-      setCreatingOrder(false); // No artificial delay needed for offline caching
-    }
-    return; // Exit out early! Do not let execution hit the network apiFetch loop below
-  }
-
-  // 🟢 ONLINE ROUTE: Standard network execution path
+  // 🟢 ONLINE ROUTE: Standard execution path
   try {
     const res = await apiFetch(
       `${import.meta.env.VITE_API_URL}/orders`,
@@ -1241,9 +1219,7 @@ const handleCreateOrder = async () => {
     );
 
     if (!res.ok) {
-      addNotification("❌ Failed to process checkout.", "error");
-      setCreatingOrder(false); 
-      return;
+      throw new Error("Server rejected or failed to process layout checkout packet");
     }
 
     const data = await res.json();
@@ -1261,42 +1237,23 @@ const handleCreateOrder = async () => {
     // 🎉 STEP 2: The print dialog was closed! Now show the completion toast
     addNotification("🎉 Order Completed Successfully!", "success");
 
-    // 🎯 STEP 3: Instantly reset cart and refresh transaction list rows
+    // 🎯 STEP 3: Instantly reset cart panel states
     setCart([]);
     setPaymentMode("cash");
-    
-    // if (typeof fetchTransactions === "function") {
-    //   fetchTransactions(); 
-    // }
     
     refreshSummary();
     refreshAnalytics();
     refreshTransactions();
-    // Unlock checkout instantly for the next customer
-    setCreatingOrder(false); 
 
   } catch (err) {
-    console.error("Billing Checkout Online Error. Falling back to offline save...", err);
+    console.error("Billing Checkout Online Error. Resetting operational backups...", err);
+    addNotification("❌ Network error! Could not finalize bill transaction on the cloud server.", "error");
     
-    // 📡 FALLBACK: If the internet drops right in the split-second after clicking checkout
-    try {
-      await saveOfflineOrder(orderPayload);
-
-      // 🔊 SOUND ONLY: Inform operator that the checkout layout step processed successfully into storage
-      if (settings?.enable_sound && acceptSoundRef?.current) {
-        acceptSoundRef.current.currentTime = 0;
-        acceptSoundRef.current.play().catch(err => console.error("Audio blocked:", err));
-      }
-
-      addNotification("📡 Network dropped mid-flight! Order securely saved offline.", "warning");
-      setCart([]);
-      setPaymentMode("cash");
-    } catch (innerDbErr) {
-      console.error("Critical fallback storage failure:", innerDbErr);
-      addNotification("❌ Connection error and local storage failure.", "error");
-    } finally {
-      setCreatingOrder(false);
-    }
+    // 🚀 THE SAFETY NET: Restore state variables into the checkout context so cart data is NEVER lost!
+    setCart(localCartBackup);
+    setPaymentMode(localPaymentModeBackup);
+  } finally {
+    setCreatingOrder(false); // Unlock checkout panel inputs safely
   }
 };
 
