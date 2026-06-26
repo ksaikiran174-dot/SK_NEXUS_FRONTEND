@@ -948,11 +948,6 @@ return (
 
 {/* ========== RESTORE STOCK VIEW ========== */}
 
-
-
-
-        <ToastContainer notifications={notifications} />
-
         {lowStockMessage && (
           <motion.div
             className="toast toast--warning toast--anchored-bottom"
@@ -968,6 +963,9 @@ return (
           </motion.div>
         )}
       </main>
+
+        <ToastContainer notifications={notifications} />
+
 
       {/* Confirmation Modal */}
       <ConfirmationModal

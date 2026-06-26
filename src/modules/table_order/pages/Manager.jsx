@@ -3409,7 +3409,6 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
           </>
         )}
 
-        <ToastContainer notifications={notifications} />
 
 {/* ========================================================
     MAIN CONTENT AREA: SUBSCRIPTION MANAGEMENT PANEL
@@ -4094,6 +4093,8 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 )}
 
       </main>
+
+        <ToastContainer notifications={notifications} />
 
       {/* Confirmation Modal */}
       <ConfirmationModal

@@ -3354,7 +3354,6 @@ return (
           </>
         )}
 
-        <ToastContainer notifications={notifications} />
 
 {/* ========================================================
     MAIN CONTENT AREA: SUBSCRIPTION MANAGEMENT PANEL
@@ -4019,6 +4018,8 @@ return (
 )}
 
       </main>
+
+        <ToastContainer notifications={notifications} />
 
       {/* Confirmation Modal */}
       <ConfirmationModal

@@ -720,7 +720,6 @@ function TableEmployee() {
           </>
         )}
 
-        <ToastContainer notifications={notifications} />
 
         {lowStockMessage && (
           <motion.div
@@ -735,6 +734,9 @@ function TableEmployee() {
           </motion.div>
         )}
       </main>
+
+        <ToastContainer notifications={notifications} />
+
 
       {/* Confirmation Modal */}
       <ConfirmationModal

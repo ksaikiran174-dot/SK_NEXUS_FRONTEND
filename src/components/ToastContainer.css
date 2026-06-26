@@ -211,7 +211,7 @@
 @media (max-width: 430px) {
   /* Restrict the stack from blowing up horizontally */
   .toast-stack {
-    top: 16px;
+    top: 74px;
     right: 16px;
     left: auto; /* ⚡ Cancels out full-width stretching */
     width: calc(100vw - 32px);

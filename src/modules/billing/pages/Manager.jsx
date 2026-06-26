@@ -3033,7 +3033,6 @@ return (
           </>
         )}
 
-        <ToastContainer notifications={notifications} />
 
 
 {/* ========================================================
@@ -3622,6 +3621,7 @@ return (
 
 </main>
 
+        <ToastContainer notifications={notifications} />
 
 
       {/* ========== GLOBAL CONFIRMATION MODAL ========== */}
