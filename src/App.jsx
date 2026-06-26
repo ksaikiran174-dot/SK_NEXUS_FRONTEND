@@ -44,7 +44,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       icon: "👔",
       title: "Welcome Manager",
       color: "#2563eb",
-      avatar: "https://cdn-icons-png.flaticon.com/512/4140/4140048.png",
+      avatar: "/manager.webp",
       messages: [
         "🔐 Verifying secure access...",
         "📊 Loading business analytics...",
@@ -57,7 +57,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       icon: dynamicMode === "billing" ? "💳" : dynamicMode === "table" ? "📱" : "👨‍🍳",
       title: dynamicMode === "billing" ? "Welcome Cashier" : dynamicMode === "table" ? "Welcome Employee" : "Welcome Employee",
       color: "#10b981",
-      avatar: "https://cdn-icons-png.flaticon.com/512/168/168882.png",
+      avatar: "/employee.webp",
       messages: [
         "🔐 Authenticating your credentials...",
         dynamicMode === "billing" 

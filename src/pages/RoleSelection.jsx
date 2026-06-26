@@ -48,7 +48,7 @@ function RoleSelection({ onSelectRole }) {
               className="avatar-wrapper"
             >
               <img
-                src="/manager.png"
+                src="/manager.webp"
                 alt="Manager"
                 className="role-avatar"
               />
@@ -87,7 +87,7 @@ function RoleSelection({ onSelectRole }) {
               className="avatar-wrapper"
             >
               <img
-                src="/employee.png"
+                src="/employee.webp"
                 alt="Employee"
                 className="role-avatar"
               />
