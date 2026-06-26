@@ -665,7 +665,6 @@ const printToken = (order, onComplete) => {
 </head>
 <body>
   <div class="center">
-    {/* 🚀 THE BIGGER LOGO FIX: Increased size to 100 for premium clarity */}
     ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="100" style="margin-bottom: 8px; display: inline-block;" /></div>` : ""}
     <div class="restaurant-name">${settings?.restaurant_name || "BUSINESS NAME"}</div>
     <div class="details">
