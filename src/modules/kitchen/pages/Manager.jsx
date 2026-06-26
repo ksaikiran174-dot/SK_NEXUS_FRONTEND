@@ -595,7 +595,12 @@ const printToken = (order, onComplete) => {
     }
     @media print {
       html, body { background: #fff; margin: 0; padding: 0; }
-      body { width: 72mm; margin: 0 auto; padding: 4mm 0 10mm 0; }
+      body { 
+        width: 72mm; 
+        margin: 0 auto; 
+        /* 🚀 THE SPACER FIX: Generates crisp breathing room on top of the physical paper roll */
+        padding: 8mm 0 12mm 0; 
+      }
     }
     body {
       font-family: 'Courier New', Courier, Monaco, system-ui, monospace;
@@ -605,7 +610,8 @@ const printToken = (order, onComplete) => {
       width: 100%;
       max-width: 290px;
       margin: 0 auto;
-      padding: 10px;
+      /* Visual padding behavior for screen previews */
+      padding: 25px 10px 10px 10px; 
       color: #000;
       box-sizing: border-box;
       font-size: 13px;
@@ -613,7 +619,6 @@ const printToken = (order, onComplete) => {
     }
     .center { text-align: center; }
     .restaurant-name { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
-    .subtitle { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
     .details { font-size: 11px; font-weight: 500; line-height: 1.4; }
     .divider { border-top: 1px dashed #000; margin: 12px 0; height: 0; }
     .token { font-size: 42px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; }
@@ -626,7 +631,8 @@ const printToken = (order, onComplete) => {
 </head>
 <body>
   <div class="center">
-    ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="70" style="margin-bottom: 6px; display: inline-block;" /></div>` : ""}
+    {/* 🚀 THE BIGGER LOGO FIX: Increased size to 100 for premium clarity */}
+    ${settings?.logo_url ? `<div><img id="receipt-logo" src="${settings.logo_url}" width="100" style="margin-bottom: 8px; display: inline-block;" /></div>` : ""}
     <div class="restaurant-name">${settings?.restaurant_name || "BUSINESS NAME"}</div>
     <div class="details">
       ${settings?.address ? `<div>${settings.address}</div>` : ""}
