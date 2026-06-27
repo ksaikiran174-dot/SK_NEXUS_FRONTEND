@@ -428,13 +428,13 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
                 >
                   📝 Sign Up
                 </button>
-                {/* <button
+                <button
                   type="button"
                   className="footer-link-btn forgot"
                   onClick={() => setShowForgotModal(true)}
                 >
                   🔑 Forgot Password?
-                </button> */}
+                </button>
               </div>
               <button
                 type="button"
