@@ -550,7 +550,7 @@ function TableEmployee() {
               <h1>⚠️ Send Low Stock Alert</h1>
             </div>
 
-            {/* 🔍 REAL-TIME SEARCH BAR */}
+{/* 🔍 REAL-TIME SEARCH BAR */}
             <div className="search-container" style={{ marginBottom: "20px" }}>
               <input
                 type="text"
@@ -562,8 +562,12 @@ function TableEmployee() {
                   width: "100%",
                   padding: "12px 16px",
                   borderRadius: "8px",
-                  border: "1px solid #ccc",
-                  fontSize: "16px"
+                  fontSize: "16px",
+                  // 🚀 DYNAMIC DARK MODE SUPPORT
+                  backgroundColor: darkMode ? "#1f2937" : "#ffffff", // Dark gray vs White
+                  color: darkMode ? "#ffffff" : "#000000",           // White text vs Black text
+                  border: darkMode ? "1px solid #4b5563" : "1px solid #ccc", // Muted border for dark mode
+                  outline: "none"
                 }}
               />
             </div>
