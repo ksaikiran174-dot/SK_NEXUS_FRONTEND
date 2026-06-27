@@ -749,6 +749,17 @@ body {
   background: var(--bg-color);
 }
 
+[data-theme="dark"] .search-input {
+  background-color: #1e293b; /* Matches your stock-item background color */
+  color: #ffffff;            /* White text for visibility */
+  border-color: var(--border-color) !important; /* Uses your global dark border variable */
+}
+
+/* This handles the placeholder text color in dark mode */
+[data-theme="dark"] .search-input::placeholder {
+  color: #94a3b8; /* Muted slate gray placeholder */
+}
+
 /* ============================================
    RESPONSIVE — TABLET ≤1100px
    ============================================ */
