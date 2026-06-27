@@ -745,6 +745,10 @@ body {
   color: #34d399;
 }
 
+[data-theme="dark"] .search-container {
+  background: var(--bg-color);
+}
+
 /* ============================================
    RESPONSIVE — TABLET ≤1100px
    ============================================ */
@@ -1295,4 +1299,5 @@ aside.employee-sidebar {
   [data-theme="dark"] aside.employee-sidebar {
     background: linear-gradient(160deg, #064e3b 0%, #065f46 100%) !important;
   }
+
 }
