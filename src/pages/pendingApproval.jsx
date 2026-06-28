@@ -47,9 +47,9 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
         
         <p style={styles.subtext}>
           {isTrial ? (
-            <>Your free trial workspace setup is currently undergoing quick administrative configuration. Please wait a moment while the super-admin activates your trial access pipeline.</>
+            <>Your free trial workspace setup is currently undergoing quick administrative configuration. Please wait a moment while the admin activates your trial access pipeline.</>
           ) : (
-            <>Your restaurant setup is currently undergoing administrative review. Please wait for the super-admin to verify your payment status and activate your dashboard.</>
+            <>Your restaurant setup is currently undergoing administrative review. Please wait for the admin to verify your payment status and activate your dashboard.</>
           )}
         </p>
 
@@ -93,17 +93,17 @@ const PendingApproval = ({ restaurantData, onLogout }) => {
         {/* Support Call-to-Actions */}
         <div style={styles.supportSection}>
           <p style={styles.supportText}>Have any questions or need urgent activation?</p>
-          <a href={`tel:${adminContact}`} className="btn btn-primary" style={styles.supportBtn}>
-            📞 Call Support Admin
+          <a href="tel:+918464053060" className="btn btn-primary" style={styles.supportBtn}>
+            📞 Admin Contact Support: 8464053060
           </a>
           <a 
-            href={`https://wa.me/${adminContact.replace("+", "")}?text=${encodeURIComponent(whatsappMessage)}`} 
+            href="https://wa.me/918464053060?text=Hi%20Admin,%20I%27m%20waiting%20for%20my%20SK%20Nexus%20account%20approval." 
             target="_blank" 
             rel="noopener noreferrer" 
             className="btn btn-success" 
             style={styles.supportBtn}
           >
-            💬 WhatsApp Chat
+            💬 WhatsApp Chat: 8464053060
           </a>
         </div>
 

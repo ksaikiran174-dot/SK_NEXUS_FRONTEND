@@ -34,8 +34,8 @@ function Register({
 
   const PLAN_PRICES = {
     basic: 499,
-    pro: 999,
-    enterprise: 999
+    pro: 799,
+    enterprise: 799
   };
 
   // =========================================
