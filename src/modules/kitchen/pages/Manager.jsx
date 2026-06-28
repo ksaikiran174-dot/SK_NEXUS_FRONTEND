@@ -1527,7 +1527,29 @@ const handleCloseDay = async () => {
 };
 
 
+const fetchEmployees = async () => {
 
+  try {
+
+    const response = await apiFetch(
+      `${import.meta.env.VITE_API_URL}/employees`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${localStorage.getItem("managerAccessToken")}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    setEmployees(data);
+
+  } catch (err) {
+
+    console.error(err);
+  }
+};
 
 
 // const runCountdownCalculation = (expiryDateString) => {
