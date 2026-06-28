@@ -3766,6 +3766,14 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
 
   if (!isOpen) return null;
 
+  // Clean-up and close utility
+  const handleModalClose = () => {
+    setUtr('');
+    setScreenshot(null);
+    setPreview('');
+    onClose();
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -3782,23 +3790,22 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
       return;
     }
     
-    // 🚀 STRICT LENGTH GUARD (12 to 22 characters)
+    // Strict Length Check
     if (cleanUtr.length < 12 || cleanUtr.length > 22) {
       onNotify("⚠️ Transaction Reference UTR must be between 12 and 22 digits long!");
-      return;
-    }
-
-    if (!screenshot) {
-      onNotify("Please upload your payment screenshot file proof!");
       return;
     }
     
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("screenshot", screenshot);
     formData.append("utr_id", cleanUtr);
     formData.append("duration_days", 30);
+    
+    // Only attach screenshot if the user optionally chose to upload one
+    if (screenshot) {
+      formData.append("screenshot", screenshot);
+    }
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/recharge-subscription`, {
@@ -3825,12 +3832,14 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
     }
   };
 
+  const isUtrInvalid = utr.trim().length > 0 && (utr.trim().length < 12 || utr.trim().length > 22);
+
   return (
     <div className="modal-overlay-backdrop">
       <div className="modal-content-card">
         <div className="modal-header-row">
           <h3 className="modal-card-heading">💳 Secure Manual Payment</h3>
-          <button onClick={onClose} className="modal-close-cross-btn">×</button>
+          <button onClick={handleModalClose} className="modal-close-cross-btn">×</button>
         </div>
 
         <p className="modal-info-paragraph">
@@ -3863,18 +3872,17 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
             onChange={(e) => setUtr(e.target.value)}
             className="text-input-field"
           />
-          {/* 🚀 LIVE ERROR INDICATOR DISPLAYED ON BAD VALUES */}
-          {utr.trim().length > 0 && (utr.trim().length < 12 || utr.trim().length > 22) && (
+          {isUtrInvalid && (
             <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "5px", fontWeight: "600" }}>
               ⚠️ UTR must be between 12 and 22 digits long (Current: {utr.trim().length}).
             </p>
           )}
         </div>
 
-        {/* FILE UPLOADER DRAWER */}
+        {/* FILE UPLOADER DRAWER (OPTIONAL) */}
         <div className="dashed-uploader-container">
           <label className="uploader-clickable-label">
-            📸 Upload Payment Receipt Screenshot
+            📸 Upload Payment Receipt Screenshot (Optional)
           </label>
           <input type="file" accept="image/*" onChange={handleFileChange} className="file-input-field" />
           
@@ -3887,12 +3895,12 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
         <div className="modal-btn-row-group">
           <button 
             onClick={handleReceiptSubmission} 
-            disabled={loading || (uttr => utr.trim().length > 0 && (utr.trim().length < 12 || utr.trim().length > 22))} 
+            disabled={loading || isUtrInvalid || !utr.trim()} 
             className="btn-modal-action-primary"
           >
             {loading ? "Verifying Reference..." : "🚀 Submit Extension Proof"}
           </button>
-          <button onClick={onClose} className="btn-modal-action-secondary">
+          <button onClick={handleModalClose} className="btn-modal-action-secondary">
             Cancel
           </button>
         </div>
