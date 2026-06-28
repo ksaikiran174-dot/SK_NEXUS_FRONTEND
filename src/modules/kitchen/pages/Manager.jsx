@@ -192,6 +192,7 @@ function KitchenManager() {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
   const [showSummaryView, setShowSummaryView] = useState(true);
 const [showAnalyticsView, setShowAnalyticsView] = useState(false);
@@ -1397,6 +1398,8 @@ const handleSaveSettings = async () => {
 
   } catch (err) {
     console.error(err);
+  } finally {
+    setIsUpdatingSettings(false);
   }
 };
 
@@ -3808,8 +3811,17 @@ return (
                 <button
                   className="btn btn-success btn-lg"
                   onClick={handleSaveSettings}
+                  disabled={isUpdatingSettings} // 🛡️ Isolated protection
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 >
-                  💾 Save Settings
+                  {isUpdatingSettings ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>💾 Save Settings</>
+                  )}
                 </button>
               </div>
             </div>

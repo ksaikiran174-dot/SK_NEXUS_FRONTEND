@@ -190,6 +190,7 @@ function BillingManager() {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
   // State tracking for editing an item's category inline
   const [editCategory, setEditCategory] = useState("");
@@ -1419,6 +1420,8 @@ const handleSaveSettings =
     } catch (err) {
 
       console.error(err);
+    } finally {
+      setIsUpdatingSettings(false);
     }
 };
 
@@ -3386,11 +3389,20 @@ return (
 
       <div className="settings-actions">
         <button
-          className="btn btn-success btn-lg btn-settings-save-main"
-          onClick={handleSaveSettings}
-        >
-          💾 Save Settings
-        </button>
+                  className="btn btn-success btn-lg"
+                  onClick={handleSaveSettings}
+                  disabled={isUpdatingSettings} // 🛡️ Isolated protection
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+                >
+                  {isUpdatingSettings ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>💾 Save Settings</>
+                  )}
+                </button>
       </div>
     </div>
   </div>

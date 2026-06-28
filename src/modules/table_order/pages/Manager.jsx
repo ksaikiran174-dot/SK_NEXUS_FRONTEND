@@ -186,6 +186,7 @@ function TableManager() {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [rechargePending, setRechargePending] = useState(false); // 👈 Tracks if a request was submitted
   const [submittedUtr, setSubmittedUtr] = useState('');
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
   const isProcessingRef = useRef(false);
   
@@ -1372,6 +1373,8 @@ const handleSaveSettings = async () => {
 
   } catch (err) {
     console.error(err);
+  } finally {
+    setIsUpdatingSettings(false);
   }
 };
 
@@ -3861,8 +3864,17 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
                 <button
                   className="btn btn-success btn-lg"
                   onClick={handleSaveSettings}
+                  disabled={isUpdatingSettings} // 🛡️ Isolated protection
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 >
-                  💾 Save Settings
+                  {isUpdatingSettings ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    <>💾 Save Settings</>
+                  )}
                 </button>
               </div>
             </div>
