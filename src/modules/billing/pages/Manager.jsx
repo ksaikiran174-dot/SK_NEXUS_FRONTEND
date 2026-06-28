@@ -3775,10 +3775,19 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
   };
 
   const handleReceiptSubmission = async () => {
-    if (!utr.trim()) {
+    const cleanUtr = utr.trim();
+
+    if (!cleanUtr) {
       onNotify("Please input your transaction reference UTR ID first!");
       return;
     }
+    
+    // 🚀 STRICT LENGTH GUARD (12 to 22 characters)
+    if (cleanUtr.length < 12 || cleanUtr.length > 22) {
+      onNotify("⚠️ Transaction Reference UTR must be between 12 and 22 digits long!");
+      return;
+    }
+
     if (!screenshot) {
       onNotify("Please upload your payment screenshot file proof!");
       return;
@@ -3788,7 +3797,7 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
 
     const formData = new FormData();
     formData.append("screenshot", screenshot);
-    formData.append("utr_id", utr.trim());
+    formData.append("utr_id", cleanUtr);
     formData.append("duration_days", 30);
 
     try {
@@ -3801,9 +3810,10 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
       });
 
       if (res.ok) {
+        setUtr('');
         setScreenshot(null);
         setPreview('');
-        onSuccess(utr.trim()); 
+        onSuccess(cleanUtr); 
         onClose(); 
       } else {
         onNotify("❌ Database submission rejected by server infrastructure.");
@@ -3830,7 +3840,6 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
         {/* MERCHANT GATEWAY BOX */}
         <div className="merchant-gateway-box">
           <div className="merchant-qr-placeholder-img">
-            {/* 🔄 Restored original image constraints and spacing styles */}
             <img 
               src="/qr_code.jpeg" 
               alt="QR Code" 
@@ -3843,15 +3852,23 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
         {/* UTR INPUT BLOCK */}
         <div className="input-group-field-block">
           <label className="input-field-label">
-            Reference UTR / Transaction ID (12 Digits)
+            Reference UTR / Transaction ID (12 to 22 Digits)
           </label>
           <input 
             type="text" 
-            placeholder="Enter 12-digit UTR identifier number" 
+            placeholder="Enter 12-22 digit UTR identifier" 
+            minLength={12}
+            maxLength={22}
             value={utr}
             onChange={(e) => setUtr(e.target.value)}
             className="text-input-field"
           />
+          {/* 🚀 LIVE ERROR INDICATOR DISPLAYED ON BAD VALUES */}
+          {utr.trim().length > 0 && (utr.trim().length < 12 || utr.trim().length > 22) && (
+            <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "5px", fontWeight: "600" }}>
+              ⚠️ UTR must be between 12 and 22 digits long (Current: {utr.trim().length}).
+            </p>
+          )}
         </div>
 
         {/* FILE UPLOADER DRAWER */}
@@ -3868,7 +3885,11 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
 
         {/* BUTTON GROUP ROW */}
         <div className="modal-btn-row-group">
-          <button onClick={handleReceiptSubmission} disabled={loading} className="btn-modal-action-primary">
+          <button 
+            onClick={handleReceiptSubmission} 
+            disabled={loading || (uttr => utr.trim().length > 0 && (utr.trim().length < 12 || utr.trim().length > 22))} 
+            className="btn-modal-action-primary"
+          >
             {loading ? "Verifying Reference..." : "🚀 Submit Extension Proof"}
           </button>
           <button onClick={onClose} className="btn-modal-action-secondary">
