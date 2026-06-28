@@ -1670,28 +1670,41 @@
 .merchant-gateway-box {
   text-align: center;
   background-color: #f8fafc;
-  padding: 12px;
+  padding: 16px; /* Increased padding slightly for better breathing room */
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
 .merchant-qr-placeholder-img {
-  width: 140px;
-  height: 140px;
-  background-color: #cbd5e1;
-  margin: 0 auto 8px auto;
+  width: 150px;  /* Bumped slightly to comfortably show the QR */
+  height: 150px; 
+  background-color: #ffffff; /* Changing to white looks cleaner under a real QR image */
+  margin: 0 auto 12px auto;
   border-radius: 8px;
+  border: 1px solid #e2e8f0; /* Soft border around the white QR canvas */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  color: #475569;
-  font-size: 12px;
+  overflow: hidden; /* Encapsulates the image strictly to the border-radius */
 }
+
+/* 🚀 New explicit style targeting the image inside the box */
+.payment-qr {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Guarantees the entire QR code fits beautifully without distortion */
+  padding: 8px; /* Gives the QR a safe clean whitespace zone */
+}
+
 .merchant-upi-text {
-  font-size: 12px;
+  font-size: 13px; /* Slightly bumped for readability */
   color: #334155;
   font-weight: 700;
+  word-break: break-all; /* Prevents overflow strings on super small screens */
 }
 
 /* Inputs & Uploader Groups */
