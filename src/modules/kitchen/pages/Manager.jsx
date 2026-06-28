@@ -1366,6 +1366,7 @@ const handleLogoUpload =
 
 const handleSaveSettings = async () => {
   try {
+    setIsUpdatingSettings(true); 
     // 1. Commit the preference to localStorage exactly when the user clicks save
     const preferencesToSave = {
       enable_sound: settings.enable_sound

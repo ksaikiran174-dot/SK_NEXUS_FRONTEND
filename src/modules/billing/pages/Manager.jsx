@@ -1387,7 +1387,7 @@ const handleSaveSettings =
   async () => {
 
     try {
-
+      setIsUpdatingSettings(true);
       const res =
         await apiFetch(
           `${import.meta.env.VITE_API_URL}/settings`,
