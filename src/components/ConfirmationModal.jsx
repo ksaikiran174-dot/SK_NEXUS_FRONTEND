@@ -7,6 +7,7 @@ function ConfirmationModal({
   message,
   onConfirm,
   onCancel,
+  children,
   confirmText = "Confirm",
   cancelText = "Cancel",
   isDangerous = false,
@@ -67,6 +68,8 @@ function ConfirmationModal({
               <p>{message}</p>
             </div>
 
+            {children}
+            
             <div className="confirmation-footer">
               {showCancelButton && (
                 <button
