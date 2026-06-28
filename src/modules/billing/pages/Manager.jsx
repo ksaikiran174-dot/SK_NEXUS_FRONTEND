@@ -3830,7 +3830,13 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
         {/* MERCHANT GATEWAY BOX */}
         <div className="merchant-gateway-box">
           <div className="merchant-qr-placeholder-img">
-            [ MERCHANT QR IMAGE ]
+            {/* 🔄 Restored original image constraints and spacing styles */}
+            <img 
+              src="/qr_code.jpeg" 
+              alt="QR Code" 
+              className="payment-qr" 
+              style={{ display: "block", margin: "0 auto 15px", maxWidth: "200px" }} 
+            />
           </div>
           <span className="merchant-upi-text">UPI ID: business@upi</span>
         </div>
