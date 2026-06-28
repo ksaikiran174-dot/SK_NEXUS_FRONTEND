@@ -3835,10 +3835,10 @@ const ManualRechargeModal = ({ isOpen, onClose, onSuccess, onNotify }) => {
               src="/qr_code.jpeg" 
               alt="QR Code" 
               className="payment-qr" 
-              style={{ display: "block", margin: "0 auto 15px", maxWidth: "200px" }} 
+              style={{ display: "block", margin: "0 auto 15px", maxWidth: "170px" }} 
             />
           </div>
-          <span className="merchant-upi-text">UPI ID: business@upi</span>
+          <span className="merchant-upi-text">UPI ID: 8464053060-2@ybl </span>
         </div>
 
         {/* UTR INPUT BLOCK */}
