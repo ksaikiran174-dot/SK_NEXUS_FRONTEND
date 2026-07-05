@@ -4025,7 +4025,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
       <div style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)", borderRadius: "12px", padding: "20px", marginBottom: "25px", border: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px dashed #cbd5e1" }}>
           <span style={{ color: "#475569", fontWeight: "600" }}>📦 Total Orders Processed:</span>
-          <span style={{ fontWeight: "700", color: "#0f172a" }}>{masterCycleSummary.total_orders} Tickets</span>
+          <span style={{ fontWeight: "700", color: "#0f172a" }}>{masterCycleSummary.total_orders} Order(s)</span>
         </div>
         
         <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px dashed #cbd5e1" }}>
