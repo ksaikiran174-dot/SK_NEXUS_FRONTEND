@@ -573,6 +573,21 @@ const printToken = (order, onComplete) => {
   // 🚀 DYNAMIC GST INJECTION CHECKER FOR THERMAL RECEIPT
   const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
 
+  // 📝 GST MATHEMATICS FOR 5% TOTAL RESTAURANT TAX (2.5% CGST + 2.5% SGST)
+  const totalAmount = Number(order.total_price);
+  let subtotal = totalAmount;
+  let cgst = 0;
+  let sgst = 0;
+
+  if (hasValidGst) {
+    // If total includes 5% GST, reverse-calculate the base price
+    // Base Price = Total / 1.05
+    subtotal = totalAmount / 1.05;
+    const totalGst = totalAmount - subtotal;
+    cgst = totalGst / 2;
+    sgst = totalGst / 2;
+  }
+
   printWindow.document.write(`
 <html>
 <head>
@@ -612,6 +627,7 @@ const printToken = (order, onComplete) => {
     .divider { border-top: 1px dashed #000; margin: 12px 0; height: 0; }
     .token { font-size: 42px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; }
     .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-weight: 600; }
+    .gst-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-weight: 500; font-size: 12px; }
     .item-name { text-align: left; padding-right: 10px; }
     .item-price { text-align: right; white-space: nowrap; }
     .total { font-size: 18px; font-weight: 900; margin-top: 6px; }
@@ -648,9 +664,26 @@ const printToken = (order, onComplete) => {
 
   <div class="divider"></div>
 
+  <!-- 📊 GST TAX BREAKDOWN SECTION -->
+  ${hasValidGst ? `
+    <div class="gst-row">
+      <span>Subtotal</span>
+      <span>₹${subtotal.toFixed(2)}</span>
+    </div>
+    <div class="gst-row">
+      <span>CGST (2.5%)</span>
+      <span>₹${cgst.toFixed(2)}</span>
+    </div>
+    <div class="gst-row">
+      <span>SGST (2.5%)</span>
+      <span>₹${sgst.toFixed(2)}</span>
+    </div>
+    <div class="divider"></div>
+  ` : ""}
+
   <div class="row total">
-    <span>TOTAL</span>
-    <span>₹${Number(order.total_price).toFixed(2)}</span>
+    <span>NET TOTAL</span>
+    <span>₹${totalAmount.toFixed(2)}</span>
   </div>
   
   <div class="divider"></div>
