@@ -476,7 +476,8 @@ const downloadReceipt = (transaction) => {
     contactLineItems.push(`Tel: ${settings.phone}`);
   }
   // Check if gst_number exists, isn't empty, and isn't the fallback string
-  if (settings.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED") {
+  const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
+  if (hasValidGst) {
     contactLineItems.push(`GST: ${settings.gst_number}`);
   }
 
@@ -489,6 +490,18 @@ const downloadReceipt = (transaction) => {
   y += 2;
   drawDivider(y);
   y += 6;
+
+  // 📝 FORWARD GST MATHEMATICS (Base Price + 5% Extra Tax)
+  const subtotal = Number(transaction.total_price); // Treat current total as base subtotal
+  let cgst = 0;
+  let sgst = 0;
+  let grandTotal = subtotal;
+
+  if (hasValidGst) {
+    cgst = subtotal * 0.025; // 2.5% CGST
+    sgst = subtotal * 0.025; // 2.5% SGST
+    grandTotal = subtotal + cgst + sgst; // Base + Tax = Grand Total
+  }
 
   // --- TRANSACTION INFO ---
   doc.setFontSize(9);
@@ -509,9 +522,9 @@ const downloadReceipt = (transaction) => {
   drawDivider(y);
   y += 6;
 
-  const colItemX = margin;                                       
+  const colItemX = margin;                                      
   const colQtyCenter = margin + (rightBoundary - margin) / 2;    
-  const colTotalRight = rightBoundary;                           
+  const colTotalRight = rightBoundary;                          
 
   // --- ITEMS TABLE HEADER ---
   doc.setFont("JetBrains Mono", "bold");
@@ -536,14 +549,38 @@ const downloadReceipt = (transaction) => {
 
   y += 2;
   drawDivider(y);
-  y += 7;
+  y += 6;
 
-  // --- SUMMARY SECTION ---
+  // --- 📊 SUMMARY & GST TAX BREAKDOWN SECTION ---
+  if (hasValidGst) {
+    doc.setFontSize(8);
+    doc.setFont("JetBrains Mono", "normal");
+    
+    // Subtotal Row
+    doc.text("Subtotal", margin, y);
+    doc.text(`Rs.${subtotal.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 4;
+    
+    // CGST Row
+    doc.text("CGST (2.5%)", margin, y);
+    doc.text(`Rs.${cgst.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 4;
+    
+    // SGST Row
+    doc.text("SGST (2.5%)", margin, y);
+    doc.text(`Rs.${sgst.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 5;
+
+    drawDivider(y);
+    y += 6;
+  }
+
+  // --- GRAND TOTAL ---
   doc.setFontSize(10);
   doc.setFont("JetBrains Mono", "bold");
   doc.text("GRAND TOTAL", margin, y);
   doc.setFontSize(11);
-  doc.text(`Rs. ${Number(transaction.total_price).toFixed(2)}`, rightBoundary, y, { align: "right" });
+  doc.text(`Rs. ${grandTotal.toFixed(2)}`, rightBoundary, y, { align: "right" });
   y += 10;
 
   // --- FOOTER ---
@@ -561,7 +598,6 @@ const downloadReceipt = (transaction) => {
 
   doc.save(`Receipt-${transaction.token_id}.pdf`);
 };
-
 
 const printToken = (order, onComplete) => {
   const printWindow = window.open(
