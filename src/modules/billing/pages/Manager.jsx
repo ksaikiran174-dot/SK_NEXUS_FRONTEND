@@ -573,19 +573,16 @@ const printToken = (order, onComplete) => {
   // 🚀 DYNAMIC GST INJECTION CHECKER FOR THERMAL RECEIPT
   const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
 
-  // 📝 GST MATHEMATICS FOR 5% TOTAL RESTAURANT TAX (2.5% CGST + 2.5% SGST)
-  const totalAmount = Number(order.total_price);
-  let subtotal = totalAmount;
+  // 📝 FORWARD GST MATHEMATICS (Base Price + 5% Extra Tax)
+  const subtotal = Number(order.total_price); // Treat current total as base subtotal
   let cgst = 0;
   let sgst = 0;
+  let grandTotal = subtotal;
 
   if (hasValidGst) {
-    // If total includes 5% GST, reverse-calculate the base price
-    // Base Price = Total / 1.05
-    subtotal = totalAmount / 1.05;
-    const totalGst = totalAmount - subtotal;
-    cgst = totalGst / 2;
-    sgst = totalGst / 2;
+    cgst = subtotal * 0.025; // 2.5% CGST
+    sgst = subtotal * 0.025; // 2.5% SGST
+    grandTotal = subtotal + cgst + sgst; // Base + Tax = Grand Total
   }
 
   printWindow.document.write(`
@@ -602,7 +599,7 @@ const printToken = (order, onComplete) => {
       body { 
         width: 72mm; 
         margin: 0 auto; 
-        /* 🚀 THE SPACER FIX: Generates crisp breathing room on top of the physical paper roll */
+        /* 🚀 THE SPACER FIX */
         padding: 8mm 0 12mm 0; 
       }
     }
@@ -614,7 +611,6 @@ const printToken = (order, onComplete) => {
       width: 100%;
       max-width: 290px;
       margin: 0 auto;
-      /* Visual padding behavior for screen previews */
       padding: 25px 10px 10px 10px; 
       color: #000;
       box-sizing: border-box;
@@ -682,8 +678,8 @@ const printToken = (order, onComplete) => {
   ` : ""}
 
   <div class="row total">
-    <span>NET TOTAL</span>
-    <span>₹${totalAmount.toFixed(2)}</span>
+    <span>GRAND TOTAL</span>
+    <span>₹${grandTotal.toFixed(2)}</span>
   </div>
   
   <div class="divider"></div>
