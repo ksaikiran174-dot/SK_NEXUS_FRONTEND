@@ -381,54 +381,80 @@ const getWaitingTime = (
 };
 
 const downloadTransactionsPDF = () => {
-
   const doc = new jsPDF();
 
   doc.setFontSize(18);
+  doc.text("Restaurant Transactions Report", 14, 20);
 
-  doc.text("Restaurant Transactions", 14, 20);
+  // 🚀 DYNAMIC GST CHECKER FOR COMPLIANT ACCOUNTING LOGS
+  const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
 
-  const tableData = transactions.map((txn) => [
-    txn.token_id,
+  const tableData = transactions.map((txn) => {
+    const subtotal = Number(txn.total_price);
+    
+    if (hasValidGst) {
+      const totalGst = subtotal * 0.05; // 5% Total Tax (CGST + SGST combined)
+      const grandTotal = subtotal + totalGst;
 
-    txn.items
-      .map(
-        (i) => `${i.name} x${i.quantity}`
-      )
-      .join(", "),
-
-    `Rs. ${txn.total_price}`,
-
-    txn.payment_mode,
-
-      new Date(txn.created_at)
-      .toLocaleString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-  ]);
+      return [
+        txn.token_id,
+        txn.items.map((i) => `${i.name} x${i.quantity}`).join(", "),
+        `Rs. ${subtotal.toFixed(2)}`,
+        `Rs. ${totalGst.toFixed(2)}`,
+        `Rs. ${grandTotal.toFixed(2)}`,
+        txn.payment_mode?.toUpperCase() || "ONLINE",
+        new Date(txn.created_at).toLocaleString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      ];
+    } else {
+      // Fallback if the restaurant does not use GST billing
+      return [
+        txn.token_id,
+        txn.items.map((i) => `${i.name} x${i.quantity}`).join(", "),
+        `Rs. ${subtotal.toFixed(2)}`,
+        "Rs. 0.00",
+        `Rs. ${subtotal.toFixed(2)}`,
+        txn.payment_mode?.toUpperCase() || "ONLINE",
+        new Date(txn.created_at).toLocaleString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      ];
+    }
+  });
 
   autoTable(doc, {
-
     startY: 30,
-
     head: [[
       "Token",
       "Items",
-      "Total",
+      "Subtotal",
+      "GST (5%)",
+      "Grand Total",
       "Payment",
       "Ordered Time"
     ]],
-
     body: tableData,
+    theme: "striped",
+    styles: { fontSize: 9 },
+    // Giving extra width flexibility to items column since text strings can get long
+    columnStyles: {
+      1: { cellWidth: 50 } 
+    }
   });
 
-  doc.save("transactions.pdf");
-  };
+  doc.save("transactions-report.pdf");
+};
 
 
 const downloadReceipt = (transaction) => {
