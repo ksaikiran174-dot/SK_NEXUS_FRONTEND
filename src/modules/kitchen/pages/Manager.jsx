@@ -393,56 +393,80 @@ const getWaitingTime = (
 };
 
 const downloadTransactionsPDF = () => {
-
   const doc = new jsPDF();
 
   doc.setFontSize(18);
+  doc.text("Restaurant Transactions Report", 14, 20);
 
-  doc.text("Restaurant Transactions", 14, 20);
+  // 🚀 DYNAMIC GST CHECKER FOR COMPLIANT ACCOUNTING LOGS
+  const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
 
-  const tableData = transactions.map((txn) => [
-    txn.token_id,
+  const tableData = transactions.map((txn) => {
+    const subtotal = Number(txn.total_price);
+    
+    if (hasValidGst) {
+      const totalGst = subtotal * 0.05; // 5% Total Tax (CGST + SGST combined)
+      const grandTotal = subtotal + totalGst;
 
-    txn.items
-      .map(
-        (i) => `${i.name} x${i.quantity}`
-      )
-      .join(", "),
-
-    `Rs. ${txn.total_price}`,
-
-    txn.payment_mode,
-
-      new Date(txn.created_at)
-      .toLocaleString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-  ]);
+      return [
+        txn.token_id,
+        txn.items.map((i) => `${i.name} x${i.quantity}`).join(", "),
+        `Rs. ${subtotal.toFixed(2)}`,
+        `Rs. ${totalGst.toFixed(2)}`,
+        `Rs. ${grandTotal.toFixed(2)}`,
+        txn.payment_mode?.toUpperCase() || "ONLINE",
+        new Date(txn.created_at).toLocaleString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      ];
+    } else {
+      // Fallback if the restaurant does not use GST billing
+      return [
+        txn.token_id,
+        txn.items.map((i) => `${i.name} x${i.quantity}`).join(", "),
+        `Rs. ${subtotal.toFixed(2)}`,
+        "Rs. 0.00",
+        `Rs. ${subtotal.toFixed(2)}`,
+        txn.payment_mode?.toUpperCase() || "ONLINE",
+        new Date(txn.created_at).toLocaleString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      ];
+    }
+  });
 
   autoTable(doc, {
-
     startY: 30,
-
     head: [[
       "Token",
       "Items",
-      "Total",
+      "Subtotal",
+      "GST (5%)",
+      "Grand Total",
       "Payment",
       "Ordered Time"
     ]],
-
     body: tableData,
+    theme: "striped",
+    styles: { fontSize: 9 },
+    // Giving extra width flexibility to items column since text strings can get long
+    columnStyles: {
+      1: { cellWidth: 50 } 
+    }
   });
 
-  doc.save("transactions.pdf");
-  };
-
-
+  doc.save("transactions-report.pdf");
+};
 
 const downloadReceipt = (transaction) => {
   const doc = new jsPDF({
@@ -489,7 +513,8 @@ const downloadReceipt = (transaction) => {
     contactLineItems.push(`Tel: ${settings.phone}`);
   }
   // Check if gst_number exists, isn't empty, and isn't the fallback string
-  if (settings.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED") {
+  const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
+  if (hasValidGst) {
     contactLineItems.push(`GST: ${settings.gst_number}`);
   }
 
@@ -502,6 +527,18 @@ const downloadReceipt = (transaction) => {
   y += 2;
   drawDivider(y);
   y += 6;
+
+  // 📝 FORWARD GST MATHEMATICS (Base Price + 5% Extra Tax)
+  const subtotal = Number(transaction.total_price); // Treat current total as base subtotal
+  let cgst = 0;
+  let sgst = 0;
+  let grandTotal = subtotal;
+
+  if (hasValidGst) {
+    cgst = subtotal * 0.025; // 2.5% CGST
+    sgst = subtotal * 0.025; // 2.5% SGST
+    grandTotal = subtotal + cgst + sgst; // Base + Tax = Grand Total
+  }
 
   // --- TRANSACTION INFO ---
   doc.setFontSize(9);
@@ -522,9 +559,9 @@ const downloadReceipt = (transaction) => {
   drawDivider(y);
   y += 6;
 
-  const colItemX = margin;                                       
+  const colItemX = margin;                                      
   const colQtyCenter = margin + (rightBoundary - margin) / 2;    
-  const colTotalRight = rightBoundary;                           
+  const colTotalRight = rightBoundary;                          
 
   // --- ITEMS TABLE HEADER ---
   doc.setFont("JetBrains Mono", "bold");
@@ -549,14 +586,38 @@ const downloadReceipt = (transaction) => {
 
   y += 2;
   drawDivider(y);
-  y += 7;
+  y += 6;
 
-  // --- SUMMARY SECTION ---
+  // --- 📊 SUMMARY & GST TAX BREAKDOWN SECTION ---
+  if (hasValidGst) {
+    doc.setFontSize(8);
+    doc.setFont("JetBrains Mono", "normal");
+    
+    // Subtotal Row
+    doc.text("Subtotal", margin, y);
+    doc.text(`Rs.${subtotal.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 4;
+    
+    // CGST Row
+    doc.text("CGST (2.5%)", margin, y);
+    doc.text(`Rs.${cgst.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 4;
+    
+    // SGST Row
+    doc.text("SGST (2.5%)", margin, y);
+    doc.text(`Rs.${sgst.toFixed(2)}`, rightBoundary, y, { align: "right" });
+    y += 5;
+
+    drawDivider(y);
+    y += 6;
+  }
+
+  // --- GRAND TOTAL ---
   doc.setFontSize(10);
   doc.setFont("JetBrains Mono", "bold");
   doc.text("GRAND TOTAL", margin, y);
   doc.setFontSize(11);
-  doc.text(`Rs. ${Number(transaction.total_price).toFixed(2)}`, rightBoundary, y, { align: "right" });
+  doc.text(`Rs. ${grandTotal.toFixed(2)}`, rightBoundary, y, { align: "right" });
   y += 10;
 
   // --- FOOTER ---
@@ -585,6 +646,18 @@ const printToken = (order, onComplete) => {
   // 🚀 DYNAMIC GST INJECTION CHECKER FOR THERMAL RECEIPT
   const hasValidGst = settings?.gst_number && settings.gst_number.trim() !== "" && settings.gst_number !== "NOT_PROVIDED";
 
+  // 📝 FORWARD GST MATHEMATICS (Base Price + 5% Extra Tax)
+  const subtotal = Number(order.total_price); // Treat current total as base subtotal
+  let cgst = 0;
+  let sgst = 0;
+  let grandTotal = subtotal;
+
+  if (hasValidGst) {
+    cgst = subtotal * 0.025; // 2.5% CGST
+    sgst = subtotal * 0.025; // 2.5% SGST
+    grandTotal = subtotal + cgst + sgst; // Base + Tax = Grand Total
+  }
+
   printWindow.document.write(`
 <html>
 <head>
@@ -599,7 +672,7 @@ const printToken = (order, onComplete) => {
       body { 
         width: 72mm; 
         margin: 0 auto; 
-        /* 🚀 THE SPACER FIX: Generates crisp breathing room on top of the physical paper roll */
+        /* 🚀 THE SPACER FIX */
         padding: 8mm 0 12mm 0; 
       }
     }
@@ -611,7 +684,6 @@ const printToken = (order, onComplete) => {
       width: 100%;
       max-width: 290px;
       margin: 0 auto;
-      /* Visual padding behavior for screen previews */
       padding: 25px 10px 10px 10px; 
       color: #000;
       box-sizing: border-box;
@@ -624,6 +696,7 @@ const printToken = (order, onComplete) => {
     .divider { border-top: 1px dashed #000; margin: 12px 0; height: 0; }
     .token { font-size: 42px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; }
     .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-weight: 600; }
+    .gst-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-weight: 500; font-size: 12px; }
     .item-name { text-align: left; padding-right: 10px; }
     .item-price { text-align: right; white-space: nowrap; }
     .total { font-size: 18px; font-weight: 900; margin-top: 6px; }
@@ -660,9 +733,26 @@ const printToken = (order, onComplete) => {
 
   <div class="divider"></div>
 
+  <!-- 📊 GST TAX BREAKDOWN SECTION -->
+  ${hasValidGst ? `
+    <div class="gst-row">
+      <span>Subtotal</span>
+      <span>₹${subtotal.toFixed(2)}</span>
+    </div>
+    <div class="gst-row">
+      <span>CGST (2.5%)</span>
+      <span>₹${cgst.toFixed(2)}</span>
+    </div>
+    <div class="gst-row">
+      <span>SGST (2.5%)</span>
+      <span>₹${sgst.toFixed(2)}</span>
+    </div>
+    <div class="divider"></div>
+  ` : ""}
+
   <div class="row total">
-    <span>TOTAL</span>
-    <span>₹${Number(order.total_price).toFixed(2)}</span>
+    <span>GRAND TOTAL</span>
+    <span>₹${grandTotal.toFixed(2)}</span>
   </div>
   
   <div class="divider"></div>
@@ -706,6 +796,7 @@ const printToken = (order, onComplete) => {
     printWindow.close();
   }, 1000); 
 };
+
 
 /* =========================================================================
     🚀 UNIFIED DASHBOARD MOUNT ENGINE (Perfect Sync & Clean Key Mapping)
