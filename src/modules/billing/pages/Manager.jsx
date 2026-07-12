@@ -1322,7 +1322,7 @@ const handleCreateOrder = async () => {
     
     // 🖨️ STEP 1: Open print window and pause code execution!
     // React halts right here while the user interacts with the Print dialog.
-    await printToken(data); 
+    printToken(data); 
     
     // 🔊 SOUND ONLY: Audio confirmation plays right along with the layout completion notification
     if (settings?.enable_sound && acceptSoundRef?.current) {
