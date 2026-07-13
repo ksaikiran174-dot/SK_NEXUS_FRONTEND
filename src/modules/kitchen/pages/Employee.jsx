@@ -527,7 +527,7 @@ return (
     {/* HIDDEN AUDIO TAG */}
     <audio 
       ref={soundRef} 
-      src="/sounds/for_acceptance.wav" 
+      src="/sounds/for_notification.mp3" 
       preload="auto" 
       style={{ display: 'none' }} 
     />
