@@ -448,7 +448,7 @@ function SuperAdmin() {
                       {restaurant.payment_screenshot && restaurant.payment_screenshot !== "FREE_TRIAL" ? (
                         <button
                           className="view-payment-btn"
-                          style={{backgroundColor: "yellow", padding: "10px", fontSize: "white", fontWeight: "bold", border: "None"}}
+                          style={{backgroundColor: "yellow", padding: "10px", fontSize: "white", fontWeight: "bold", border: "None", borderRadius: "6px", cursor: "pointer"}}
                           onClick={() => {
                             let finalUrl = restaurant.payment_screenshot;
 
