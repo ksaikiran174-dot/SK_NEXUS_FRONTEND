@@ -645,7 +645,7 @@ function SuperAdmin() {
         <div className="restaurant-modal-overlay">
           <div className="restaurant-modal">
             <div className="restaurant-modal-header">
-              <h2>Restaurant Details</h2>
+              <h2>Business Details</h2>
               <button className="close-modal-btn" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <div className="restaurant-modal-body">
