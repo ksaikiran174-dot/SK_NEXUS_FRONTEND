@@ -6,13 +6,14 @@ import ToastContainer from "../components/ToastContainer";
 import { inferToastType } from "../utils/ToastHelpers";
 import ConfirmationModal from "../components/ConfirmationModal"; // 🚀 Import our custom modal framework
 
-function SuperAdmin() {
+
+function SuperAdmin({ onLogout }) {
   const [restaurants, setRestaurants] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [showImageModal, setShowImageModal] = useState(false);
-  
+
   // 🎯 Manage custom toast arrays cleanly
   const [notifications, setNotifications] = useState([]);
 
@@ -36,34 +37,58 @@ function SuperAdmin() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchRestaurants();
-  }, []);
-
-  const handleLogout = () => {
+  /* ── 🔐 CENTRALIZED SESSION EXPIRED DISPATCHER ── */
+  const triggerSessionExpired = () => {
     localStorage.removeItem("superAdminAccessToken");
     localStorage.removeItem("superAdminRefreshToken");
     localStorage.removeItem("role");
-    window.location.reload(); 
+
+    // If passed as a prop from App.jsx, use it to seamlessly switch state without full page reload
+    if (typeof onLogout === "function") {
+      onLogout();
+    } else {
+      window.location.reload();
+    }
+  };
+
+  const handleLogout = () => {
+    triggerSessionExpired();
   };
 
   const formatDateTime = (dateString) => {
     if (!dateString) return "Never";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; 
+    if (isNaN(date.getTime())) return dateString;
     return date.toLocaleString(undefined, {
       dateStyle: "medium",
-      timeStyle: "short"
+      timeStyle: "short",
     });
   };
 
   const fetchRestaurants = async () => {
+    const token = localStorage.getItem("superAdminAccessToken");
+    if (!token) {
+      triggerSessionExpired();
+      return;
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}`
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
+
+      // 🚨 catch token expiration or invalid permissions
+      if (response.status === 401 || response.status === 403) {
+        console.warn("🔒 SuperAdmin token expired or unauthorized. Logging out...");
+        triggerSessionExpired();
+        return;
+      }
+
       const data = await response.json();
       setRestaurants(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -77,7 +102,7 @@ function SuperAdmin() {
     setNotifications((prev) => {
       const isDuplicate = prev.some((n) => n.text === text);
       if (isDuplicate) return prev;
-      return [...prev, { id, text, type: type || inferToastType(text) }];
+      return [...prev, { id, text, type: type || "info" }];
     });
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -95,18 +120,31 @@ function SuperAdmin() {
   }, []);
 
   // Utility flags to set and remove asynchronous processing spinners on target elements
-  const startLoading = (actionKey) => setIsProcessing(prev => ({ ...prev, [actionKey]: true }));
-  const stopLoading = (actionKey) => setIsProcessing(prev => ({ ...prev, [actionKey]: false }));
-  const closeConfirmModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
+  const startLoading = (actionKey) =>
+    setIsProcessing((prev) => ({ ...prev, [actionKey]: true }));
+  const stopLoading = (actionKey) =>
+    setIsProcessing((prev) => ({ ...prev, [actionKey]: false }));
+  const closeConfirmModal = () =>
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
 
   const approveRestaurant = async (id) => {
     const actionKey = `approve-${id}`;
     startLoading(actionKey);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/approve`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-      });
+      const token = localStorage.getItem("superAdminAccessToken");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/approve`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
+
       await fetchRestaurants();
     } catch (err) {
       console.error(err);
@@ -119,7 +157,8 @@ function SuperAdmin() {
     setModalConfig({
       isOpen: true,
       title: "Block Workspace Access?",
-      message: "Are you sure you want to suspend this restaurant profile? Their management staff will be immediately locked out of live platform configurations until unblocked manually.",
+      message:
+        "Are you sure you want to suspend this restaurant profile? Their management staff will be immediately locked out of live platform configurations until unblocked manually.",
       type: "warning",
       confirmText: "Block Access",
       isDangerous: true,
@@ -128,10 +167,20 @@ function SuperAdmin() {
         const actionKey = `suspend-${id}`;
         startLoading(actionKey);
         try {
-          await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/suspend`, {
-            method: "PUT",
-            headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-          });
+          const token = localStorage.getItem("superAdminAccessToken");
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/suspend`,
+            {
+              method: "PUT",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            triggerSessionExpired();
+            return;
+          }
+
           await fetchRestaurants();
           addNotification("🔒 Restaurant workspace access successfully suspended.");
         } catch (err) {
@@ -139,7 +188,7 @@ function SuperAdmin() {
         } finally {
           stopLoading(actionKey);
         }
-      }
+      },
     });
   };
 
@@ -147,10 +196,20 @@ function SuperAdmin() {
     const actionKey = `unblock-${id}`;
     startLoading(actionKey);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/unblock`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-      });
+      const token = localStorage.getItem("superAdminAccessToken");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}/unblock`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
+
       await fetchRestaurants();
       addNotification("🔓 Workspace access granted to restaurant group successfully.");
     } catch (err) {
@@ -164,7 +223,8 @@ function SuperAdmin() {
     setModalConfig({
       isOpen: true,
       title: "Permanently Delete Restaurant?",
-      message: "Warning! This action is irreversible. All linked active transactional histories, catalog settings, and credential parameters will be wiped from the data cluster database logs forever.",
+      message:
+        "Warning! This action is irreversible. All linked active transactional histories, catalog settings, and credential parameters will be wiped from the data cluster database logs forever.",
       type: "error",
       confirmText: "Delete Log Permanently",
       isDangerous: true,
@@ -173,10 +233,20 @@ function SuperAdmin() {
         const actionKey = `delete-${id}`;
         startLoading(actionKey);
         try {
-          await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-          });
+          const token = localStorage.getItem("superAdminAccessToken");
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}`,
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            triggerSessionExpired();
+            return;
+          }
+
           await fetchRestaurants();
           addNotification("🗑️ Restaurant records deleted permanently.");
         } catch (err) {
@@ -184,7 +254,7 @@ function SuperAdmin() {
         } finally {
           stopLoading(actionKey);
         }
-      }
+      },
     });
   };
 
@@ -193,15 +263,24 @@ function SuperAdmin() {
     startLoading(actionKey);
     try {
       const token = localStorage.getItem("superAdminAccessToken");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${restaurantId}/approve`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${restaurantId}/approve`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok) {
         addNotification(`🎉 Success! Subscription for the restaurant has been approved and extended.`);
-        setRestaurants(prevRestaurants => prevRestaurants.filter(r => r.id !== restaurantId));
+        setRestaurants((prev) => prev.filter((r) => r.id !== restaurantId));
         await fetchRestaurants();
       } else {
         addNotification(`❌ Failed to approve: ${data.detail || "Unknown error occurred"}`);
@@ -215,7 +294,7 @@ function SuperAdmin() {
   };
 
   const openDeclineInterface = (restaurantId) => {
-    setDeclineInput(""); 
+    setDeclineInput("");
     setActiveDeclineId(restaurantId);
   };
 
@@ -226,27 +305,34 @@ function SuperAdmin() {
     }
 
     const targetId = activeDeclineId;
-    setActiveDeclineId(null); 
+    setActiveDeclineId(null);
     const actionKey = `sub-decline-${targetId}`;
     startLoading(actionKey);
 
     try {
       const token = localStorage.getItem("superAdminAccessToken");
-      // 🚀 FIXED: Replaced production hardcoded string with dynamic environment base URL variable safely
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${targetId}/decline`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ reason: declineInput })
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${targetId}/decline`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ reason: declineInput }),
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
 
       const data = await response.json();
 
       if (response.ok) {
         addNotification(`📉 Request Declined! The manager has been notified with the reason: "${declineInput}"`);
-        setRestaurants(prevRestaurants => prevRestaurants.filter(r => r.id !== targetId));
+        setRestaurants((prev) => prev.filter((r) => r.id !== targetId));
         await fetchRestaurants();
       } else {
         addNotification(`❌ Failed to decline: ${data.detail || "Validation check error"}`);
@@ -263,10 +349,20 @@ function SuperAdmin() {
     const actionKey = `extend-${restaurantId}`;
     startLoading(actionKey);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${restaurantId}/extend?days=30`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-      });
+      const token = localStorage.getItem("superAdminAccessToken");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${restaurantId}/extend?days=30`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
+
       if (!response.ok) throw new Error("Failed to extend subscription");
       addNotification("📆 Subscription window extended manually by 30 days.");
       await fetchRestaurants();
@@ -279,9 +375,19 @@ function SuperAdmin() {
 
   const openRestaurantModal = async (id) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("superAdminAccessToken")}` }
-      });
+      const token = localStorage.getItem("superAdminAccessToken");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/super-admin/restaurants/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        triggerSessionExpired();
+        return;
+      }
+
       const data = await response.json();
       setSelectedRestaurant(data);
       setShowModal(true);
