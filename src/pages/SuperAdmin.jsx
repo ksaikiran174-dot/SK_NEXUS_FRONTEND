@@ -482,7 +482,7 @@ function SuperAdmin() {
           ACTIVE RESTAURANTS
       ======================================= */}
       <div className="admin-section">
-        <h2 className="section-title">Active Restaurants</h2>
+        <h2 className="section-title">Active Users</h2>
         <table className="admin-table">
           <thead>
             <tr>
@@ -540,7 +540,7 @@ function SuperAdmin() {
           BLOCKED RESTAURANTS
       ======================================= */}
       <div className="admin-section">
-        <h2 className="section-title">Blocked Restaurants</h2>
+        <h2 className="section-title">Blocked Users</h2>
         <table className="admin-table">
           <thead>
             <tr>
