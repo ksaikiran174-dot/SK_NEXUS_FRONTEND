@@ -1,286 +1,608 @@
+/* =============================================================
+   🎨 SUPER ADMIN PANEL — CORE THEME
+   ============================================================= */
+
+:root {
+  --sa-bg: #f3f5fa;
+  --sa-surface: #ffffff;
+  --sa-border: #e7eaf1;
+  --sa-text: #1f2430;
+  --sa-text-soft: #64748b;
+  --sa-primary: #4f46e5;
+  --sa-primary-dark: #4338ca;
+  --sa-success: #10b981;
+  --sa-success-dark: #059669;
+  --sa-warning: #f59e0b;
+  --sa-warning-dark: #d97706;
+  --sa-danger: #ef4444;
+  --sa-danger-dark: #dc2626;
+  --sa-radius-lg: 18px;
+  --sa-radius-md: 12px;
+  --sa-radius-sm: 8px;
+  --sa-shadow: 0 6px 24px rgba(30, 41, 59, 0.06);
+  --sa-shadow-hover: 0 10px 30px rgba(30, 41, 59, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
 .super-admin-page {
-  padding: 30px;
-  background: #f5f7fb;
+  padding: 40px;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.06), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05), transparent 45%),
+    var(--sa-bg);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--sa-text);
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+
+.super-admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 34px;
+  width: 100%;
 }
 
 .super-admin-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 30px;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: linear-gradient(135deg, var(--sa-primary), #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
+.logout-btn {
+  padding: 11px 22px !important;
+  background: linear-gradient(135deg, var(--sa-danger), var(--sa-danger-dark)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Section cards ────────────────────────────────────────── */
+
 .admin-section {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--sa-surface);
+  border-radius: var(--sa-radius-lg);
+  padding: 26px;
   margin-bottom: 30px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  box-shadow: var(--sa-shadow);
+  border: 1px solid var(--sa-border);
+  transition: box-shadow 0.2s ease;
+}
+
+.admin-section:hover {
+  box-shadow: var(--sa-shadow-hover);
 }
 
 .section-title {
-  font-size: 22px;
-  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--sa-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sa-text);
 }
+
+/* ── Table ────────────────────────────────────────────────── */
 
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .admin-table th {
   text-align: left;
-  padding: 14px;
-  background: #f3f4f6;
-  font-weight: 600;
+  padding: 14px 16px;
+  background: #f8f9fc;
+  color: var(--sa-text-soft);
+  font-weight: 700;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--sa-border);
+}
+
+.admin-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.admin-table th:last-child {
+  border-top-right-radius: 10px;
 }
 
 .admin-table td {
-  padding: 14px;
-  border-bottom: 1px solid #eee;
+  padding: 16px;
+  border-bottom: 1px solid var(--sa-border);
+  font-size: 14.5px;
+  vertical-align: middle;
 }
+
+.admin-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #fafbff;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Action buttons ───────────────────────────────────────── */
 
 .actions-cell {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .approve-btn,
 .extend-btn,
 .suspend-btn,
-.delete-btn {
+.delete-btn,
+.decline-btn,
+.view-payment-btn {
   border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 9px 16px;
+  border-radius: var(--sa-radius-sm);
   font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  white-space: nowrap;
+}
+
+.approve-btn:hover,
+.extend-btn:hover,
+.suspend-btn:hover,
+.delete-btn:hover,
+.decline-btn:hover,
+.view-payment-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.approve-btn:active,
+.extend-btn:active,
+.suspend-btn:active,
+.delete-btn:active,
+.decline-btn:active,
+.view-payment-btn:active {
+  transform: translateY(0);
+}
+
+.approve-btn:disabled,
+.extend-btn:disabled,
+.suspend-btn:disabled,
+.delete-btn:disabled,
+.decline-btn:disabled,
+.view-payment-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .approve-btn {
-  background: #10b981;
+  background: linear-gradient(135deg, var(--sa-success), var(--sa-success-dark));
   color: white;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
 }
 
 .extend-btn {
-  background: #2563eb;
+  background: linear-gradient(135deg, var(--sa-primary), var(--sa-primary-dark));
   color: white;
+  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3);
 }
 
 .suspend-btn {
-  background: #f59e0b;
+  background: linear-gradient(135deg, var(--sa-warning), var(--sa-warning-dark));
   color: white;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.3);
 }
 
-.delete-btn {
-  background: #ef4444;
+.delete-btn,
+.decline-btn {
+  background: linear-gradient(135deg, var(--sa-danger), var(--sa-danger-dark));
   color: white;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+}
+
+.view-payment-btn {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  color: #1f2430 !important;
+  box-shadow: 0 3px 10px rgba(251, 191, 36, 0.35);
+}
+
+/* ── Status pills ─────────────────────────────────────────── */
+
+.pending-status,
+.active-status,
+.expired-status {
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  display: inline-block;
 }
 
 .pending-status {
-  color: #f59e0b;
-  font-weight: 700;
+  color: var(--sa-warning-dark);
+  background: #fef3c7;
 }
 
 .active-status {
-  color: #10b981;
-  font-weight: 700;
+  color: var(--sa-success-dark);
+  background: #d1fae5;
 }
 
 .expired-status {
-  color: #ef4444;
-  font-weight: 700;
+  color: var(--sa-danger-dark);
+  background: #fee2e2;
 }
 
+/* ── Restaurant name link ─────────────────────────────────── */
 
 .restaurant-link-btn {
-
   background: none;
-
   border: none;
-
-  color: #2563eb;
-
-  font-weight: 600;
-
+  color: var(--sa-primary);
+  font-weight: 700;
   cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  transition: color 0.15s ease;
 }
 
 .restaurant-link-btn:hover {
-
+  color: var(--sa-primary-dark);
   text-decoration: underline;
 }
 
+/* ── Details modal ────────────────────────────────────────── */
+
 .restaurant-modal-overlay {
-
   position: fixed;
-
   inset: 0;
-
-  background: rgba(0,0,0,0.55);
-
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   z-index: 999;
+  animation: sa-fade-in 0.15s ease;
 }
 
 .restaurant-modal {
-
   width: 600px;
-
   max-width: 95%;
-
-  background: white;
-
-  border-radius: 16px;
-
-  padding: 24px;
+  background: var(--sa-surface);
+  border-radius: var(--sa-radius-lg);
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: sa-pop-in 0.18s ease;
 }
 
 .restaurant-modal-header {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--sa-border);
+}
+
+.restaurant-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .close-modal-btn {
-
   border: none;
-
-  background: none;
-
-  font-size: 20px;
-
+  background: #f1f2f6;
+  color: var(--sa-text-soft);
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.close-modal-btn:hover {
+  background: var(--sa-danger);
+  color: white;
 }
 
 .restaurant-modal-body {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 14px;
 }
 
 .detail-row {
-
   display: flex;
-
   justify-content: space-between;
-
   gap: 20px;
-
-  border-bottom: 1px solid #eee;
-
+  border-bottom: 1px solid var(--sa-border);
   padding-bottom: 10px;
+  font-size: 14.5px;
 }
 
+.detail-row strong {
+  color: var(--sa-text-soft);
+  font-weight: 600;
+  min-width: 160px;
+}
+
+.detail-row span {
+  text-align: right;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* ── Image modal ──────────────────────────────────────────── */
+
 .image-modal-overlay {
-
   position: fixed;
-
   inset: 0;
-
-  background: rgba(0,0,0,0.7);
-
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(3px);
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
   z-index: 9999;
+  animation: sa-fade-in 0.15s ease;
 }
 
 .image-modal {
-
-  background: white;
-
+  background: var(--sa-surface);
   padding: 20px;
-
-  border-radius: 16px;
-
+  border-radius: var(--sa-radius-lg);
   max-width: 700px;
-
   width: 90%;
-
   position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  animation: sa-pop-in 0.18s ease;
 }
 
 .payment-preview-image {
-
   width: 100%;
-
   border-radius: 12px;
+  display: block;
 }
 
-.close-modal-btn {
-
+.image-modal .close-modal-btn {
   position: absolute;
-
-  top: 10px;
-
-  right: 10px;
-
-  border: none;
-
-  background: red;
-
+  top: -14px;
+  right: -14px;
+  background: var(--sa-danger);
   color: white;
-
-  width: 32px;
-
-  height: 32px;
-
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
+.image-modal .close-modal-btn:hover {
+  background: var(--sa-danger-dark);
+}
 
-/* ==========================================
-   📱 MOBILE RESPONSIVENESS (≤430px)
-   ========================================== */
+/* ── Animations ───────────────────────────────────────────── */
+
+@keyframes sa-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sa-pop-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* =============================================================
+   💻 LAPTOP / SMALL DESKTOP (1025px – 1366px)
+   Slightly tighten padding and font sizes for narrower laptops
+   ============================================================= */
+
+@media (max-width: 1366px) {
+  .super-admin-page {
+    padding: 32px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 13px 14px;
+    font-size: 14px;
+  }
+}
+
+/* =============================================================
+   📱 TABLET (769px – 1024px)
+   ============================================================= */
+
+@media (max-width: 1024px) {
+  .super-admin-page {
+    padding: 24px;
+  }
+
+  .super-admin-title {
+    font-size: 26px;
+  }
+
+  .admin-section {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .admin-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px;
+    font-size: 13.5px;
+    white-space: nowrap;
+  }
+
+  .actions-cell {
+    flex-wrap: nowrap;
+  }
+
+  .restaurant-modal {
+    width: 90%;
+    padding: 22px;
+  }
+
+  .detail-row strong {
+    min-width: 130px;
+  }
+}
+
+/* =============================================================
+   📱 LARGE PHONE / SMALL TABLET (431px – 768px)
+   ============================================================= */
+
+@media (max-width: 768px) {
+  .super-admin-page {
+    padding: 18px;
+  }
+
+  .super-admin-header-row {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .super-admin-title {
+    font-size: 22px;
+  }
+
+  .logout-btn {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .admin-section {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+  }
+
+  .section-title {
+    font-size: 16.5px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .actions-cell {
+    gap: 6px;
+  }
+
+  .approve-btn,
+  .extend-btn,
+  .suspend-btn,
+  .delete-btn,
+  .decline-btn,
+  .view-payment-btn {
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+
+  .restaurant-modal {
+    width: 92%;
+    padding: 20px;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  .detail-row {
+    font-size: 13.5px;
+  }
+}
+
+/* =============================================================
+   📱 PHONE (≤430px)
+   ============================================================= */
+
 @media (max-width: 430px) {
-
   .super-admin-page {
     padding: 14px;
   }
 
   .super-admin-title {
-    font-size: 22px;
-    margin-bottom: 16px;
+    font-size: 20px;
+    margin-bottom: 0;
   }
 
   .super-admin-header-row {
     flex-wrap: wrap;
     gap: 10px;
+    margin-bottom: 18px;
   }
 
   .logout-btn {
     padding: 8px 14px !important;
-    font-size: 13px;
+    font-size: 13px !important;
   }
 
   .admin-section {
     padding: 12px;
     border-radius: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .section-title {
-    font-size: 17px;
+    font-size: 16px;
     margin-bottom: 12px;
+    padding-bottom: 8px;
   }
 
   /* Make wide tables scrollable instead of squishing/overflowing the page */
@@ -295,7 +617,7 @@
   .admin-table th,
   .admin-table td {
     padding: 10px 8px;
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
   /* Stack action buttons vertically and let them fill width */
@@ -303,6 +625,7 @@
     flex-direction: column;
     gap: 6px;
     flex-wrap: nowrap;
+    white-space: normal;
   }
 
   .approve-btn,
@@ -312,13 +635,20 @@
   .decline-btn,
   .view-payment-btn {
     width: 100%;
-    padding: 8px 10px;
+    padding: 9px 10px;
     font-size: 12px;
+  }
+
+  .pending-status,
+  .active-status,
+  .expired-status {
+    font-size: 12px;
+    padding: 4px 10px;
   }
 
   /* Details modal */
   .restaurant-modal {
-    width: 92%;
+    width: 94%;
     padding: 16px;
     border-radius: 12px;
     max-height: 85vh;
@@ -326,7 +656,7 @@
   }
 
   .restaurant-modal-header h2 {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .restaurant-modal-body {
@@ -337,6 +667,15 @@
     flex-direction: column;
     gap: 4px;
     font-size: 13px;
+    text-align: left;
+  }
+
+  .detail-row strong {
+    min-width: 0;
+  }
+
+  .detail-row span {
+    text-align: left;
   }
 
   /* Image modal */
@@ -345,9 +684,11 @@
     padding: 14px;
   }
 
-  .close-modal-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
+  .image-modal .close-modal-btn {
+    top: -12px;
+    right: -12px;
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
   }
 }
