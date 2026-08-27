@@ -3852,3 +3852,171 @@
   .payment-modal-overlay { padding: 16px !important; }
   .payment-modal { max-width: 100% !important; padding: 20px !important; }
 }
+
+/* ============================================
+   FIX: business-day-banner was 30px globally —
+   this was the main oversized-text culprit on phones
+============================================ */
+.business-day-banner {
+  font-size: 30px; /* stays for desktop */
+}
+
+@media (max-width: 768px) {
+  .business-day-banner {
+    font-size: 15px;
+    padding: 8px 14px;
+    margin: 12px;
+  }
+}
+
+@media (max-width: 430px) {
+
+  /* ============================================
+     PHONE TYPOGRAPHY PASS
+     Tighter, more legible sizing + font stack
+     tuned for small screens
+  ============================================ */
+
+  .manager-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+      'Segoe UI', Roboto, sans-serif;
+    font-size: 14px; /* baseline shrink for the whole dashboard */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .business-day-banner {
+    font-size: 12px !important;
+    padding: 7px 12px !important;
+    margin: 10px !important;
+    letter-spacing: -0.1px;
+  }
+
+  /* Headings */
+  .page-title {
+    font-size: 21px !important;
+    letter-spacing: -0.3px;
+  }
+
+  .page-subtitle {
+    font-size: 12.5px !important;
+  }
+
+  .card-title,
+  .summary-header {
+    font-size: 16px !important;
+  }
+
+  .chart-title {
+    font-size: 14px !important;
+    padding-bottom: 8px;
+  }
+
+  .modal-card-heading {
+    font-size: 15px !important;
+  }
+
+  /* Stat / summary numbers were the biggest offenders */
+  .stat-value {
+    font-size: 19px !important;
+  }
+
+  .stat-label {
+    font-size: 10px !important;
+    letter-spacing: 0.3px;
+  }
+
+  .summary-item-value {
+    font-size: 21px !important;
+  }
+
+  .summary-item-label {
+    font-size: 11px !important;
+  }
+
+  .meta-card-value {
+    font-size: 16px !important;
+  }
+
+  .meta-card-label,
+  .cost-badge-label {
+    font-size: 10.5px !important;
+  }
+
+  .cost-badge-value {
+    font-size: 19px !important;
+  }
+
+  .countdown-value {
+    font-size: 15px !important;
+  }
+
+  .countdown-label {
+    font-size: 10px !important;
+  }
+
+  /* Body / form text */
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .setting-input,
+  .text-input-field {
+    font-size: 13px !important;
+  }
+
+  .form-group label,
+  .setting-label {
+    font-size: 12px !important;
+  }
+
+  .btn {
+    font-size: 13px !important;
+  }
+
+  .status-badge,
+  .status-pill {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+
+  .cart-item-name {
+    font-size: 13px !important;
+  }
+
+  .cart-item-price,
+  .cart-item-total {
+    font-size: 12px !important;
+  }
+
+  .transaction-token {
+    font-size: 14px !important;
+  }
+
+  .transaction-detail-value {
+    font-size: 12px !important;
+  }
+
+  .menu-item-name {
+    font-size: 14px !important;
+  }
+
+  .menu-item-price {
+    font-size: 15px !important;
+  }
+
+  .menu-item-description {
+    font-size: 12px !important;
+  }
+
+  .subscription-main-title {
+    font-size: 18px !important;
+  }
+
+  .subscription-subtitle,
+  .sub-state-desc {
+    font-size: 12px !important;
+  }
+
+  .sub-state-title {
+    font-size: 15px !important;
+  }
+}
