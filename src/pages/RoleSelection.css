@@ -781,7 +781,7 @@ body {
   letter-spacing: 0.4px;
   color: rgba(255, 255, 255, 1);
 
-  background: #00BFFF;
+  background: rgba(0, 0, 255, 1);
   box-shadow:
     0 4px 16px rgba(191, 227, 251, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
