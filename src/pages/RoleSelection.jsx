@@ -5,6 +5,18 @@ import "./RoleSelection.css";
 function RoleSelection({ onSelectRole, onRegisterClick }) {
   return (
     <div className="role-selection-container">
+      {/* TOP RIGHT — CREATE WORKSPACE BUTTON */}
+      <motion.button
+        type="button"
+        className="create-workspace-btn"
+        onClick={onRegisterClick}
+        whileHover={{ y: -2, scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+      >
+        <span className="create-workspace-icon">✨</span>
+        Create Workspace
+      </motion.button>
+
       <motion.div
         className="role-selection-wrapper"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -18,13 +30,6 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
           </p>
         </div>
 
-        <button
-                  type="button"
-                  className="footer-link-btn signup"
-                  onClick={onRegisterClick}
-                >
-                  📝 Sign Up
-                </button>
         {/* MAIN CARDS GRID (Manager & Employee Only) */}
         <div className="role-selection-cards">
           {/* MANAGER CARD */}
@@ -106,9 +111,9 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
           </motion.div>
         </div>
 
-        {/* 🎯 THE UPDATE: ADMIN PANEL AS A SUBTLE TEXT LINK */}
+        {/* ADMIN PANEL AS A SUBTLE TEXT LINK */}
         <div className="admin-link-wrapper">
-          <span 
+          <span
             className="admin-text-link"
             onClick={() => onSelectRole("super_admin")}
             role="button"
