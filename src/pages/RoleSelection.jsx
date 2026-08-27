@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import "./RoleSelection.css";
 
 
-function RoleSelection({ onSelectRole }) {
+function RoleSelection({ onSelectRole, onRegisterClick }) {
   return (
     <div className="role-selection-container">
       <motion.div
@@ -18,6 +18,13 @@ function RoleSelection({ onSelectRole }) {
           </p>
         </div>
 
+        <button
+                  type="button"
+                  className="footer-link-btn signup"
+                  onClick={onRegisterClick}
+                >
+                  📝 Sign Up
+                </button>
         {/* MAIN CARDS GRID (Manager & Employee Only) */}
         <div className="role-selection-cards">
           {/* MANAGER CARD */}
