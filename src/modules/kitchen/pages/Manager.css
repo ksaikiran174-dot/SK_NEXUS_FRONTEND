@@ -2656,7 +2656,7 @@
   right: 0;
   width: 100% !important; /* 🎯 Forces full horizontal coverage edge-to-edge */
   z-index: 1500;
-  background: var(--bg-color);
+  background: var(--primary-color);
   padding: 10px 16px;
   height: 56px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
