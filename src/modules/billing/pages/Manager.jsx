@@ -2198,7 +2198,7 @@ return (
                 </button>
               )}
             </div>
-            <button style={{ background: "rgba(0, 0, 0, 0.25)", color: "#FFFFFF"}} className="btn btn-primary" onClick={fetchTransactions}>
+            <button style={{ background: "rgba(0, 0, 0, 0.75)", color: "#FFFFFF"}} className="btn btn-primary" onClick={fetchTransactions}>
               Apply
             </button>
           </div>
