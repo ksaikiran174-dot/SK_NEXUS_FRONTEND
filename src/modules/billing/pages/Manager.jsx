@@ -2216,13 +2216,11 @@ return (
                     style={{
                       fontSize: "11px",
                       fontWeight: "700",
-                      color: "#4f46e5",
-                      background: "#eff6ff",
-                      padding: "2px 8px",
                       borderRadius: "6px",
                       width: "fit-content",
-                      border: "1px solid #bfdbfe"
-                    }}
+                      background: "#FEF3C7",
+                      color: "#B45309",
+                      border: "1px solid #FDE68A" }}
                   >
                     🔄 Day {txn.cycle_number || "N/A"}
                   </span>
