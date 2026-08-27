@@ -2198,7 +2198,7 @@ return (
                 </button>
               )}
             </div>
-            <button className="btn btn-primary" onClick={fetchTransactions}>
+            <button style={{ background: "#0F172A", color: "#FFFFFF"}} className="btn btn-primary" onClick={fetchTransactions}>
               Apply
             </button>
           </div>
@@ -2279,7 +2279,7 @@ return (
                 <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
                   <button
                     className="btn btn-primary btn-sm"
-                    style={{ width: "100%", fontSize: "13px" }}
+                    style={{ width: "100%", fontSize: "13px", background: "#F8FAFC", color: "#0F172A", border: "1px solid #E2E8F0"  }}
                     onClick={() => downloadReceipt(txn)}
                   >
                     📥 Download Receipt
