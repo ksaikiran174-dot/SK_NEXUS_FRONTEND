@@ -1514,7 +1514,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     z-index: 1000;
-    background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%);
+    background: var(--primary-color);
     border-right: 1px solid rgba(255,255,255,0.1);
     box-sizing: border-box;
   }
