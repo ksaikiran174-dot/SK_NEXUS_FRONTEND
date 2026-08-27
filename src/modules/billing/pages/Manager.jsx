@@ -2212,7 +2212,7 @@ return (
                   <span className="transaction-token">
                     Token #{txn.token_id}
                   </span>
-                  <span
+                  <span className="transaction-cycle"
                     style={{
                       fontSize: "11px",
                       fontWeight: "700",
@@ -2420,7 +2420,7 @@ return (
                     <p className="menu-item-price">₹{item.price}</p>
                     <p className="menu-item-description">{item.description}</p>
                     
-                    <span style={{
+                    <span className="category-badge" style={{
                       display: "inline-block",
                       padding: "3px 8px",
                       backgroundColor: "#f1f5f9",
