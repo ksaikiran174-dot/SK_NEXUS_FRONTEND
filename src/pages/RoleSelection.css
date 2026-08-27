@@ -779,9 +779,9 @@ body {
   font-size: 14.5px;
   font-weight: 600;
   letter-spacing: 0.4px;
-  color: #0c2f52;
+  color: rgba(255, 255, 255, 1);
 
-  background: #bfe3fb;
+  background: #00BFFF;
   box-shadow:
     0 4px 16px rgba(191, 227, 251, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
