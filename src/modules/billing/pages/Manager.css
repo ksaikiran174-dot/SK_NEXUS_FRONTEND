@@ -3686,42 +3686,60 @@
   }
 
 /* ── FILTER GROUP FLEX GRID PATCH ── */
-  .filter-group {
-    display: flex !important;
-    flex-direction: row !important; /* Keep items horizontal */
-    flex-wrap: wrap !important;     /* Let elements wrap rows cleanly */
-    gap: 8px !important;
-    width: 100% !important;
-  }
+.filter-group {
+  display: flex !important;
+  flex-direction: column !important; /* Stack everything — no more 50/50 squeeze */
+  gap: 10px !important;
+  width: 100% !important;
+}
 
-  /* 1. Force the Search Input to own the top line fully */
-  .filter-group > input.form-input {
-    width: 100% !important;
-    min-width: 100% !important;
-    flex: unset !important;
-  }
+/* 1. Search input — full width */
+.filter-group > input.form-input {
+  width: 100% !important;
+  min-width: 100% !important;
+  flex: unset !important;
+}
 
-  /* 2. Force Select Dropdown & Date Wrapper to split the second line perfectly */
-  .filter-group .form-select,
-  .filter-group .date-input-wrapper {
-    width: calc(50% - 4px) !important;  /* Perfect split factoring layout gaps */
-    min-width: calc(50% - 4px) !important;
-    flex: 1 !important;
-    box-sizing: border-box !important;
-  }
+/* 2. Select and Date wrapper — each get their own full-width row now */
+.filter-group .form-select,
+.filter-group .date-input-wrapper {
+  width: 100% !important;
+  min-width: 100% !important;
+  flex: unset !important;
+  box-sizing: border-box !important;
+}
 
-  /* Ensure the date input inside its wrapper expands correctly */
-  .filter-group .date-input-wrapper .form-input {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
+/* Reset native select rendering so it respects your theme colors/width */
+.filter-group .form-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 13px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px !important;
+  color: var(--text-primary);
+  color-scheme: light dark; /* lets native popup + date UI match theme instead of forcing white-on-white */
+}
 
-  /* 3. Drop the Apply Button to its own clean action line at the bottom */
-  .filter-group .btn {
-    width: 100% !important;
-    margin-top: 4px !important;
-  }
+/* Date input — ensure enough room for the native widget so it doesn't render blank */
+.filter-group .date-input-wrapper .form-input {
+  width: 100% !important;
+  min-width: 100% !important;
+  min-height: 44px; /* native date widgets need this to lay out all segments */
+  padding-right: 34px !important; /* fixed space for the reset icon, not inline-style dependent */
+  box-sizing: border-box;
+  color-scheme: light dark;
+}
 
+/* 3. Apply button — its own line, unchanged */
+.filter-group .btn {
+  width: 100% !important;
+  margin-top: 4px !important;
+}
 
   .sub-countdown-card {
     padding: 14px;

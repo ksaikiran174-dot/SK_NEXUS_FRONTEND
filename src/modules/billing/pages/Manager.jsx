@@ -2187,7 +2187,6 @@ return (
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                style={{ paddingRight: filterDate ? '30px' : '10px' }}
               />
               {filterDate && (
                 <button
