@@ -675,7 +675,7 @@ function App() {
             setAuthState("authenticating");
           }}
           onLoginClick={() => setAuthState("login")}
-          onBackClick={() => setAuthState("login")}
+          onBackClick={() => setAuthState("role-selection")}
         />
       );
     }

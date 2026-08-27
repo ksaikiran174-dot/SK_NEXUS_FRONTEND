@@ -13,7 +13,7 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
         whileHover={{ y: -2, scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
       >
-        <span className="create-workspace-icon">✨</span>
+        <span className="create-workspace-icon"></span>
         Create Workspace
       </motion.button>
 
