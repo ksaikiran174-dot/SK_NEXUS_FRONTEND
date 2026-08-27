@@ -46,6 +46,8 @@
       #111827 50%,
       #020617 100%
     );
+
+    padding-top: clamp(70px, 12vh, 30px);
 }
 
 /* BACKGROUND GLOW */
@@ -480,6 +482,8 @@ body {
   .role-selection-container {
 
     padding: 20px 16px;
+
+    padding-top: 64px;
   }
 
   .role-selection-cards {
@@ -573,6 +577,8 @@ body {
   .role-selection-container {
 
     padding: 14px;
+
+
   }
 
   .role-selection-title {
@@ -680,6 +686,7 @@ body {
   /* Container & Layout */
   .role-selection-container {
     padding: 12px;
+    padding-top: 56px;
   }
 
   .role-selection-wrapper {
@@ -757,46 +764,49 @@ body {
   }
 }
 
+
 /* ============================================
-   CREATE WORKSPACE BUTTON (TOP RIGHT)
+   CREATE WORKSPACE BUTTON (TOP RIGHT) — FIXED
 ============================================ */
 
 .create-workspace-btn {
-  position: absolute;
-  top: 28px;
-  right: 32px;
-  z-index: 10;
+  position: fixed; /* fixed instead of absolute: stays put regardless of content height / scroll */
+  top: clamp(12px, 3vw, 28px);
+  right: clamp(12px, 3vw, 32px);
+  z-index: 50;
 
   display: inline-flex;
   align-items: center;
   gap: 8px;
 
-  padding: 11px 24px;
+  padding: clamp(8px, 1.6vw, 11px) clamp(14px, 3vw, 24px);
   border-radius: 20px;
   border: none;
 
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  font-size: 15.5px;
+  font-size: clamp(12px, 1.4vw + 8px, 15.5px);
   font-weight: 600;
   letter-spacing: 0.4px;
+  white-space: nowrap;
   color: rgba(255, 255, 255, 1);
 
-  background: rgba(0, 0, 255, 1);
+  background: #2563eb; /* solid blue matches the manager accent instead of pure #00f */
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
   cursor: pointer;
 }
 
 .create-workspace-btn:hover {
-  background: #a9d8f7;
-  color: #08243f;
+  background: #3b82f6;
+  color: #ffffff;
   box-shadow:
-    0 6px 20px rgba(191, 227, 251, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    0 6px 20px rgba(37, 99, 235, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .create-workspace-btn:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #93c5fd;
   outline-offset: 3px;
 }
 
@@ -804,23 +814,8 @@ body {
   font-size: 15px;
   line-height: 1;
 }
-
-/* Responsive: shrink and reflow on smaller screens */
-@media (max-width: 768px) {
-  .create-workspace-btn {
-    top: 16px;
-    right: 16px;
-    padding: 9px 16px;
-    font-size: 13px;
-  }
+.create-workspace-icon::before {
+  content: "+";
+  font-weight: 800;
 }
 
-@media (max-width: 430px) {
-  .create-workspace-btn {
-    top: 10px;
-    right: 10px;
-    padding: 8px 14px;
-    font-size: 12px;
-    gap: 6px;
-  }
-}
