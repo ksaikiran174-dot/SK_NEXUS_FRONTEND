@@ -1559,6 +1559,12 @@
   border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
 }
 
+[data-theme="dark"] .btn-primary {
+  background-color: var(--bg-color);       /* Swaps background to your dark mode layout background */
+  border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
+}
+
+
 /* Countdown Card */
 .sub-countdown-card {
   background: #f8fafc;
