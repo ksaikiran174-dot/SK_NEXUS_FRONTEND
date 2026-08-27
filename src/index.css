@@ -1,4 +1,100 @@
-/* Light mode (default) */
+/* Light mode (Synced with Dark Navy Sidebar) */
+:root {
+  --primary-color: #0f172a;       /* Deep slate/black primary actions */
+  --primary-dark: #1e293b;        /* Darker slate hover state */
+  --secondary-color: #10b981;
+  --secondary-dark: #059669;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --bg-color: #f1f5f9;            /* Cool slate tint synced with sidebar */
+  --card-bg: #ffffff;             /* Pure white floating cards */
+  --text-primary: #0f172a;        /* High-contrast slate text */
+  --text-secondary: #64748b;      /* Muted secondary labels */
+  --border-color: #e2e8f0;        /* Soft borders */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.12);
+}
+
+/* Dark mode (Rich Pure Dark Navy & Charcoal) */
+[data-theme="dark"] {
+  --primary-color: #f8fafc;       /* Clean off-white primary buttons in dark mode */
+  --primary-dark: #e2e8f0;        /* Hover off-white */
+  --secondary-color: #10b981;
+  --secondary-dark: #059669;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
+  --bg-color: #090d16;            /* Deep black-slate background */
+  --card-bg: #111827;             /* Slightly lighter charcoal card surface */
+  --text-primary: #f8fafc;        /* Soft white text */
+  --text-secondary: #94a3b8;      /* Muted slate text */
+  --border-color: rgba(255, 255, 255, 0.08); /* Ultra-subtle light border */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Light mode (default) 
 :root {
   --primary-color: #2563eb;
   --primary-dark: #1e40af;
@@ -16,8 +112,8 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
-
-/* Dark mode */
+*/
+/* Dark mode 
 [data-theme="dark"] {
   --primary-color: #3b82f6;
   --primary-dark: #2563eb;
@@ -56,3 +152,4 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+*/
