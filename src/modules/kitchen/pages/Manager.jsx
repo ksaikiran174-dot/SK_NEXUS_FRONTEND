@@ -2209,7 +2209,7 @@ return (
                       border: "1px solid #bfdbfe"
                     }}
                   >
-                    🔄 Cycle #{txn.cycle_number || "N/A"}
+                    🔄 Day #{txn.cycle_number || "N/A"}
                   </span>
                 </div>
 
@@ -4077,7 +4077,7 @@ return (
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 0 0 0" }}>
-          <span style={{ color: "#1e293b", fontSize: "16px", fontWeight: "bold" }}>📈 Gross Cycle Revenue:</span>
+          <span style={{ color: "#1e293b", fontSize: "16px", fontWeight: "bold" }}>📈 Gross Revenue:</span>
           <span style={{ fontWeight: "900", color: "#1e40af", fontSize: "22px" }}>
             ₹{Number(masterCycleSummary.total_sales).toLocaleString('en-IN')}
           </span>

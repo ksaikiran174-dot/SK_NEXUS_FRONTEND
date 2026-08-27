@@ -4037,4 +4037,9 @@
   .sub-state-title {
     font-size: 15px !important;
   }
+
+  .status-badge {
+    display: none !important;
+  }
+
 }
