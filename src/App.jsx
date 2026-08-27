@@ -569,7 +569,7 @@ function App() {
         else if (selectedRole === "super_admin") setAuthState("super-admin-login");
         else setAuthState("login");
       };
-      return <RoleSelection onSelectRole={handleRoleSelect} />;
+      return <RoleSelection onSelectRole={handleRoleSelect} onRegisterClick={() => setAuthState("register")} />;
     }
 
     if (authState === "employee-login") {
