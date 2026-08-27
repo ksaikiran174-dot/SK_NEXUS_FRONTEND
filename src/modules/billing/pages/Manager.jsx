@@ -2198,7 +2198,7 @@ return (
                 </button>
               )}
             </div>
-            <button style={{ background: "#0F172A", color: "#FFFFFF"}} className="btn btn-primary" onClick={fetchTransactions}>
+            <button style={{ background: "#1E40AF", color: "#FFFFFF"}} className="btn btn-primary" onClick={fetchTransactions}>
               Apply
             </button>
           </div>
@@ -2937,7 +2937,7 @@ return (
   </div>
 
   <h1 className="page-title">
-    📝 Create Order
+     Create Order
   </h1>
 
 </div>
