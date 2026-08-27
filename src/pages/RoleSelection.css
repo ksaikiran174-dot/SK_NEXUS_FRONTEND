@@ -771,31 +771,30 @@ body {
   align-items: center;
   gap: 8px;
 
-  padding: 11px 22px;
+  padding: 11px 24px;
   border-radius: 999px;
+  border: none;
 
-  font-family: inherit;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
   font-size: 14.5px;
   font-weight: 600;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.4px;
+  color: #0c2f52;
 
-  background: rgba(135, 206, 235, 0.06);
-  backdrop-filter: blur(14px);
+  background: #bfe3fb;
   box-shadow:
-    0 4px 18px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 4px 16px rgba(191, 227, 251, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 
   cursor: pointer;
 }
 
 .create-workspace-btn:hover {
-  color: #ffffff;
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(59, 130, 246, 0.12);
+  background: #a9d8f7;
+  color: #08243f;
   box-shadow:
-    0 6px 24px rgba(37, 99, 235, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 6px 20px rgba(191, 227, 251, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .create-workspace-btn:focus-visible {
