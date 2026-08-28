@@ -44,6 +44,9 @@
       background: #0f172a !important;
 }
 
+[data-theme="dark"] .btn:hover {
+      background: #1e293b !important;
+}
 
 .sidebar-header {
   display: flex;

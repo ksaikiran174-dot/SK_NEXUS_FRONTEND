@@ -1588,6 +1588,10 @@
       background: #0f172a !important;
 }
 
+[data-theme="dark"] .btn:hover {
+      background: #1e293b !important;
+}
+
 /* Countdown Card */
 .sub-countdown-card {
   background: #f8fafc;
