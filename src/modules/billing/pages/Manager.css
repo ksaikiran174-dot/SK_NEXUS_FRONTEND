@@ -781,6 +781,10 @@
   border: 1px solid #FDE68A
 }
 
+.btn btn-primary btn-sm download-receipt-btn{
+  background: none;
+}
+
 /* ============================================
    PREMIUM SUMMARY PANEL
 ============================================ */
