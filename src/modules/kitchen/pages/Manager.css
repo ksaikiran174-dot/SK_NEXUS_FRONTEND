@@ -2969,6 +2969,13 @@
     margin-top: 4px !important;
   }
 
+[data-theme="dark"] .manager-sidebar.sidebar-open {
+  background: var(--bg-color) !important;
+}
+
+[data-theme="dark"] .mobile-topbar {
+  background: var(--bg-color) !important;
+}
 
   .card, .settings-card { padding: 16px !important; }
   .main-header h1 { font-size: 22px !important; }
