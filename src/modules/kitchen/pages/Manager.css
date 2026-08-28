@@ -26,7 +26,7 @@
 
 .manager-sidebar {
   width: var(--manager-sidebar-width);
-  background: var(--primary-color) !important;
+  background: #0f172a !important;
   padding: 30px 20px;
   color: white;
   overflow-y: auto;
