@@ -783,6 +783,7 @@
 
 .download-receipt-btn {
   background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
 }
 
 /* ============================================
