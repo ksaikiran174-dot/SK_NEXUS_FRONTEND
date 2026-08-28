@@ -1584,6 +1584,10 @@
   border-color: var(--border-color);       /* Softens the border so it doesn't look too bright */
 }
 
+[data-theme="dark"] .manager-sidebar {
+      background: var(--primary-color) !important;
+}
+
 /* Countdown Card */
 .sub-countdown-card {
   background: #f8fafc;
