@@ -782,7 +782,7 @@
 }
 
 .btn btn-primary btn-sm download-receipt-btn{
-  background: none;
+  background: none !important;
 }
 
 /* ============================================
