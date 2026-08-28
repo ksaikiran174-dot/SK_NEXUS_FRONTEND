@@ -41,6 +41,11 @@
   border-radius: 0 12px 12px 0 !important;
 }
 
+[data-theme="dark"] .manager-sidebar {
+      background: var(--primary-color) !important;
+}
+
+
 .sidebar-header {
   display: flex;
   align-items: center;
