@@ -26,7 +26,7 @@
 
 .manager-sidebar {
   width: var(--manager-sidebar-width);
-  background: #0F172A ;
+  background: var(--primary-color);
   padding: 30px 20px;
   color: white;
   overflow-y: auto;
@@ -3764,7 +3764,7 @@
 
 .transaction-cycle {
     font-size: 8.5px;
-    padding: 1.5px 5px;
+    padding: 1.2px 3.5px;
   }
 
 /* 3. Apply button — its own line, unchanged */
