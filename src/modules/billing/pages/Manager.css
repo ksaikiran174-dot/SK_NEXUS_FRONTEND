@@ -3287,6 +3287,13 @@
     font-size: 22px !important;
   }
 
+  .transaction-cycle {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    gap: 2px;
+  }
+
   
 }
 
@@ -3744,6 +3751,11 @@
   box-sizing: border-box;
   color-scheme: light dark;
 }
+
+.transaction-cycle {
+    font-size: 8.5px;
+    padding: 1.5px 5px;
+  }
 
 /* 3. Apply button — its own line, unchanged */
 .filter-group .btn {

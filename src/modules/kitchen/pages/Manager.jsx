@@ -2197,7 +2197,8 @@ return (
                   <span className="transaction-token">
                     Token #{txn.token_id}
                   </span>
-                  <span
+                  <span 
+                    className="transaction-cycle"
                     style={{
                       fontSize: "11px",
                       fontWeight: "700",
