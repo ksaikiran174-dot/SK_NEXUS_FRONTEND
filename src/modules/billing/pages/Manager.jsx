@@ -2213,14 +2213,6 @@ return (
                     Token #{txn.token_id}
                   </span>
                   <span className="transaction-cycle"
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: "700",
-                      borderRadius: "6px",
-                      width: "fit-content",
-                      background: "#FEF3C7",
-                      color: "#B45309",
-                      border: "1px solid #FDE68A" }}
                   >
                     🔄 Day {txn.cycle_number || "N/A"}
                   </span>
