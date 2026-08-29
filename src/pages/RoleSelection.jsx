@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
+import { Shield, Terminal } from "lucide-react"; // Imported premium geometric vectors
 import "./RoleSelection.css";
-
 
 function RoleSelection({ onSelectRole, onRegisterClick }) {
   return (
@@ -24,7 +24,7 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
         transition={{ duration: 0.5 }}
       >
         <div className="role-selection-header">
-          <h1 className="role-selection-title">🎯 Select Your Role</h1>
+          <h1 className="role-selection-title"> Select Your Role</h1>
           <p className="role-selection-subtitle">
             Choose how you want to access the business system
           </p>
@@ -50,6 +50,7 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
               }
             }}
           >
+            {/* Preserved your beautiful floating infinite loop animation */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{
@@ -59,11 +60,10 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
               }}
               className="avatar-wrapper"
             >
-              <img
-                src="/manager.webp"
-                alt="Manager"
-                className="role-avatar"
-              />
+              {/* Premium Manager Neon Shield Replacement */}
+              <div className="neon-icon-box manager-icon">
+                <Shield size={44} className="vector-icon-blue" />
+              </div>
             </motion.div>
             <h3 className="role-card-title">Manager Dashboard</h3>
             <p className="role-description">
@@ -89,6 +89,7 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
               }
             }}
           >
+            {/* Preserved your beautiful floating infinite loop animation */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{
@@ -98,11 +99,10 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
               }}
               className="avatar-wrapper"
             >
-              <img
-                src="/employee.webp"
-                alt="Employee"
-                className="role-avatar"
-              />
+              {/* Premium Employee Neon Terminal Node Replacement */}
+              <div className="neon-icon-box employee-icon">
+                <Terminal size={44} className="vector-icon-green" />
+              </div>
             </motion.div>
             <h3 className="role-card-title">Employee Portal</h3>
             <p className="role-description">
@@ -135,6 +135,5 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
     </div>
   );
 }
-
 
 export default RoleSelection;

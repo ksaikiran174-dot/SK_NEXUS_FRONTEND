@@ -329,6 +329,42 @@
   letter-spacing: 1px;
 }
 
+/* Translucent Glass-morphism Icon Containers */
+.neon-icon-box {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* Manager Neon Setup */
+.manager-icon {
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.25);
+}
+
+.vector-icon-blue {
+  color: #60a5fa;
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
+}
+
+/* Employee Neon Setup */
+.employee-icon {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+}
+
+.vector-icon-green {
+  color: #34d399;
+  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.6));
+}
+
+
 /* ============================================
    RESPONSIVE
 ============================================ */
