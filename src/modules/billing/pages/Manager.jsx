@@ -2295,7 +2295,7 @@ return (
 {showManageMenu && (
   <div>
     <div className="main-header" style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
-      <h1 style={{ margin: 0 }}>✏️ Manage Menu Items</h1>
+      <h1 style={{ margin: 0 }}> Manage Menu Items</h1>
       
       {/* 🔍 REAL-TIME SEARCH BAR INPUT FIELD */}
       <div className="search-bar-wrapper" style={{ position: "relative", width: "100%", maxWidth: "400px" }}>

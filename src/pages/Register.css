@@ -490,7 +490,7 @@ body {
   color: #ffffff;
 
   /* Default Theming & Transitions */
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
   
