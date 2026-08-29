@@ -91,8 +91,6 @@
   max-width: 1100px;
 
   text-align: center;
-
-  overflow: visible !important;
 }
 
 /* HEADER */
@@ -142,16 +140,13 @@
   gap: 40px;
 
   margin-bottom: 40px;
-
-  overflow: visible !important;
-  padding: 20px 40px;
 }
 
 .role-card {
 
   position: relative;
 
-  overflow: visible !important;
+  overflow: hidden;
 
   border-radius: 28px;
 
@@ -179,10 +174,6 @@
   align-items: center;
 
   justify-content: center;
-
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  will-change: transform, box-shadow;
 }
 
 /* SHINE EFFECT */
