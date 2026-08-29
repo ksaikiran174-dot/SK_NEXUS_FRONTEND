@@ -232,7 +232,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
             style={{
               background: index < messageIndex ? "#e0f2fe" : "#f1f5f9",
               border: `2px solid ${index < messageIndex ? config.color : "#cbd5e1"}`,
-              borderRadius: "8px",
+              borderRadius: "30px",
               fontWeight: "500",
               color: index < messageIndex ? config.color : "#64748b",
             }}

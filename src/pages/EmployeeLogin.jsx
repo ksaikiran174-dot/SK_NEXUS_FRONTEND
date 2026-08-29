@@ -117,53 +117,10 @@ function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <div className="visual-content">
-            <div className="visual-icon chef-icon">
-              <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Chef Hat */}
-                <rect x="65" y="10" width="70" height="20" rx="2" fill="#ffffff" />
-                <path d="M65 30 Q65 42 100 48 Q135 42 135 30" fill="#ffffff" stroke="#ddd" strokeWidth="0.5" />
-                {/* Hat band */}
-                <rect x="60" y="28" width="80" height="4" fill="#c41e3a" />
-                {/* Hair */}
-                <path d="M75 48 Q75 35 100 33 Q125 35 125 48" fill="#8b4513" />
-                {/* Head */}
-                <circle cx="100" cy="70" r="28" fill="#f4c4a0" />
-                {/* Eyes - anime style */}
-                <ellipse cx="86" cy="65" rx="6" ry="9" fill="#6eb5d4" />
-                <ellipse cx="114" cy="65" rx="6" ry="9" fill="#6eb5d4" />
-                <circle cx="86" cy="68" r="2.5" fill="#2c1810" />
-                <circle cx="114" cy="68" r="2.5" fill="#2c1810" />
-                <circle cx="87" cy="66" r="1" fill="white" />
-                <circle cx="115" cy="66" r="1" fill="white" />
-                {/* Eyebrows */}
-                <path d="M78 55 Q86 52 92 55" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
-                <path d="M108 55 Q114 52 122 55" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
-                {/* Nose */}
-                <line x1="100" y1="68" x2="100" y2="80" stroke="#d4a574" strokeWidth="1.5" />
-                {/* Mouth - happy smile */}
-                <path d="M90 85 Q100 92 110 85" stroke="#d4666a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                {/* Neck */}
-                <rect x="92" y="96" width="16" height="10" fill="#f4c4a0" />
-                {/* Chef Coat */}
-                <path d="M55 106 L55 220 Q55 235 70 240 L130 240 Q145 235 145 220 L145 106 Z" fill="#ffffff" stroke="#ddd" strokeWidth="0.5" />
-                {/* Chef Coat buttons */}
-                <circle cx="75" cy="135" r="3" fill="#c41e3a" />
-                <circle cx="75" cy="165" r="3" fill="#c41e3a" />
-                <circle cx="75" cy="195" r="3" fill="#c41e3a" />
-                <circle cx="125" cy="135" r="3" fill="#c41e3a" />
-                <circle cx="125" cy="165" r="3" fill="#c41e3a" />
-                <circle cx="125" cy="195" r="3" fill="#c41e3a" />
-                {/* Apron straps */}
-                <line x1="85" y1="106" x2="80" y2="220" stroke="#8b4513" strokeWidth="3" />
-                <line x1="115" y1="106" x2="120" y2="220" stroke="#8b4513" strokeWidth="3" />
-                {/* Arms */}
-                <path d="M58 130 L25 160" stroke="#f4c4a0" strokeWidth="13" strokeLinecap="round" />
-                <path d="M142 130 L175 160" stroke="#f4c4a0" strokeWidth="13" strokeLinecap="round" />
-                {/* Hands holding spoon/utensil */}
-                <circle cx="22" cy="163" r="7" fill="#f4c4a0" />
-                <circle cx="178" cy="163" r="7" fill="#f4c4a0" />
-              </svg>
-            </div>
+            {/* Highly Apt Food-Tech Kitchen Chef Hat Node */}
+              <div className="neon-icon-box employee-icon">
+                <ChefHat size={56} strokeWidth={1.5} className="vector-icon-green" />
+              </div>
             <h2 className="visual-title">Staff</h2>
           </div>
         </motion.div>
