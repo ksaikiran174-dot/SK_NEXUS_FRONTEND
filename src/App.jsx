@@ -31,7 +31,7 @@ const getModeFromPlan = (plan) => {
   return "billing"; 
 };
 
-import { LayoutDashboard, ChefHat, CreditCard, Tablet, ShieldCheck } from "lucide-react";
+import { BarChart3, UtensilsCrossed, Receipt, ClipboardList, ShieldCheck } from "lucide-react";
 
 // 🎯 DASHBOARD ANIMATION COMPONENT - PERFECTED 5-SECOND STEADY ENGINE
 function DashboardAnimation({ role, onAnimationComplete }) {
@@ -43,12 +43,12 @@ function DashboardAnimation({ role, onAnimationComplete }) {
 
   // 🎨 Pick the right lucide icon per role / mode
   const getRoleIcon = () => {
-    if (role === "manager") return LayoutDashboard;
+    if (role === "manager") return BarChart3;
     if (role === "super_admin") return ShieldCheck;
     // employee
-    if (dynamicMode === "billing") return CreditCard;
-    if (dynamicMode === "table") return Tablet;
-    return ChefHat; // kitchen / default
+    if (dynamicMode === "billing") return Receipt;
+    if (dynamicMode === "table") return ClipboardList;
+    return UtensilsCrossed; // kitchen / default
   };
 
   const roleConfig = {
