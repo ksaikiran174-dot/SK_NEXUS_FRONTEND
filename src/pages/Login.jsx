@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { LayoutDashboard, ChefHat } from "lucide-react"; 
 import "./Login.css";
+
 
 function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
   const [email, setEmail] = useState("");
@@ -285,30 +287,10 @@ function Login({ onLoginSuccess, onRegisterClick, onBackClick }) {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <div className="visual-content">
-            <div className="visual-icon manager-icon">
-              {/* SVG Graphic */}
-              <svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60 45 Q60 20 100 20 Q140 20 140 45 L140 70 Q100 75 60 70 Z" fill="#2c1810" />
-                <circle cx="100" cy="65" r="30" fill="#f4c4a0" />
-                <ellipse cx="88" cy="60" rx="5" ry="8" fill="#4a90e2" />
-                <ellipse cx="112" cy="60" rx="5" ry="8" fill="#4a90e2" />
-                <circle cx="88" cy="62" r="2" fill="white" />
-                <circle cx="112" cy="62" r="2" fill="white" />
-                <path d="M82 50 Q88 48 94 50" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
-                <path d="M106 50 Q112 48 118 50" stroke="#2c1810" strokeWidth="2" strokeLinecap="round" />
-                <line x1="100" y1="62" x2="100" y2="75" stroke="#d4a574" strokeWidth="1.5" />
-                <path d="M92 82 Q100 88 108 82" stroke="#d4666a" strokeWidth="2" strokeLinecap="round" fill="none" />
-                <rect x="92" y="93" width="16" height="12" fill="#f4c4a0" />
-                <path d="M55 105 L55 180 Q55 195 70 200 L130 200 Q145 195 145 180 L145 105 Z" fill="#1a3a52" />
-                <path d="M85 105 L85 140 L115 140 L115 105" fill="#ffffff" />
-                <path d="M98 105 L96 135 L100 137 L104 135 L102 105" fill="#c41e3a" />
-                <path d="M55 105 Q70 100 100 100 Q130 100 145 105" stroke="#0f2438" strokeWidth="1" />
-                <path d="M60 120 L30 150" stroke="#f4c4a0" strokeWidth="14" strokeLinecap="round" />
-                <path d="M140 120 L170 150" stroke="#f4c4a0" strokeWidth="14" strokeLinecap="round" />
-                <circle cx="28" cy="152" r="8" fill="#f4c4a0" />
-                <circle cx="172" cy="152" r="8" fill="#f4c4a0" />
-              </svg>
-            </div>
+            {/* Premium Manager Analytics Dashboard Box */}
+              <div className="neon-icon-box manager-icon">
+                <LayoutDashboard size={56} strokeWidth={1.5} className="vector-icon-blue" />
+              </div>
             <h2 className="visual-title">Manager Login</h2>
           </div>
         </motion.div>
