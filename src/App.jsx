@@ -31,6 +31,8 @@ const getModeFromPlan = (plan) => {
   return "billing"; 
 };
 
+import { LayoutDashboard, ChefHat, CreditCard, Tablet, ShieldCheck } from "lucide-react";
+
 // 🎯 DASHBOARD ANIMATION COMPONENT - PERFECTED 5-SECOND STEADY ENGINE
 function DashboardAnimation({ role, onAnimationComplete }) {
   const [messageIndex, setMessageIndex] = useState(0);
@@ -39,12 +41,20 @@ function DashboardAnimation({ role, onAnimationComplete }) {
   const currentPlan = localStorage.getItem("plan") || "basic";
   const dynamicMode = getModeFromPlan(currentPlan);
 
+  // 🎨 Pick the right lucide icon per role / mode
+  const getRoleIcon = () => {
+    if (role === "manager") return LayoutDashboard;
+    if (role === "super_admin") return ShieldCheck;
+    // employee
+    if (dynamicMode === "billing") return CreditCard;
+    if (dynamicMode === "table") return Tablet;
+    return ChefHat; // kitchen / default
+  };
+
   const roleConfig = {
     manager: {
-      icon: "👔",
       title: "Welcome Manager",
       color: "#2563eb",
-      avatar: "/manager.webp",
       messages: [
         "🔐 Verifying secure access...",
         "📊 Loading business analytics...",
@@ -54,10 +64,8 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       ],
     },
     employee: {
-      icon: dynamicMode === "billing" ? "💳" : dynamicMode === "table" ? "📱" : "👨‍🍳",
       title: dynamicMode === "billing" ? "Welcome Cashier" : dynamicMode === "table" ? "Welcome Employee" : "Welcome Employee",
       color: "#10b981",
-      avatar: "/employee.webp",
       messages: [
         "🔐 Authenticating your credentials...",
         dynamicMode === "billing" 
@@ -74,7 +82,6 @@ function DashboardAnimation({ role, onAnimationComplete }) {
       title: "Super Admin Panel",
       subtitle: "Loading platform controls...",
       color: "#4f46e5",
-      avatar: "https://cdn-icons-png.flaticon.com/512/2206/2206368.png",
       messages: [
         "🔐 Verifying administrative access...",
         "🏢 Fetching registered global branches...",
@@ -86,6 +93,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
   };
 
   const config = roleConfig[role];
+  const RoleIcon = getRoleIcon();
 
   useEffect(() => {
     // ⏱️ 5 Ticks * 950ms = 4750ms total sequence time
@@ -141,7 +149,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
     >
       <style>{`
         .dash-avatar-outer { width: 140px; height: 140px; }
-        .dash-avatar-img { width: 140px; height: 140px; border-width: 5px; }
+        .dash-avatar-icon { width: 140px; height: 140px; border-width: 5px; }
         .dash-title { font-size: 32px; margin-bottom: 40px; }
         .dash-msg-container { gap: 12px; margin-bottom: 40px; }
         .dash-msg-card { padding: 12px 16px; font-size: 14px; }
@@ -149,7 +157,7 @@ function DashboardAnimation({ role, onAnimationComplete }) {
 
         @media (max-width: 430px) {
           .dash-avatar-outer { width: 100px; height: 100px; margin-bottom: 20px; }
-          .dash-avatar-img { width: 100px; height: 100px; border-width: 4px; }
+          .dash-avatar-icon { width: 100px; height: 100px; border-width: 4px; }
           .dash-title { font-size: 22px; margin-bottom: 24px; letter-spacing: -0.5px; }
           .dash-msg-container { gap: 8px; margin-bottom: 24px; }
           .dash-msg-card { padding: 10px 12px; font-size: 13px; border-width: 1px !important; }
@@ -180,21 +188,28 @@ function DashboardAnimation({ role, onAnimationComplete }) {
             opacity: 0.5,
           }}
         />
-        <img
-          src={config.avatar}
-          alt={config.title}
-          className="dash-avatar-img"
+        {/* 🔁 Replaced <img avatar> with a lucide-react icon badge */}
+        <div
+          className="dash-avatar-icon"
           style={{
             borderRadius: "50%",
-            objectFit: "cover",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             borderStyle: "solid",
             borderColor: config.color,
-            background: "white",
+            background: "#ffffff",
             boxShadow: `0 0 40px ${config.color}55`,
             position: "relative",
             zIndex: 2
           }}
-        />
+        >
+          <RoleIcon
+            size="56%"
+            color={config.color}
+            strokeWidth={1.75}
+          />
+        </div>
       </div>
 
       <motion.h1
