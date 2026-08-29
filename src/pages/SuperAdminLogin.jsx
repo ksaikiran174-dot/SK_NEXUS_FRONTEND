@@ -68,7 +68,7 @@ function SuperAdminLogin({ onLoginSuccess, onBackClick }) {
   };
 
   return (
-    <div className="auth-container super-admin-auth">
+    <div className="auth-container manager-auth">
       <motion.div
         className="auth-wrapper"
         initial={{ opacity: 0, y: 20 }}
@@ -189,7 +189,6 @@ function SuperAdminLogin({ onLoginSuccess, onBackClick }) {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                style ={{ backgroundColor: loading ? "#262626" : "#404040", cursor: loading ? "not-allowed" : "pointer" }}
               > 
                 {loading ? (
                   <>
