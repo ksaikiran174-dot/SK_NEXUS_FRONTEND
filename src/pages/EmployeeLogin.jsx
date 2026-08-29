@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "./Login.css";
+import { LayoutDashboard, ChefHat } from "lucide-react"; 
+
 
 function EmployeeLogin({ onLoginSuccess, onRegisterClick, onBackClick }) {
   const [email, setEmail] = useState("");
