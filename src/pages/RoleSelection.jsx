@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Shield, Terminal } from "lucide-react"; // Imported premium geometric vectors
+import { LayoutDashboard, ChefHat } from "lucide-react"; // Highly apt premium vectors
 import "./RoleSelection.css";
 
 function RoleSelection({ onSelectRole, onRegisterClick }) {
@@ -30,7 +30,7 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
           </p>
         </div>
 
-        {/* MAIN CARDS GRID (Manager & Employee Only) */}
+        {/* MAIN CARDS GRID */}
         <div className="role-selection-cards">
           {/* MANAGER CARD */}
           <motion.div
@@ -44,25 +44,15 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
             onClick={() => onSelectRole("manager")}
             role="button"
             tabIndex="0"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                onSelectRole("manager");
-              }
-            }}
           >
-            {/* Preserved your beautiful floating infinite loop animation */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="avatar-wrapper"
             >
-              {/* Premium Manager Neon Shield Replacement */}
+              {/* Premium Manager Analytics Dashboard Box */}
               <div className="neon-icon-box manager-icon">
-                <Shield size={44} className="vector-icon-blue" />
+                <LayoutDashboard size={56} strokeWidth={1.5} className="vector-icon-blue" />
               </div>
             </motion.div>
             <h3 className="role-card-title">Manager Dashboard</h3>
@@ -83,25 +73,15 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
             onClick={() => onSelectRole("employee")}
             role="button"
             tabIndex="0"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                onSelectRole("employee");
-              }
-            }}
           >
-            {/* Preserved your beautiful floating infinite loop animation */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="avatar-wrapper"
             >
-              {/* Premium Employee Neon Terminal Node Replacement */}
+              {/* Highly Apt Food-Tech Kitchen Chef Hat Node */}
               <div className="neon-icon-box employee-icon">
-                <Terminal size={44} className="vector-icon-green" />
+                <ChefHat size={56} strokeWidth={1.5} className="vector-icon-green" />
               </div>
             </motion.div>
             <h3 className="role-card-title">Employee Portal</h3>
@@ -111,19 +91,9 @@ function RoleSelection({ onSelectRole, onRegisterClick }) {
           </motion.div>
         </div>
 
-        {/* ADMIN PANEL AS A SUBTLE TEXT LINK */}
+        {/* ADMIN PANEL */}
         <div className="admin-link-wrapper">
-          <span
-            className="admin-text-link"
-            onClick={() => onSelectRole("super_admin")}
-            role="button"
-            tabIndex="0"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                onSelectRole("super_admin");
-              }
-            }}
-          >
+          <span className="admin-text-link" onClick={() => onSelectRole("super_admin")}>
             ⚙️ Access Admin Panel
           </span>
         </div>
