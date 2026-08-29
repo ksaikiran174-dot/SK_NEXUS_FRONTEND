@@ -50,36 +50,6 @@
     padding-top: clamp(70px, 12vh, 30px);
 }
 
-/* BACKGROUND GLOW */
-
-.role-selection-container::before {
-
-  content: "";
-
-  position: absolute;
-
-  width: 700px;
-
-  height: 700px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(255,255,255,0.05),
-      transparent 70%
-    );
-
-  top: -250px;
-
-  left: -250px;
-
-  filter: blur(80px);
-
-  pointer-events: none;
-}
-
 .role-selection-wrapper {
 
   position: relative;
@@ -163,7 +133,7 @@
     1px solid rgba(255,255,255,0.08);
 
   box-shadow:
-    0 10px 40px rgba(0,0,0,0.35);
+    0 8px 24px rgba(0,0,0,0.25);
 
   min-height: 420px;
 
@@ -178,34 +148,36 @@
 
 /* SHINE EFFECT */
 
-.role-card::before {
+.role-card::after {
 
   content: "";
 
   position: absolute;
 
-  top: -120%;
+  top: 0;
 
-  left: -40%;
+  left: -60%;
 
-  width: 60%;
+  width: 40%;
 
-  height: 300%;
+  height: 100%;
 
   background:
     linear-gradient(
       90deg,
       transparent,
-      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.06),
       transparent
     );
 
-  transform: rotate(25deg);
+  transform: skewX(-20deg);
 
   transition: 0.8s;
+
+  pointer-events: none;
 }
 
-.role-card:hover::before {
+.role-card:hover::after {
 
   left: 120%;
 }
@@ -855,4 +827,3 @@ body {
   content: "+";
   font-weight: 800;
 }
-
