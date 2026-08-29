@@ -189,6 +189,7 @@ function SuperAdminLogin({ onLoginSuccess, onBackClick }) {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                style ={{ background: loading ? "#262626" : "#404040", cursor: loading ? "not-allowed" : "pointer" }}
               >
                 {loading ? (
                   <>
