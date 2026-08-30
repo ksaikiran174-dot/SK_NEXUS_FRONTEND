@@ -670,38 +670,38 @@ const printToken = (order, onComplete) => {
     @media print {
       html, body { background: #fff; margin: 0; padding: 0; }
       body { 
-        width: 72mm; 
+        width: 80mm; 
         margin: 0 auto; 
         /* 🚀 THE SPACER FIX */
         padding: 8mm 0 12mm 0; 
       }
     }
     body {
-      font-family: 'Courier New', Courier, Monaco, system-ui, monospace;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-rendering: optimizeLegibility;
       width: 100%;
-      max-width: 290px;
+      max-width: 360px;
       margin: 0 auto;
-      padding: 25px 10px 10px 10px; 
+      padding: 25px 14px 10px 14px; 
       color: #000;
       box-sizing: border-box;
       font-size: 13px;
-      line-height: 1.3;
+      line-height: 1.35;
     }
     .center { text-align: center; }
-    .restaurant-name { font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
-    .details { font-size: 11px; font-weight: 500; line-height: 1.4; }
+    .restaurant-name { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 3px; }
+    .details { font-size: 11.5px; font-weight: 500; line-height: 1.5; color: #222; }
     .divider { border-top: 1px dashed #000; margin: 12px 0; height: 0; }
-    .token { font-size: 42px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; }
-    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; font-weight: 600; }
-    .gst-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-weight: 500; font-size: 12px; }
-    .item-name { text-align: left; padding-right: 10px; }
-    .item-price { text-align: right; white-space: nowrap; }
+    .token { font-family: 'Courier New', Courier, monospace; font-size: 40px; font-weight: 900; text-align: center; margin: 14px 0; padding: 6px; letter-spacing: 1px; }
+    .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; font-weight: 600; }
+    .gst-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 3px; font-weight: 500; font-size: 12px; }
+    .item-name { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-price { text-align: right; white-space: nowrap; flex-shrink: 0; }
     .total { font-size: 18px; font-weight: 900; margin-top: 6px; }
     .payment-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-top: 4px; }
-    .footer { text-align: center; font-size: 12px; font-weight: 600; margin-top: 16px; line-height: 1.4; }
+    .footer { text-align: center; font-size: 12px; font-weight: 600; margin-top: 16px; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -726,7 +726,7 @@ const printToken = (order, onComplete) => {
   <div class="divider"></div>
 
   ${order.items.map(item => `
-    <div class="row">
+    <div class="row" style="font-size: 12.5px;">
       <span class="item-name">${item.name} x${item.quantity} @ ${Number(item.price).toFixed(2)}</span>
       <span class="item-price">₹${(item.price * item.quantity).toFixed(2)}</span>
     </div>
