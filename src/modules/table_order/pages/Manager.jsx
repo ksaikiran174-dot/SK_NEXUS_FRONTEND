@@ -2388,7 +2388,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
 
       <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border-color)" }}>
         <button
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary btn-sm download-receipt-btn"
           style={{ width: "100%", fontSize: "13px" }}
           onClick={() => downloadReceipt(txn)}
         >

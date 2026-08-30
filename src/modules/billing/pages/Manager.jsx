@@ -625,6 +625,8 @@ const downloadReceipt = (transaction) => {
   doc.save(`Receipt-${transaction.token_id}.pdf`);
 };
 
+
+
 const printToken = (order, onComplete) => {
   const printWindow = window.open(
     "",
@@ -646,6 +648,15 @@ const printToken = (order, onComplete) => {
     sgst = subtotal * 0.025; // 2.5% SGST
     grandTotal = subtotal + cgst + sgst; // Base + Tax = Grand Total
   }
+
+  // 💳 PAYMENT MODE — normalized to just "Cash" or "Online"
+  // order.payment_mode comes straight from the Order model's payment_mode column.
+  // Whatever gateway/method string is stored there (UPI, PhonePe, GPay, Card, etc.)
+  // gets collapsed to "Online"; anything cash-like stays "Cash".
+  const paymentModeDisplay =
+    order?.payment_mode && order.payment_mode.toLowerCase().includes("cash")
+      ? "Cash"
+      : "Online";
 
   printWindow.document.write(`
 <html>
@@ -689,6 +700,7 @@ const printToken = (order, onComplete) => {
     .item-name { text-align: left; padding-right: 10px; }
     .item-price { text-align: right; white-space: nowrap; }
     .total { font-size: 18px; font-weight: 900; margin-top: 6px; }
+    .payment-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-top: 4px; }
     .footer { text-align: center; font-size: 12px; font-weight: 600; margin-top: 16px; line-height: 1.4; }
   </style>
 </head>
@@ -700,7 +712,7 @@ const printToken = (order, onComplete) => {
       ${settings?.address ? `<div>${settings.address}</div>` : ""}
       <div>
         ${settings?.phone ? `<span>Phone: ${settings.phone}</span>` : ""}
-        ${hasValidGst ? `${settings?.phone ? " | " : ""}<span>GST: ${settings.gst_number}</span>` : ""}
+        ${hasValidGst ? `${settings?.phone ? " | " : ""}<span>GSTIN: ${settings.gst_number}</span>` : ""}
       </div>
     </div>
   </div>
@@ -715,7 +727,7 @@ const printToken = (order, onComplete) => {
 
   ${order.items.map(item => `
     <div class="row">
-      <span class="item-name">${item.name} x${item.quantity}</span>
+      <span class="item-name">${item.name} x${item.quantity} @ ${Number(item.price).toFixed(2)}</span>
       <span class="item-price">₹${(item.price * item.quantity).toFixed(2)}</span>
     </div>
   `).join("")}
@@ -743,8 +755,13 @@ const printToken = (order, onComplete) => {
     <span>GRAND TOTAL</span>
     <span>₹${grandTotal.toFixed(2)}</span>
   </div>
-  
+
   <div class="divider"></div>
+
+  <div class="payment-row">
+    <span>Payment Mode:</span>
+    <span>${paymentModeDisplay}</span>
+  </div>
 
   <div class="footer">
     ${new Date(order.created_at).toLocaleString("en-IN", {
