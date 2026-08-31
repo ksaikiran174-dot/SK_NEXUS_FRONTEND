@@ -3267,7 +3267,7 @@ return (
 {showSettings && (
   <div className="settings-container">
     <div className="main-header">
-      <h1>⚙️ Business Settings</h1>
+      <h1>⚙️ Settings</h1>
     </div>
 
     <div className="settings-section">

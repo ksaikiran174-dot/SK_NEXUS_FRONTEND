@@ -3652,7 +3652,7 @@ const existingCategories = [...new Set(menu.map(item => item.category).filter(Bo
         {showSettings && (
           <div className="settings-container">
             <div className="main-header">
-              <h1>⚙️ Business Settings</h1>
+              <h1>⚙️ Settings</h1>
             </div>
 
             <div className="settings-section">
